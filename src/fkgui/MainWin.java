@@ -26,7 +26,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import fkgui.SerialWorker.SerialState;
 
-public class MainWin implements PropertyChangeListener, ConsoleMsg {
+public class MainWin implements ConsoleMsg {
 
 	protected Shell shell;
 	private Text txtPsw;
@@ -34,17 +34,24 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 	public PopupMenu popup;
 	public MenuItem showMain;
 	public MenuItem hideMain;
+
 	public Text txtLog;
 	public Button btnStart;
+	public Label lblPort;
+	public Label lblPassword;
+
 	private Text txtDev;
 	Preferences prefs;
+	MainWin mySelf;
+	private SerialState lastState = SerialState.Disconnected;
 	
 	SerialWorker fkSerial;
 	private boolean sysTrayIconVisible;
 
 	
-	static final String PORT_PREF ="lastUsedPortPref";
+	static final String PREF_PORT ="lastUsedPortPref";
 	static final String DEFAULT_DEVICE = "/dev/FinalKey";
+	static final String PREF_AUTOHIDE = "hideMainWinAfterConnect";
  
 	
 	/**
@@ -70,7 +77,9 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 		createContents();
 		shell.open();
 		shell.layout();
-		
+		createSysTrayIcon();
+		serialEvent(SerialState.Disconnected);
+
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();				
@@ -152,13 +161,8 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 			}
 				
 		});
-        
 
-
-        
-        //Add components to pop-up menu
-        popup.add(hideMain);
-        popup.addSeparator();
+        clearSystray();
 
 
         trayIcon.setPopupMenu(popup);
@@ -192,6 +196,18 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 		SystemTray.getSystemTray().remove(trayIcon);
 	}
 	
+	private void clearSystray() {
+			popup.removeAll();
+	        //Add components to pop-up menu
+			if(shell.isVisible()==true)
+			{
+				popup.add(hideMain);
+			} else {
+				popup.add(showMain);
+			}
+	        popup.addSeparator();
+	}
+
 	public void shutDownApp()
 	{
 		if(fkSerial != null)
@@ -220,8 +236,7 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 		prefs = Preferences.userNodeForPackage(this.getClass());
 		
 
-		fkSerial = new SerialWorker(this);
-		fkSerial.addPropertyChangeListener(this);
+		mySelf = this;
 		
 
 		btnStart = new Button(shell, SWT.NONE);
@@ -229,29 +244,19 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 		btnStart.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				
-				if( fkSerial.state == SerialState.Connected )
+				if( fkSerial!=null && fkSerial.state == SerialState.Connected )
 				{
-					shell.setText("Final Key (Not connected)");
 					fkSerial.disconnect();
-					txtPsw.setVisible(true);
-					txtDev.setVisible(true);
-					
-					btnStart.setText("Connect");
 				} else {
-					prefs.put(PORT_PREF, txtDev.getText() );
+					fkSerial = new SerialWorker(mySelf);
+					prefs.put(PREF_PORT, txtDev.getText() );
 					fkSerial.connect(txtDev.getText(),txtPsw.getText());
-					//Eat the password for security reasons.
 					txtPsw.setText("");
-					txtPsw.setVisible(false);
-					txtDev.setVisible(false);
-					btnStart.setText("Disconnect");
-					shell.setText("Final Key (Connected)");
-					
 				}
 			}
 		});
-		btnStart.setText("Connect");
-		Label lblPassword = new Label(shell, SWT.NONE);
+//		btnStart.setText("Connect");
+		lblPassword = new Label(shell, SWT.NONE);
 		lblPassword.setText("Password");
 		lblPassword.setBounds(10, 39, 85, 23);
 		
@@ -262,31 +267,25 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 		txtLog.setEditable(false);
 		txtLog.setBounds(10, 68, 424, 388);
 		
-		Label lblPort = new Label(shell, SWT.NONE);
+		lblPort = new Label(shell, SWT.NONE);
 		lblPort.setBounds(10, 10, 76, 23);
 		lblPort.setText("Port");
 		
 		txtDev = new Text(shell, SWT.BORDER);
 		txtDev.setFont(SWTResourceManager.getFont("Cantarell", 9, SWT.NORMAL));
-		txtDev.setText( prefs.get(PORT_PREF, DEFAULT_DEVICE));
+		txtDev.setText( prefs.get(PREF_PORT, DEFAULT_DEVICE));
 		txtDev.setBounds(101, 10, 223, 23);
 		shell.setTabList(new Control[]{txtPsw, btnStart});
 		
 		log("Welcome!\nConnect your Final Key and enter password.\nThen press connect.\nPress the button when it blinks.\n----------\n");
 
 
-		createSysTrayIcon();
-		
-		
-		
 		shell.addShellListener( new ShellListener() {
 			
 			public void shellIconified(ShellEvent e) {
 
-					
-
 			}
-			
+
 			public void shellDeiconified(ShellEvent e) {
 				// TODO Auto-generated method stub
 				
@@ -312,19 +311,56 @@ public class MainWin implements PropertyChangeListener, ConsoleMsg {
 
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		
-		if( evt.getPropertyName().equals("serialState") )
-		{
-			System.out.println( "serialState changed from "+((SerialState)evt.getOldValue())+" to "+((SerialState)evt.getNewValue()) );
-		}
-		
-		
-	}
+
 
 	@Override
 	public PopupMenu getPopup() {
 		return this.popup;
 	}
+
+	@Override
+	public void serialEvent(SerialState state) {
+		switch(state)
+		{
+		case Connected:
+			btnStart.setText("Disconnect");
+			btnStart.setVisible(true);
+			//Should we hide?
+			if( prefs.getBoolean(PREF_AUTOHIDE, false) == true)
+			{
+				hideToTray();
+			}
+			log("* Connected *");
+			break;
+		case Connecting:
+			shell.setText("Final Key (Connecting...)");
+			txtPsw.setVisible(false);
+			txtDev.setVisible(false);
+			btnStart.setVisible(false);
+			lblPort.setVisible(false);
+			lblPassword.setVisible(false);
+			break;
+		case Disconnected:
+			fkSerial=null;
+			shell.setText("Final Key (Not connected)");
+			txtPsw.setVisible(true);
+			txtDev.setVisible(true);
+			btnStart.setText("Connect");
+			btnStart.setVisible(true);
+			lblPort.setVisible(true);
+			lblPassword.setVisible(true);
+			clearSystray();
+			if(lastState != state)
+			{
+				log("* Disconnected *");
+			}
+			break;
+		default:
+			break;
+		}
+		lastState=state;
+		
+	}
+
+
 }

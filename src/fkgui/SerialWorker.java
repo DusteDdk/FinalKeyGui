@@ -33,26 +33,28 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		pass=p;
 		
 		serialPort = new SerialPort(dev);		
-		firePropertyChange("serialState", state, SerialState.Connecting );
+
 		state = SerialState.Connecting;
+		postStateChange( state );
 		
 		execute();
 	}
 	
 	public void disconnect()
 	{
-		firePropertyChange("serialState", state, SerialState.Disconnected );
-
-		
 		if(serialPort != null && serialPort.isOpened() )
 		{
 			try {
+				serialPort.writeByte( (byte)'q'); //Machine commands with uppercase X
+				Thread.sleep(400);
 				serialPort.closePort();
-			} catch (SerialPortException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		state = SerialState.Disconnected;
+		postStateChange( SerialState.Disconnected);
 	}
 
 	public String expectString(String expect, int timeOut)
@@ -108,7 +110,10 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		try {
 			System.out.println("Port opened: " + serialPort.openPort());
 			System.out.println("Params setted: " + serialPort.setParams(9600, 8, 1, 0));
-			
+
+			int mask = SerialPort.MASK_BREAK + SerialPort.MASK_ERR + SerialPort.MASK_RLSD;
+			serialPort.setEventsMask(mask);
+
 			serialPort.addEventListener(this);
 			String test = expectString("The Final Key", 1000);
 			if( test != null )
@@ -132,7 +137,8 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				return null;
 			}
 
-			serialPort.writeBytes(pass.getBytes());
+			enterString(pass);
+
 			serialPort.writeByte( (byte)13 );
 			pass = "";
 			
@@ -242,10 +248,19 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 		publish("Use the systray icon to trigger.");
 
-		firePropertyChange("serialState", state, SerialState.Connected );
 		state = SerialState.Connected;
+		postStateChange( state);
 		
 		return null;
+	}
+
+
+	private void enterString(String str) throws SerialPortException, InterruptedException {
+		for(int i=0; i < str.length(); i++)
+		{
+			serialPort.writeByte( str.getBytes()[i] );
+			Thread.sleep(20);
+		}
 	}
 
 
@@ -262,6 +277,25 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		}
 	}
 	
+	private class MainWinSerialChange implements Runnable  {
+		private ConsoleMsg delegate;
+		private SerialState state;
+		private MainWinSerialChange(ConsoleMsg d, SerialState s )
+		{
+			delegate=d;
+			state=s;
+		}
+		@Override
+		public void run() {
+			delegate.serialEvent(state);
+		}
+	}
+
+	private void postStateChange(SerialState state)
+	{
+		Display.getDefault().asyncExec( new MainWinSerialChange(delegate, state) );
+	}
+
 	@Override
 	protected void process(List<String> msgs) {
 		for(String s : msgs)
@@ -274,10 +308,24 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 	@Override
 	public void serialEvent(SerialPortEvent event) {
 		
+		System.out.println("Event!" + event.getEventType() );
+
 		if(event.isBREAK())
-			System.out.println(">>BREAK);");
+		{
+			if(state!=SerialState.Disconnected)
+			{
+				disconnect();
+				System.out.println(">>Break);");
+			}
+		}
 		if(event.isERR())
-			System.out.println(">>Err");
+		{
+			if(state!=SerialState.Disconnected)
+			{
+				disconnect();
+				System.out.println(">>Error");
+			}
+		}
 		if(serialPort == null)
 			System.out.println(">>Null");
 
