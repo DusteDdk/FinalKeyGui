@@ -36,7 +36,7 @@ public class MainWin implements ConsoleMsg {
 	public MenuItem hideMain;
 
 	public Text txtLog;
-	public Button btnStart;
+	public Button btnConnect;
 	public Label lblPort;
 	public Label lblPassword;
 
@@ -239,9 +239,9 @@ public class MainWin implements ConsoleMsg {
 		mySelf = this;
 		
 
-		btnStart = new Button(shell, SWT.NONE);
-		btnStart.setBounds(330, 10, 104, 52);
-		btnStart.addSelectionListener(new SelectionAdapter() {
+		btnConnect = new Button(shell, SWT.NONE);
+		btnConnect.setBounds(330, 10, 104, 52);
+		btnConnect.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				
 				if( fkSerial!=null && fkSerial.state == SerialState.Connected )
@@ -255,7 +255,7 @@ public class MainWin implements ConsoleMsg {
 				}
 			}
 		});
-//		btnStart.setText("Connect");
+		btnConnect.setText("Connect");
 		lblPassword = new Label(shell, SWT.NONE);
 		lblPassword.setText("Password");
 		lblPassword.setBounds(10, 39, 85, 23);
@@ -275,7 +275,7 @@ public class MainWin implements ConsoleMsg {
 		txtDev.setFont(SWTResourceManager.getFont("Cantarell", 9, SWT.NORMAL));
 		txtDev.setText( prefs.get(PREF_PORT, DEFAULT_DEVICE));
 		txtDev.setBounds(101, 10, 223, 23);
-		shell.setTabList(new Control[]{txtPsw, btnStart});
+		shell.setTabList(new Control[]{txtPsw, btnConnect});
 		
 		log("Welcome!\nConnect your Final Key and enter password.\nThen press connect.\nPress the button when it blinks.\n----------\n");
 
@@ -323,8 +323,8 @@ public class MainWin implements ConsoleMsg {
 		switch(state)
 		{
 		case Connected:
-			btnStart.setText("Disconnect");
-			btnStart.setVisible(true);
+			btnConnect.setText("Disconnect");
+			btnConnect.setVisible(true);
 			//Should we hide?
 			if( prefs.getBoolean(PREF_AUTOHIDE, false) == true)
 			{
@@ -336,7 +336,7 @@ public class MainWin implements ConsoleMsg {
 			shell.setText("Final Key (Connecting...)");
 			txtPsw.setVisible(false);
 			txtDev.setVisible(false);
-			btnStart.setVisible(false);
+			btnConnect.setVisible(false);
 			lblPort.setVisible(false);
 			lblPassword.setVisible(false);
 			break;
@@ -345,8 +345,8 @@ public class MainWin implements ConsoleMsg {
 			shell.setText("Final Key (Not connected)");
 			txtPsw.setVisible(true);
 			txtDev.setVisible(true);
-			btnStart.setText("Connect");
-			btnStart.setVisible(true);
+			btnConnect.setText("Connect");
+			btnConnect.setVisible(true);
 			lblPort.setVisible(true);
 			lblPassword.setVisible(true);
 			clearSystray();
