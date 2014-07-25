@@ -20,5 +20,6 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/FinalKeyGUI/lib/jssc-2.8.0-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="swing2swt.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
