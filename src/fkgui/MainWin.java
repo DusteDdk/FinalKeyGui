@@ -1,30 +1,25 @@
 package fkgui;
 
 
-import java.util.Iterator;
-import java.util.concurrent.CountDownLatch;
 import  java.util.prefs.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ListViewer;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.widgets.Text;
@@ -32,18 +27,16 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import fkgui.FkManager.Account;
 import fkgui.SerialWorker.SerialState;
 import fkgui.UpdateChecker.AutoUpdaterResultListener;
 
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.widgets.List;
 
 
 public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
@@ -79,7 +72,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 	static final String PREF_AUTOHIDE = "hideMainWinAfterConnect";
 	public Composite cmpConnect;
 	private Composite cmpAccounts;
-	List lstAccounts;
+	ListViewer lstAccounts;
  
 	
 	/**
@@ -119,9 +112,13 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 	public void log( String str )
 	{
 		txtLog.append(str+"\n");
-		txtLog.redraw();
-		shell.redraw();
+		if( tabFolder.getSelectionIndex() == 0 )
+		{
+			txtLog.redraw();
+			shell.redraw();
+		}
 		System.out.println(str);
+
 	}
 
 	/**
@@ -446,8 +443,8 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			
 			for( FkManager.Account a : FkManager.getInstance().getList() )
 			{
-				lstAccounts.add(a.name);
-				
+				lstAccounts.add( a );
+								
 				Menu menu = new Menu(a.name+" ["+a.num+"]");
 				MenuItem both = new MenuItem("User + Pass");
 				MenuItem usr = new MenuItem("User");
@@ -469,14 +466,16 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 				usr.addActionListener(FkManager.getInstance());	
 				usr.setActionCommand( "u"+a.num );
 
-				popup.add(menu);				
+				popup.add(menu);
 				
 				
 			}
 			
-			if( lstAccounts.getItemCount() > 0 )
+			
+			int numAccounts=FkManager.getInstance().getList().size();
+			if( numAccounts>0 )
 			{
-				trayIcon.displayMessage("FinalKey", lstAccounts.getItemCount() + " account"+(( lstAccounts.getItemCount()>1)?"s":"")+" ready.", 
+				trayIcon.displayMessage("FinalKey", numAccounts + " account"+(( numAccounts >1)?"s":"")+" ready.", 
 			            TrayIcon.MessageType.INFO);
 			}
 
@@ -561,34 +560,45 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		btnNewAccoount.setLayoutData(fd_btnNewAccoount);
 		btnNewAccoount.setText("New Account");
 		
-		lstAccounts = new List(cmpAccounts, SWT.BORDER | SWT.V_SCROLL);
+		lstAccounts = new ListViewer(cmpAccounts, SWT.BORDER | SWT.V_SCROLL);
 		FormData fd_lstAccounts = new FormData();
 		fd_lstAccounts.bottom = new FormAttachment(btnNewAccoount, -6);
 		fd_lstAccounts.top = new FormAttachment(0, 10);
 		fd_lstAccounts.left = new FormAttachment(0, 10);
 		fd_lstAccounts.right = new FormAttachment(100, -10);
+		
 
-		lstAccounts.setLayoutData(fd_lstAccounts);
-				
-		lstAccounts.addListener(SWT.Selection, new Listener()
-		{
-
-			@Override
-			public void handleEvent(Event event) {
-				System.out.println( "Selected Idx:"+lstAccounts.getSelectionIndex() );
-				TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), FkManager.getInstance().getList().get(lstAccounts.getSelectionIndex()) );
-
-				shell.setMinimized(true);
-				shell.setEnabled(false);
-				if( !((Boolean)diag.open()) )
-				{
-					shell.setMinimized(false);
-				}
-				
-				shell.setEnabled(true);
-			}
+		//lstAccounts.setLayoutData(fd_lstAccounts);
+		lstAccounts.getControl().setLayoutData(fd_lstAccounts);
+		
+		lstAccounts.addSelectionChangedListener(new ISelectionChangedListener() {
 			
+			@Override
+			public void selectionChanged(SelectionChangedEvent arg0) {
+
+				StructuredSelection selection = (StructuredSelection) arg0.getSelection();
+				if( !selection.isEmpty() )
+				{
+					Account acc = (Account)selection.getFirstElement();
+					TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc );
+
+					shell.setMinimized(true);
+					shell.setEnabled(false);
+					if( !((Boolean)diag.open()) )
+					{
+						shell.setMinimized(false);
+					}
+					
+					shell.setEnabled(true);
+				} else {
+					System.out.println("Selected nothing.");
+				}				
+				
+				
+				
+			}
 		});
+				
 	}
 
 
@@ -611,4 +621,6 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		}
 		
 	}
+
+
 }

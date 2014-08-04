@@ -7,6 +7,8 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
 
+import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
 
 import jssc.SerialPortException;
@@ -28,6 +30,11 @@ public class FkManager implements ActionListener {
 		{
 			name = acName;
 			num = acNum;
+		}
+		
+		public String toString()
+		{
+			return(name);
 		}
 	}
 		
@@ -208,6 +215,7 @@ public class FkManager implements ActionListener {
 		System.out.println("FkManager: Got current layout:" + str );
 		
 	}
+
 	
 	
 }
