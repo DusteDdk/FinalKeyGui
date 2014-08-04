@@ -15,16 +15,17 @@ import org.eclipse.swt.widgets.Display;
 public class SerialWorker extends javax.swing.SwingWorker<Void, String> implements SerialPortEventListener {
 	public String dev;
 	public String pass;
-	private SerialPort serialPort;
+	public SerialPort serialPort;
 	SerialState state;
 	private ConsoleMsg delegate; 
 	
-	public enum SerialState { Connecting, Connected, Disconnected };
+	public enum SerialState { Connecting,Working, Connected, Disconnected };
 
 
 	public SerialWorker(ConsoleMsg d) {
 		delegate=d;
 		state = SerialState.Disconnected;
+		FkManager.getInstance().setWorker(this);
 	}
 	
 	public void connect(String d, String p)
@@ -36,7 +37,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 		state = SerialState.Connecting;
 		postStateChange( state );
-		
+		FkManager.getInstance().listClear();
 		execute();
 	}
 	
@@ -118,8 +119,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			String test = expectString("The Final Key", 1000);
 			if( test != null )
 			{
-				publish("Ready to log in, press button now.");
-				publish("Waiting for button press...");
+				publish("\n* Press the button on the Final Key *");
 			} else {
 				//Try logging out.
 				serialPort.writeByte( (byte)'q');
@@ -130,7 +130,8 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			
 			if( expectString( "Pass:", 0 ) != null )
 			{
-				publish("Logging in...");
+				publish("Logging in.");
+				postStateChange(SerialState.Working);
 			} else {
 				publish("Error: Did not get password prompt. Unplug and try again.");
 				disconnect();
@@ -142,17 +143,24 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			serialPort.writeByte( (byte)13 );
 			pass = "";
 			
+			/*String str = expectString( "[Keyboard: ", 200 );
+			if( str != null )
+			{
+				FkManager.getInstance().setCurrentLayout( str );
+			} else {
+				publish("Did not get Keyboard layout.");
+			}*/
 			
 			if( expectString( "[Granted]", 200 ) != null )
 			{
-				publish("Access Granted.");
+				publish("\nAccess Granted.");
 			} else {
-				publish("Error: Access Denied.");
+				publish("\nError: Access Denied.");
 				disconnect();
 				return null;
 			}
 
-			publish("Getting account list...");
+			publish("Getting account list.");
 			serialPort.writeByte( (byte)'X'); //Machine commands with uppercase X
 			expectString("[auto]", 200);
 			serialPort.writeByte( (byte)'l'); //Full list 
@@ -190,66 +198,45 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 			String[] lines = accounts.split( "\r\n" );
 			numAccounts=lines.length;
+			Boolean kbList=false;
 			for(String l:lines)
 			{
-				String ac = l.substring(0,2);
-				String an = l.substring(2);
-				
-				//publish( "Account number: "+ac+" ["+an+"]");
-
-				Menu menu = new Menu(an+" ["+ac+"]");
-				MenuItem both = new MenuItem("User + Pass");
-				MenuItem usr = new MenuItem("User");
-				MenuItem psw = new MenuItem("Pass");
-				menu.add(both);
-				menu.add(usr);
-				menu.add(psw);
-
-				FireActionListener fal = new FireActionListener();
-				fal.action = "%";
-				fal.name = an;
-				fal.num = ac;
-				fal.port = serialPort;
-				both.addActionListener(fal);
-
-
-				fal = new FireActionListener();
-				fal.action = "p";
-				fal.name = an;
-				fal.num = ac;
-				fal.port = serialPort;
-				psw.addActionListener(fal);	                
-
-				fal = new FireActionListener();
-				fal.action = "u";
-				fal.name = an;
-				fal.num = ac;
-				fal.port = serialPort;
-				usr.addActionListener(fal);	                
-
-				delegate.getPopup().add(menu);
+				if( ! kbList )
+				{
+					if( l.compareTo("[KBL]") == 0 )
+					{
+						kbList=true;
+					} else {
+						String ac = l.substring(0,2);
+						String an = l.substring(2);
+						FkManager.getInstance().listAddAcc(ac, an);
+					}
+				} else {
+					//Next entries are supported keyboard layouts
+					publish("Supported layout:" + l);
+				}
 			}
 
 		}
-		catch (SerialPortException ex){
-			System.out.println(ex);
-		} catch (Exception e )
-		{
-			System.out.println("Other exception: "+e.getMessage() );
-			e.printStackTrace();
+		catch (Exception ex){
+			publish("Error: Exception: "+ex.getMessage() );
+			disconnect();
 		}
 
-		if(numAccounts==1)
+		if( state != SerialState.Disconnected )
 		{
-			publish(numAccounts+" account.");
-		} else {
-			publish(numAccounts+" accounts ready.");
+			if(numAccounts==1)
+			{
+				publish(numAccounts+" account.");
+			} else {
+				publish(numAccounts+" accounts ready.");
+			}
+	
+			publish("\n* Use the FinalKey icon in the systray to access your logins *");
+
+			state = SerialState.Connected;
+			postStateChange( state);
 		}
-
-		publish("Use the systray icon to trigger.");
-
-		state = SerialState.Connected;
-		postStateChange( state);
 		
 		return null;
 	}

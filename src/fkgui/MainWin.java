@@ -1,6 +1,8 @@
 package fkgui;
 
 
+import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 import  java.util.prefs.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -14,6 +16,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
@@ -30,6 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import fkgui.SerialWorker.SerialState;
+import fkgui.UpdateChecker.AutoUpdaterResultListener;
 
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -41,7 +45,8 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.widgets.List;
 
-public class MainWin implements ConsoleMsg {
+
+public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 
 	protected Shell shell;
 	private Text txtPsw;
@@ -55,6 +60,10 @@ public class MainWin implements ConsoleMsg {
 	public Button chkAutoHide;
 	public Label lblPort;
 	public Label lblPassword;
+	
+	public Animation animation;
+	
+	public TabFolder tabFolder;
 
 	private Text txtDev;
 	Preferences prefs;
@@ -69,10 +78,8 @@ public class MainWin implements ConsoleMsg {
 	static final String DEFAULT_DEVICE = "/dev/FinalKey";
 	static final String PREF_AUTOHIDE = "hideMainWinAfterConnect";
 	public Composite cmpConnect;
-	private Composite composite;
 	private Composite cmpAccounts;
 	List lstAccounts;
-	private Text txtSearch;
  
 	
 	/**
@@ -100,6 +107,7 @@ public class MainWin implements ConsoleMsg {
 		shell.layout();
 		createSysTrayIcon();
 		serialEvent(SerialState.Disconnected);
+		new Thread(new UpdateChecker(this)).start();
 
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -147,6 +155,7 @@ public class MainWin implements ConsoleMsg {
         popup = new PopupMenu();
         trayIcon =
                 new TrayIcon(Toolkit.getDefaultToolkit().createImage(getClass().getResource("finalkey.png")));
+        trayIcon.setToolTip("The Final Key - Hardware password manager");
         trayIcon.setImageAutoSize(true);
         final SystemTray tray = SystemTray.getSystemTray();
        
@@ -255,9 +264,15 @@ public class MainWin implements ConsoleMsg {
 		
 
 		mySelf = this;
-		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
+		shell.setLayout(new FormLayout());
 		
-		TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
+		tabFolder = new TabFolder(shell, SWT.NONE);
+		FormData fd_tabFolder = new FormData();
+		fd_tabFolder.bottom = new FormAttachment(0, 627);
+		fd_tabFolder.right = new FormAttachment(0, 709);
+		fd_tabFolder.top = new FormAttachment(0);
+		fd_tabFolder.left = new FormAttachment(0);
+		tabFolder.setLayoutData(fd_tabFolder);
 		tabFolder.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
 		
 		TabItem tbtmConnection = new TabItem(tabFolder, SWT.NONE);
@@ -269,7 +284,9 @@ public class MainWin implements ConsoleMsg {
 		
 
 		btnConnect = new Button(cmpConnect, SWT.CENTER);
+		btnConnect.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/lightning.png"));
 		FormData fd_btnConnect = new FormData();
+		fd_btnConnect.left = new FormAttachment(100, -125);
 		fd_btnConnect.right = new FormAttachment(100, -10);
 		btnConnect.setLayoutData(fd_btnConnect);
 
@@ -303,10 +320,10 @@ public class MainWin implements ConsoleMsg {
 		
 		txtLog = new Text(cmpConnect, SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
 		FormData fd_txtLog = new FormData();
-		fd_txtLog.bottom = new FormAttachment(100, -10);
-		fd_txtLog.right = new FormAttachment(btnConnect, 0, SWT.RIGHT);
-		fd_txtLog.top = new FormAttachment(0, 58);
 		fd_txtLog.left = new FormAttachment(0, 10);
+		fd_txtLog.right = new FormAttachment(100, -10);
+		fd_txtLog.bottom = new FormAttachment(100, -10);
+		fd_txtLog.top = new FormAttachment(0, 58);
 		txtLog.setLayoutData(fd_txtLog);
 		txtLog.setEditable(false);
 		
@@ -346,138 +363,29 @@ public class MainWin implements ConsoleMsg {
 		
 		chkAutoHide.setSelection( prefs.getBoolean(PREF_AUTOHIDE, false)) ;
 		
+		animation = new Animation(cmpConnect, SWT.NONE, 4);
+
+		FormData fd_animation = new FormData();
+		fd_animation.right = new FormAttachment(0, 86);
+		fd_animation.top = new FormAttachment(0);
+		fd_animation.left = new FormAttachment(0, 10);		
+		
+		animation.setLayoutData(fd_animation);
+
+
+		
+		
+
+		
+		animation.setVisible(false);
+		animation.addFrame( SWTResourceManager.getImage("/home/dusted/Downloads/finalkey1.png") );
+		animation.addFrame( SWTResourceManager.getImage("/home/dusted/Downloads/finalkey2.png") );
+		animation.setPlaying(false);
 		cmpConnect.setTabList(new Control[]{txtPsw, btnConnect});
 		
+	
 		
-		TabItem tbtmOptions = new TabItem(tabFolder, SWT.NONE);
-		tbtmOptions.setText("Options");
-		
-		composite = new Composite(tabFolder, SWT.BORDER);
-		tbtmOptions.setControl(composite);
-		
-		TabItem tbtmAccounts = new TabItem(tabFolder, SWT.NONE);
-		tbtmAccounts.setText("Accounts");
-		
-		cmpAccounts = new Composite(tabFolder, SWT.BORDER);
-		tbtmAccounts.setControl(cmpAccounts);
-		cmpAccounts.setLayout(new FormLayout());
-		
-		Button btnNewAccoount = new Button(cmpAccounts, SWT.NONE);
-		FormData fd_btnNewAccoount = new FormData();
-		fd_btnNewAccoount.top = new FormAttachment(0, 10);
-		fd_btnNewAccoount.left = new FormAttachment(0, 10);
-		btnNewAccoount.setLayoutData(fd_btnNewAccoount);
-		btnNewAccoount.setText("New");
-		
-		Button btnEditAccount = new Button(cmpAccounts, SWT.NONE);
-		FormData fd_btnEditAccount = new FormData();
-		fd_btnEditAccount.top = new FormAttachment(0, 10);
-		fd_btnEditAccount.left = new FormAttachment(0, 63);
-		btnEditAccount.setLayoutData(fd_btnEditAccount);
-		btnEditAccount.setText("Edit");
-		
-		Button btnDeleteAccount = new Button(cmpAccounts, SWT.NONE);
-		FormData fd_btnDeleteAccount = new FormData();
-		fd_btnDeleteAccount.top = new FormAttachment(btnNewAccoount, 0, SWT.TOP);
-		btnDeleteAccount.setLayoutData(fd_btnDeleteAccount);
-		btnDeleteAccount.setText("Delete");
-		
-		lstAccounts = new List(cmpAccounts, SWT.BORDER | SWT.V_SCROLL);
-		fd_btnDeleteAccount.right = new FormAttachment(lstAccounts, 0, SWT.RIGHT);
-		FormData fd_lstAccounts = new FormData();
-		fd_lstAccounts.left = new FormAttachment(0, 10);
-		fd_lstAccounts.bottom = new FormAttachment(100, -6);
-		fd_lstAccounts.right = new FormAttachment(100, -10);
-		fd_lstAccounts.top = new FormAttachment(btnNewAccoount, 6);
-
-		lstAccounts.setLayoutData(fd_lstAccounts);
-		
-		lstAccounts.add("Facebook");
-		lstAccounts.add("Twitter");
-		lstAccounts.add("Krapbox Twitter");
-		lstAccounts.add("Fjord");
-		lstAccounts.add("Ordbogen");
-		lstAccounts.add("Fisker");
-		lstAccounts.add("KrapBox");
-		lstAccounts.add("En to tre");
-		lstAccounts.add("Item9");
-		lstAccounts.add("Item0");
-		lstAccounts.add("Itema");
-		lstAccounts.add("Itemb");
-		lstAccounts.add("Itemc");
-		lstAccounts.add("Itemd");
-		lstAccounts.add("Iteme");
-		lstAccounts.add("Itemf");
-		lstAccounts.add("Itemg");
-		lstAccounts.add("Itemh");
-		lstAccounts.add("Itemi");
-		lstAccounts.add("Itemj");
-		lstAccounts.add("Itemk");
-		
-		txtSearch = new Text(cmpAccounts, SWT.BORDER);
-		txtSearch.setText("Search");
-		FormData fd_txtSearch = new FormData();
-		fd_txtSearch.right = new FormAttachment(btnDeleteAccount, -6);
-		fd_txtSearch.bottom = new FormAttachment(lstAccounts, -6);
-		fd_txtSearch.left = new FormAttachment(btnEditAccount, 6);
-		txtSearch.setLayoutData(fd_txtSearch);
-		
-		lstAccounts.addListener(SWT.Selection, new Listener()
-		{
-
-			@Override
-			public void handleEvent(Event event) {
-				System.out.println( "Selected Idx:"+lstAccounts.getSelectionIndex() );
-				//txtSearch.setText( lstAccounts.getItem(lstAccounts.getSelectionIndex() ) );
-				
-			}
-			
-		});
-		
-		txtSearch.addModifyListener(new ModifyListener() {
-			
-			@Override
-			public void modifyText(ModifyEvent e) {
-				if( txtSearch.getText().length()<1) return;
-
-				String lst[] = lstAccounts.getItems();
-				String wrds[] = txtSearch.getText().toLowerCase().split(" ");
-				int idx=0;
-				int scores[] = new int[lst.length];
-				for( String s : lst )
-				{
-					s = s.toLowerCase();
-					scores[idx]=0;
-					for(String w: wrds )
-					{
-						if( s.contains(w) )
-						{
-							scores[idx]++;
-							//System.out.println("Account: "+s+ " scores +1 for substring "+w);
-						}
-					}
-					idx++;
-				}
-				
-				int top=0;
-				int biggest=0;
-				for(int i=0; i<lst.length;i++)
-				{
-					if( scores[i] > biggest )
-					{
-						biggest=scores[i];
-						top=i;
-					}
-				}
-				
-				if(biggest!=0)
-				{
-					lstAccounts.setSelection(top);
-				}
-			}
-		});
-		
-		log("Welcome!\nConnect your Final Key and enter password.\nThen press connect.\nPress the button when it blinks.\n----------\n");
+		log("Type your password and press connect.\n----------\n");
 
 
 		shell.addShellListener( new ShellListener() {
@@ -498,7 +406,6 @@ public class MainWin implements ConsoleMsg {
 			
 			public void shellClosed(ShellEvent e) {
 				shutDownApp();
-				
 			}
 			
 			public void shellActivated(ShellEvent e) {
@@ -512,29 +419,75 @@ public class MainWin implements ConsoleMsg {
 	}
 
 
-
-	@Override
-	public PopupMenu getPopup() {
-		return this.popup;
-	}
-
 	@Override
 	public void serialEvent(SerialState state) {
 		switch(state)
 		{
 		case Connected:
 			shell.setText("Final Key (Connected)");
+			
+			animation.setVisible(false);
+			animation.setPlaying(false);
+
+
 			btnConnect.setText("Disconnect");
 			btnConnect.setVisible(true);
+			
 			//Should we hide?
 			if( prefs.getBoolean(PREF_AUTOHIDE, false) == true)
 			{
 				hideToTray();
 			}
+			
+			addAccountsTab();
+			
+			
+			tabFolder.setSelection(1);
+			
+			for( FkManager.Account a : FkManager.getInstance().getList() )
+			{
+				lstAccounts.add(a.name);
+				
+				Menu menu = new Menu(a.name+" ["+a.num+"]");
+				MenuItem both = new MenuItem("User + Pass");
+				MenuItem usr = new MenuItem("User");
+				MenuItem psw = new MenuItem("Pass");
+				menu.add(both);
+				menu.add(usr);
+				menu.add(psw);
+
+
+				both.addActionListener(FkManager.getInstance());
+				both.setActionCommand( "%"+a.num );
+
+
+
+				psw.addActionListener(FkManager.getInstance());	
+				psw.setActionCommand( "p"+a.num);
+
+
+				usr.addActionListener(FkManager.getInstance());	
+				usr.setActionCommand( "u"+a.num );
+
+				popup.add(menu);				
+				
+				
+			}
+			
+			if( lstAccounts.getItemCount() > 0 )
+			{
+				trayIcon.displayMessage("FinalKey", lstAccounts.getItemCount() + " account"+(( lstAccounts.getItemCount()>1)?"s":"")+" ready.", 
+			            TrayIcon.MessageType.INFO);
+			}
+
+			
 			log("* Connected *");
 			break;
 		case Connecting:
 			shell.setText("Final Key (Connecting...)");
+			animation.setVisible(true);
+			animation.setPlaying(true);
+
 			txtPsw.setVisible(false);
 			txtDev.setVisible(false);
 			btnConnect.setVisible(false);
@@ -544,6 +497,13 @@ public class MainWin implements ConsoleMsg {
 			break;
 		case Disconnected:
 			fkSerial=null;
+			animation.setVisible(false);
+			animation.setPlaying(false);
+
+			remAccountsTab();
+			
+			tabFolder.setSelection(0);
+
 			shell.setText("Final Key (Not connected)");
 			txtPsw.setVisible(true);
 			txtDev.setVisible(true);
@@ -558,10 +518,97 @@ public class MainWin implements ConsoleMsg {
 				log("* Disconnected *");
 			}
 			break;
+		
+		case Working:
+			animation.setPlaying(false);
+			animation.setVisible(false);
+			break;
+			
 		default:
 			break;
 		}
 		lastState=state;
 		cmpConnect.layout();
+	}
+
+	private void remAccountsTab() {
+		if( tabFolder.getItemCount() > 1 )
+		{
+			tabFolder.getItem(1).dispose();
+		}
+		
+	}
+
+	private void addAccountsTab() {
+		TabItem tbtmAccounts = new TabItem(tabFolder, SWT.NONE);
+		tbtmAccounts.setText("Accounts");
+		
+		cmpAccounts = new Composite(tabFolder, SWT.BORDER);
+		tbtmAccounts.setControl(cmpAccounts);
+		cmpAccounts.setLayout(new FormLayout());
+		
+		Button btnNewAccoount = new Button(cmpAccounts, SWT.NONE);
+		btnNewAccoount.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/Button New-01.png"));
+		btnNewAccoount.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+			}
+		});
+		FormData fd_btnNewAccoount = new FormData();
+		fd_btnNewAccoount.left = new FormAttachment(0, 530);
+		fd_btnNewAccoount.right = new FormAttachment(100, -10);
+		fd_btnNewAccoount.bottom = new FormAttachment(100, -10);
+		btnNewAccoount.setLayoutData(fd_btnNewAccoount);
+		btnNewAccoount.setText("New Account");
+		
+		lstAccounts = new List(cmpAccounts, SWT.BORDER | SWT.V_SCROLL);
+		FormData fd_lstAccounts = new FormData();
+		fd_lstAccounts.bottom = new FormAttachment(btnNewAccoount, -6);
+		fd_lstAccounts.top = new FormAttachment(0, 10);
+		fd_lstAccounts.left = new FormAttachment(0, 10);
+		fd_lstAccounts.right = new FormAttachment(100, -10);
+
+		lstAccounts.setLayoutData(fd_lstAccounts);
+				
+		lstAccounts.addListener(SWT.Selection, new Listener()
+		{
+
+			@Override
+			public void handleEvent(Event event) {
+				System.out.println( "Selected Idx:"+lstAccounts.getSelectionIndex() );
+				TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), FkManager.getInstance().getList().get(lstAccounts.getSelectionIndex()) );
+
+				shell.setMinimized(true);
+				shell.setEnabled(false);
+				if( !((Boolean)diag.open()) )
+				{
+					shell.setMinimized(false);
+				}
+				
+				shell.setEnabled(true);
+			}
+			
+		});
+	}
+
+
+	@Override
+	public void updateCheckFinished(AutoUpdaterResultEvent event) {
+		switch(event.result)
+		{
+		case CHECK_FAILED:
+			System.out.println("Trouble checking for updates.");
+			break;
+		case NO_UPDATE:
+			System.out.println("No update avaiable at this time.");
+			break;
+		case UPDATE_AVAILABLE:
+			MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+			dialog.setText("FinalKey GUI Version "+event.version+" available.");
+			dialog.setMessage("There's a new version of FinalKey GUI available.\nGo to http://cyberstalker.dk/finalkey/gui/ to download.\n\nNews:\n"+event.message);
+			dialog.open();	
+			break;
+		}
+		
 	}
 }
