@@ -44,7 +44,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		super(parent, style);
 		account = a;
 		delegate = d;
-		setText("Use "+ account.name);
+		setText(Messages.TriggerDialog_0+ account.name);
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				display.sleep();
 			}
 		}
-		System.out.println("Returning result:" + (Boolean)result);
+		System.out.println(Messages.TriggerDialog_1 + (Boolean)result);
 		return result;
 	}
 
@@ -95,38 +95,38 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		fd_grpMakeFinalKey.left = new FormAttachment(0, 10);
 		fd_grpMakeFinalKey.right = new FormAttachment(100, -10);
 		grpMakeFinalKey.setLayoutData(fd_grpMakeFinalKey);
-		grpMakeFinalKey.setText("Use " + account.name);
+		grpMakeFinalKey.setText(Messages.TriggerDialog_2 + account.name);
 		
 		Button btnUsernamePassword = new Button(grpMakeFinalKey, SWT.NONE);
 		btnUsernamePassword.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				FkManager.getInstance().trig(account, '%', mySelf);
-				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + ": Ready with username and password", "Focus username field and press button.\nPress and hold to cancel.", 30000);
+				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_3, Messages.TriggerDialog_4, 30000);
 				shell.setMinimized(true);
 				permitCountdownDialog.open();
 			}
 		});
-		btnUsernamePassword.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png"));
+		btnUsernamePassword.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png")); //$NON-NLS-1$
 		FormData fd_btnUsernamePassword = new FormData();
 		fd_btnUsernamePassword.top = new FormAttachment(0, 10);
 		fd_btnUsernamePassword.left = new FormAttachment(0, 10);
 		fd_btnUsernamePassword.right = new FormAttachment(0, 224);
 		btnUsernamePassword.setLayoutData(fd_btnUsernamePassword);
 
-		btnUsernamePassword.setText("Username + Password");
+		btnUsernamePassword.setText(Messages.TriggerDialog_6);
 		
 		Button btnUsernameOnly = new Button(grpMakeFinalKey, SWT.NONE);
 		btnUsernameOnly.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				FkManager.getInstance().trig(account, 'u', mySelf);
-				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + ": Ready with username", "Focus username field and press button.\nPress and hold to cancel.", 30000);
+				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_7, Messages.TriggerDialog_8, 30000);
 				shell.setMinimized(true);
 				permitCountdownDialog.open();
 			}
 		});
-		btnUsernameOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/user.png"));
+		btnUsernameOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/user.png")); //$NON-NLS-1$
 		FormData fd_btnUsernameOnly = new FormData();
 		fd_btnUsernameOnly.top = new FormAttachment(btnUsernamePassword, -35);
 		fd_btnUsernameOnly.bottom = new FormAttachment(btnUsernamePassword, 0, SWT.BOTTOM);
@@ -134,7 +134,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		fd_btnUsernameOnly.right = new FormAttachment(0, 405);
 		btnUsernameOnly.setLayoutData(fd_btnUsernameOnly);
 
-		btnUsernameOnly.setText("Username");
+		btnUsernameOnly.setText(Messages.TriggerDialog_10);
 		
 		Button btnPasswordOnly = new Button(grpMakeFinalKey, SWT.NONE);
 		btnPasswordOnly.addSelectionListener(new SelectionAdapter() {
@@ -142,13 +142,13 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			public void widgetSelected(SelectionEvent e) {
 				FkManager.getInstance().trig(account, 'p', mySelf);
 				
-				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + ": Ready with password", "Focus username field and press button.\nPress and hold to cancel.", 30000);
+				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_11, Messages.TriggerDialog_12, 30000);
 
 				shell.setMinimized(true);
 				permitCountdownDialog.open();
 			}
 		});
-		btnPasswordOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/key-icon.png"));
+		btnPasswordOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/key-icon.png")); //$NON-NLS-1$
 		FormData fd_btnPasswordOnly = new FormData();
 		fd_btnPasswordOnly.left = new FormAttachment(btnUsernameOnly, 29);
 		fd_btnPasswordOnly.top = new FormAttachment(btnUsernamePassword, 0, SWT.TOP);
@@ -156,10 +156,10 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		fd_btnPasswordOnly.bottom = new FormAttachment(0, 45);
 		btnPasswordOnly.setLayoutData(fd_btnPasswordOnly);
 
-		btnPasswordOnly.setText("Password");
+		btnPasswordOnly.setText(Messages.TriggerDialog_14);
 				
 				grpChange = new Group(shell, SWT.NONE);
-				grpChange.setText("Change "+account.name);
+				grpChange.setText(Messages.TriggerDialog_15+account.name);
 				grpChange.setLayout(new FormLayout());
 				fd_grpChange = new FormData();
 				fd_grpChange.left = new FormAttachment(grpMakeFinalKey, 353, SWT.LEFT);
@@ -168,12 +168,12 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				grpChange.setLayoutData(fd_grpChange);
 				
 				Button btnEdit = new Button(grpChange, SWT.NONE);
-				btnEdit.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/gtk_edit.png"));
+				btnEdit.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/gtk_edit.png")); //$NON-NLS-1$
 				FormData fd_btnEdit = new FormData();
 				fd_btnEdit.top = new FormAttachment(0, 10);
 				fd_btnEdit.left = new FormAttachment(0, 10);
 				btnEdit.setLayoutData(fd_btnEdit);
-				btnEdit.setText("Edit");
+				btnEdit.setText(Messages.TriggerDialog_17);
 				///TODO: Inplement edit box..
 				btnEdit.setVisible(false);
 				
@@ -182,11 +182,11 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
 						MessageBox dialog = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO );
-						dialog.setText("WARNING! Confirm delete "+account.name );
-						dialog.setMessage("Are you sure you want to delete account "+account.name+" ?\nAccount id: "+account.num+"\nIf you remove the account, it can not be recovered!");
+						dialog.setText(Messages.TriggerDialog_18+account.name );
+						dialog.setMessage(Messages.TriggerDialog_19+account.name+Messages.TriggerDialog_20+account.num+Messages.TriggerDialog_21);
 						if( dialog.open() == SWT.YES )
 						{
-							permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + ": Confirm deletion", "Press button to show delete "+account.name+".\nPress and hold to cancel.", 5000);
+							permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_22, Messages.TriggerDialog_23+account.name+Messages.TriggerDialog_24, 5000);
 							shell.setMinimized(true);
 							FkManager.getInstance().trig(account, 'd', mySelf);
 							permitCountdownDialog.open();
@@ -196,24 +196,24 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					}
 				});
 				fd_btnEdit.right = new FormAttachment(btnDelete, -6);
-				btnDelete.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/trashdelete.gif"));
+				btnDelete.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/trashdelete.gif")); //$NON-NLS-1$
 				FormData fd_btnDelete = new FormData();
 				fd_btnDelete.top = new FormAttachment(0, 10);
 				fd_btnDelete.left = new FormAttachment(0, 166);
 				fd_btnDelete.right = new FormAttachment(100, -11);
 				btnDelete.setLayoutData(fd_btnDelete);
-				btnDelete.setText("Delete");
+				btnDelete.setText(Messages.TriggerDialog_26);
 
 				Button btnCancel = new Button(shell, SWT.NONE);
 				fd_grpChange.bottom = new FormAttachment(btnCancel, -6);
-				btnCancel.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/Delete.png"));
+				btnCancel.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/Delete.png")); //$NON-NLS-1$
 				FormData fd_btnCancel = new FormData();
 				fd_btnCancel.left = new FormAttachment(grpMakeFinalKey, 0, SWT.LEFT);
 				fd_btnCancel.bottom = new FormAttachment(100, -10);
 				fd_btnCancel.right = new FormAttachment(grpMakeFinalKey, 2, SWT.RIGHT);
 				btnCancel.setLayoutData(fd_btnCancel);
 				
-				btnCancel.setText("Do nothing");
+				btnCancel.setText(Messages.TriggerDialog_28);
 				
 				btnCancel.addSelectionListener( new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
@@ -221,7 +221,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					}
 				});				
 				Group grpShow = new Group(shell, SWT.NONE);
-				grpShow.setText("Show "+account.name);
+				grpShow.setText(Messages.TriggerDialog_29+account.name);
 				FormData fd_grpShow = new FormData();
 				fd_grpShow.bottom = new FormAttachment(grpChange, 0, SWT.BOTTOM);
 				fd_grpShow.right = new FormAttachment(grpChange, -6);
@@ -234,14 +234,14 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
 						FkManager.getInstance().trig(account, 's', mySelf);
-						permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + ": Ready for display", "Press button to show username and password.\nPress and hold to cancel.", 30000);
+						permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_30, Messages.TriggerDialog_31, 30000);
 						shell.setMinimized(true);
 						permitCountdownDialog.open();
 					}
 				});
-				btnShowUsername.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png"));
+				btnShowUsername.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png")); //$NON-NLS-1$
 				btnShowUsername.setBounds(10, 36, 327, 35);
-				btnShowUsername.setText("Show Username + Password");				
+				btnShowUsername.setText(Messages.TriggerDialog_33);				
 				
 
 	}
@@ -260,13 +260,13 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		case ACTION_ABORTED:
 			dialog = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
 			dialog.setText(event.acc.name);
-			dialog.setMessage("Action aborted or timed out.");
+			dialog.setMessage(Messages.TriggerDialog_34);
 			dialog.open();
 			break;
 		case ACTION_ERROR:
 			dialog = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
-			dialog.setText(event.acc.name + " error");
-			dialog.setMessage("An error ocurred.");
+			dialog.setText(event.acc.name + Messages.TriggerDialog_35);
+			dialog.setMessage(Messages.TriggerDialog_36);
 			dialog.open();			
 			break;
 		case ACTION_OKAY:
@@ -281,7 +281,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				int end = event.data.lastIndexOf("[done]");
 				String s = event.data.substring( begin,end  );
 				dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
-				dialog.setText("Account information");
+				dialog.setText(Messages.TriggerDialog_39);
 				dialog.setMessage(s);
 				dialog.open();
 			}
@@ -290,8 +290,8 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			{
 				result = (Object)new Boolean(false); //We want the mainwin to get back after deleting an account.
 				dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
-				dialog.setText("Account deleted");
-				dialog.setMessage(event.acc.name + " has been erased.");
+				dialog.setText(Messages.TriggerDialog_40);
+				dialog.setMessage(event.acc.name + Messages.TriggerDialog_41);
 				dialog.open();
 				Display.getDefault().asyncExec( new Runnable() {
 					@Override

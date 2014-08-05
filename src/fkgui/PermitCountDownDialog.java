@@ -57,14 +57,14 @@ public class PermitCountDownDialog extends Dialog {
 		lblMsg.setText(msg);
 		
 		lblTimeLeft = new Label(shell, SWT.NONE);
-		lblTimeLeft.setText("    ");
+		lblTimeLeft.setText("    "); //$NON-NLS-1$
 		lblTimeLeft.setBounds(48, 56, 201, 32);
 		
 		Animation animation = new Animation(shell, SWT.NONE, 4);
 		animation.setBounds(10, 32, 32, 32);
 		animation.setVisible(true);
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") );
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") );
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") ); //$NON-NLS-1$
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") ); //$NON-NLS-1$
 		animation.setPlaying(true);
 		
 		
@@ -93,7 +93,7 @@ public class PermitCountDownDialog extends Dialog {
 				if( !shell.isDisposed() )
 				{
 
-					lblTimeLeft.setText( Math.round(msLeft/1000) + " seconds left.");
+					lblTimeLeft.setText( Math.round(msLeft/1000) + Messages.PermitCountDownDialog_0);
 
 					display.update();
 					msLeft -= 1000;

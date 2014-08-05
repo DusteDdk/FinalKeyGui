@@ -1,6 +1,7 @@
 package fkgui;
 
 
+import java.util.Locale;
 import  java.util.prefs.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,12 +17,16 @@ import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.widgets.Text;
@@ -40,6 +45,7 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.List;
 
 
 public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
@@ -68,11 +74,13 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 	
 	SerialWorker fkSerial;
 	private boolean sysTrayIconVisible;
+	
+	Button btnActivateAccount;
 
 	
-	static final String PREF_PORT ="lastUsedPortPref";
-	static final String DEFAULT_DEVICE = "/dev/FinalKey";
-	static final String PREF_AUTOHIDE = "hideMainWinAfterConnect";
+	static final String PREF_PORT ="lastUsedPortPref"; //$NON-NLS-1$
+	static final String DEFAULT_DEVICE = "/dev/FinalKey"; //$NON-NLS-1$
+	static final String PREF_AUTOHIDE = "hideMainWinAfterConnect"; //$NON-NLS-1$
 	public Composite cmpConnect;
 	private Composite cmpAccounts;
 	ListViewer lstAccounts;
@@ -101,6 +109,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 	public void open() {
 		Display display = Display.getDefault();
 		createContents();
+		addAccountsTab();
 		shell.open();
 		shell.layout();
 		createSysTrayIcon();
@@ -116,7 +125,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 	
 	public void log( String str )
 	{
-		txtLog.append(str+"\n");
+		txtLog.append(str+"\n"); //$NON-NLS-1$
 		if( tabFolder.getSelectionIndex() == 0 )
 		{
 			txtLog.redraw();
@@ -134,7 +143,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		sysTrayIconVisible=true;
         //Check the SystemTray is supported
         if (!SystemTray.isSupported()) {
-            log("SystemTray is not supported, app is useless");
+            log("SystemTray is not supported, app is useless"); //$NON-NLS-1$
             return;
         }
         
@@ -146,14 +155,14 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 
         popup = new PopupMenu();
         trayIcon =
-                new TrayIcon(Toolkit.getDefaultToolkit().createImage(getClass().getResource("gfx/finalkey.png")));
-        trayIcon.setToolTip("The Final Key - Hardware password manager");
+                new TrayIcon(Toolkit.getDefaultToolkit().createImage(getClass().getResource("gfx/finalkey.png"))); //$NON-NLS-1$
+        trayIcon.setToolTip("The Final Key - Hardware password manager"); //$NON-NLS-1$
         trayIcon.setImageAutoSize(true);
         final SystemTray tray = SystemTray.getSystemTray();
        
         // Create a pop-up menu components
-        showMain = new MenuItem("Show FinalKey");
-        hideMain = new MenuItem("Hide FinalKey");
+        showMain = new MenuItem(Messages.MainWin_7);
+        hideMain = new MenuItem(Messages.MainWin_8);
 
         showMain.addActionListener(new ActionListener() {
 			@Override
@@ -191,7 +200,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
         try {
             tray.add(trayIcon);
         } catch (AWTException e) {
-        	log("TrayIcon could not be added.");
+        	log("TrayIcon could not be added."); //$NON-NLS-1$
         }	
         
 	}
@@ -246,11 +255,14 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 	 * Create contents of the window.
 	 */
 	protected void createContents() {
+		
+		
 		shell = new Shell();
-		shell.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey.png"));
+		shell.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey.png")); //$NON-NLS-1$
 		shell.setSize(711, 655);
-		shell.setText("Final Key (Not connected)");
 
+
+		
 		
 		prefs = Preferences.userNodeForPackage(this.getClass());
 		
@@ -262,7 +274,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		tabFolder.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
 		
 		TabItem tbtmConnection = new TabItem(tabFolder, SWT.NONE);
-		tbtmConnection.setText("Connection");
+		tbtmConnection.setText(Messages.MainWin_12);
 		
 		cmpConnect = new Composite(tabFolder, SWT.BORDER);
 		tbtmConnection.setControl(cmpConnect);
@@ -270,7 +282,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		
 
 		btnConnect = new Button(cmpConnect, SWT.CENTER);
-		btnConnect.setImage( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightning.png") );
+		btnConnect.setImage( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightning.png") ); //$NON-NLS-1$
 		FormData fd_btnConnect = new FormData();
 		fd_btnConnect.left = new FormAttachment(100, -125);
 		fd_btnConnect.right = new FormAttachment(100, -10);
@@ -285,16 +297,12 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 					fkSerial.disconnect();
 				} else {
 					
-					prefs.putBoolean(PREF_AUTOHIDE, chkAutoHide.getSelection() );
-
-					fkSerial = new SerialWorker(mySelf);
-					prefs.put(PREF_PORT, txtDev.getText() );
-					fkSerial.connect(txtDev.getText(),txtPsw.getText());
-					txtPsw.setText("");
+					connect();
 				}
 			}
+
 		});
-		btnConnect.setText("Connect");
+		btnConnect.setText(Messages.MainWin_15);
 		
 		txtPsw = new Text(cmpConnect, SWT.BORDER | SWT.PASSWORD);
 		fd_btnConnect.bottom = new FormAttachment(txtPsw, 0, SWT.BOTTOM);
@@ -305,6 +313,22 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		fd_txtPsw.left = new FormAttachment(0, 102);
 		txtPsw.setLayoutData(fd_txtPsw);
 		txtPsw.setFocus();
+		txtPsw.addKeyListener( new KeyListener() {
+			
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				if( arg0.character==(char)13 )
+				{
+					connect();
+				}
+			}
+		});
 		
 		txtLog = new Text(cmpConnect, SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
 		FormData fd_txtLog = new FormData();
@@ -322,7 +346,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		fd_lblPort.top = new FormAttachment(0);
 		fd_lblPort.left = new FormAttachment(0, 10);
 		lblPort.setLayoutData(fd_lblPort);
-		lblPort.setText("Port");
+		lblPort.setText("Port"); //$NON-NLS-1$
 		
 		txtDev = new Text(cmpConnect, SWT.BORDER);
 		FormData fd_txtDev = new FormData();
@@ -331,7 +355,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		fd_txtDev.top = new FormAttachment(0);
 		fd_txtDev.left = new FormAttachment(0, 102);
 		txtDev.setLayoutData(fd_txtDev);
-		txtDev.setFont(SWTResourceManager.getFont("Cantarell", 9, SWT.NORMAL));
+		txtDev.setFont(SWTResourceManager.getFont("Cantarell", 9, SWT.NORMAL)); //$NON-NLS-1$
 		txtDev.setText( prefs.get(PREF_PORT, DEFAULT_DEVICE));
 		lblPassword = new Label(cmpConnect, SWT.NONE);
 		FormData fd_lblPassword = new FormData();
@@ -339,7 +363,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		fd_lblPassword.top = new FormAttachment(0, 29);
 		fd_lblPassword.left = new FormAttachment(0, 10);
 		lblPassword.setLayoutData(fd_lblPassword);
-		lblPassword.setText("Password");
+		lblPassword.setText(Messages.MainWin_18);
 		
 		chkAutoHide = new Button(cmpConnect, SWT.CHECK);
 		FormData fd_chkAutoHide = new FormData();
@@ -347,7 +371,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		fd_chkAutoHide.top = new FormAttachment(0);
 		fd_chkAutoHide.left = new FormAttachment(0, 262);
 		chkAutoHide.setLayoutData(fd_chkAutoHide);
-		chkAutoHide.setText("Hide after connection");
+		chkAutoHide.setText(Messages.MainWin_19);
 		
 		chkAutoHide.setSelection( prefs.getBoolean(PREF_AUTOHIDE, false)) ;
 		
@@ -363,14 +387,14 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 
 		
 		animation.setVisible(false);
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") );
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") );
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") ); //$NON-NLS-1$
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") ); //$NON-NLS-1$
 		animation.setPlaying(false);
 		cmpConnect.setTabList(new Control[]{txtPsw, btnConnect});
 		
 	
 		
-		log("Type your password and press connect.\n----------\n");
+		log(Messages.MainWin_22);
 
 
 		shell.addShellListener( new ShellListener() {
@@ -403,6 +427,16 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 
 	}
 
+	
+	private void connect() {
+		prefs.putBoolean(PREF_AUTOHIDE, chkAutoHide.getSelection() );
+		fkSerial = new SerialWorker(mySelf);
+		prefs.put(PREF_PORT, txtDev.getText() );
+		fkSerial.connect(txtDev.getText(),txtPsw.getText());
+		txtPsw.setText(""); //$NON-NLS-1$
+	}
+	
+	
 	@Override
 	public void updateAccountList()
 	{
@@ -415,31 +449,32 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			free--;
 			lstAccounts.add( a );
 							
-			Menu menu = new Menu(a.name+" ["+a.num+"]");
-			MenuItem both = new MenuItem("User + Pass");
-			MenuItem usr = new MenuItem("User");
-			MenuItem psw = new MenuItem("Pass");
+			Menu menu = new Menu(a.name+" ["+a.num+"]"); //$NON-NLS-1$ //$NON-NLS-1$
+			MenuItem both = new MenuItem(Messages.MainWin_25);
+			MenuItem usr = new MenuItem(Messages.MainWin_26);
+			MenuItem psw = new MenuItem(Messages.MainWin_27);
 			menu.add(both);
 			menu.add(usr);
 			menu.add(psw);
 
 
 			both.addActionListener(FkManager.getInstance());
-			both.setActionCommand( "%"+a.num );
+			both.setActionCommand( "%"+a.num ); //$NON-NLS-1$
 
 
 
 			psw.addActionListener(FkManager.getInstance());	
-			psw.setActionCommand( "p"+a.num);
+			psw.setActionCommand( "p"+a.num); //$NON-NLS-1$
 
 
 			usr.addActionListener(FkManager.getInstance());	
-			usr.setActionCommand( "u"+a.num );
+			usr.setActionCommand( "u"+a.num ); //$NON-NLS-1$
 
 			popup.add(menu);
 		}
 		
-		lblNumFree.setText(" "+free+" of 256 free.");
+		lblNumFree.setText(" "+free+Messages.MainWin_32); //$NON-NLS-1$
+		lblNumFree.pack();
 		if( free == 0 )
 		{
 			btnNewAccoount.setVisible(false);
@@ -454,13 +489,13 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		switch(state)
 		{
 		case Connected:
-			shell.setText("Final Key (Connected)");
+			shell.setText(Messages.MainWin_33);
 			
 			animation.setVisible(false);
 			animation.setPlaying(false);
 
 
-			btnConnect.setText("Disconnect");
+			btnConnect.setText(Messages.MainWin_34);
 			btnConnect.setVisible(true);
 			
 			//Should we hide?
@@ -480,15 +515,15 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			int numAccounts=FkManager.getInstance().getList().size();
 			if( numAccounts>0 )
 			{
-				trayIcon.displayMessage("FinalKey", numAccounts + " account"+(( numAccounts >1)?"s":"")+" ready.", 
+				trayIcon.displayMessage("FinalKey", numAccounts + Messages.MainWin_36+(( numAccounts >1)?"s":Messages.MainWin_38)+Messages.MainWin_39,  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			            TrayIcon.MessageType.INFO);
 			}
 
 			
-			log("* Connected *");
+			log(Messages.MainWin_40);
 			break;
 		case Connecting:
-			shell.setText("Final Key (Connecting...)");
+			shell.setText(Messages.MainWin_41);
 			animation.setVisible(true);
 			animation.setPlaying(true);
 
@@ -508,10 +543,10 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			
 			tabFolder.setSelection(0);
 
-			shell.setText("Final Key (Not connected)");
+			shell.setText(Messages.MainWin_42);
 			txtPsw.setVisible(true);
 			txtDev.setVisible(true);
-			btnConnect.setText("Connect");
+			btnConnect.setText(Messages.MainWin_43);
 			btnConnect.setVisible(true);
 			lblPort.setVisible(true);
 			lblPassword.setVisible(true);
@@ -519,7 +554,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			clearSystray();
 			if(lastState != state)
 			{
-				log("* Disconnected *");
+				log(Messages.MainWin_44);
 			}
 			break;
 		
@@ -545,14 +580,14 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 
 	private void addAccountsTab() {
 		TabItem tbtmAccounts = new TabItem(tabFolder, SWT.NONE);
-		tbtmAccounts.setText("Accounts");
+		tbtmAccounts.setText(Messages.MainWin_45);
 		
 		cmpAccounts = new Composite(tabFolder, SWT.BORDER);
 		tbtmAccounts.setControl(cmpAccounts);
 		cmpAccounts.setLayout(new FormLayout());
 		
 		btnNewAccoount = new Button(cmpAccounts, SWT.NONE);
-		btnNewAccoount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/new.png"));
+		btnNewAccoount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/new.png")); //$NON-NLS-1$
 		btnNewAccoount.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -569,10 +604,10 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		fd_btnNewAccoount.right = new FormAttachment(100, -10);
 		fd_btnNewAccoount.bottom = new FormAttachment(100, -10);
 		btnNewAccoount.setLayoutData(fd_btnNewAccoount);
-		btnNewAccoount.setText("New Account");
+		btnNewAccoount.setText(Messages.MainWin_47);
 		
 		lblNumFree = new Label(cmpAccounts, SWT.NONE);
-		lblNumFree.setText("Hello World!");
+		lblNumFree.setText("Hello World!"); //$NON-NLS-1$
 		
 		FormData fd_lblNumFree = new FormData();
 		fd_lblNumFree.left = new FormAttachment(0,0);
@@ -581,13 +616,25 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		
 		
 		lstAccounts = new ListViewer(cmpAccounts, SWT.BORDER | SWT.V_SCROLL);
+		List list = lstAccounts.getList();
+		list.setLayoutData(new FormData());
 		FormData fd_lstAccounts = new FormData();
 		fd_lstAccounts.bottom = new FormAttachment(btnNewAccoount, -6);
+		
+		btnActivateAccount = new Button(cmpAccounts, SWT.NONE);
+		btnActivateAccount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightbulb.png"));
+		FormData fd_btnActivateAccount = new FormData();
+		fd_btnActivateAccount.right = new FormAttachment(btnNewAccoount, -71);
+		fd_btnActivateAccount.left = new FormAttachment(lblNumFree, 78);
+		fd_btnActivateAccount.top = new FormAttachment(btnNewAccoount, 0, SWT.TOP);
+		btnActivateAccount.setLayoutData(fd_btnActivateAccount);
+		btnActivateAccount.setText(Messages.MainWin_btnNewButton_text);
 		fd_lstAccounts.top = new FormAttachment(0, 10);
 		fd_lstAccounts.left = new FormAttachment(0, 10);
 		fd_lstAccounts.right = new FormAttachment(100, -10);
+		btnActivateAccount.setVisible(false);
 		
-
+		
 		//lstAccounts.setLayoutData(fd_lstAccounts);
 		lstAccounts.getControl().setLayoutData(fd_lstAccounts);
 		lstAccounts.addDoubleClickListener( new IDoubleClickListener() {
@@ -610,13 +657,59 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 					
 					shell.setEnabled(true);
 				} else {
-					System.out.println("Selected nothing.");
+					System.out.println("Selected nothing."); //$NON-NLS-1$
 				}
 				
 				
 			}
 		});
 		
+		lstAccounts.addSelectionChangedListener( new ISelectionChangedListener() {
+			
+			@Override
+			public void selectionChanged(SelectionChangedEvent arg0) {
+				StructuredSelection selection = (StructuredSelection) arg0.getSelection();
+				if( !selection.isEmpty() )
+				{
+					Account acc = (Account)selection.getFirstElement();
+					btnActivateAccount.setVisible(true);
+					btnActivateAccount.setText(acc.name);
+					
+					for( Listener s :btnActivateAccount.getListeners(SWT.Selection) )
+					{
+						btnActivateAccount.removeListener(SWT.Selection, s);
+
+					}
+					
+					btnActivateAccount.addSelectionListener( new SelectionListener() {
+						
+						@Override
+						public void widgetSelected(SelectionEvent arg0) {
+							
+							StructuredSelection selection = (StructuredSelection) lstAccounts.getSelection();
+							Account acc = (Account)selection.getFirstElement();
+							TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc, mySelf );
+
+							shell.setMinimized(true);
+							shell.setEnabled(false);
+							if( !((Boolean)diag.open()) )
+							{
+								shell.setMinimized(false);
+							}
+							
+							shell.setEnabled(true);
+						}
+						
+						@Override
+						public void widgetDefaultSelected(SelectionEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+					});
+					
+				}
+			}
+		});
 		
 				
 	}
@@ -627,20 +720,18 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		switch(event.result)
 		{
 		case CHECK_FAILED:
-			System.out.println("Trouble checking for updates.");
+			System.out.println("Trouble checking for updates."); //$NON-NLS-1$
 			break;
 		case NO_UPDATE:
-			System.out.println("No update avaiable at this time.");
+			System.out.println("No update avaiable at this time."); //$NON-NLS-1$
 			break;
 		case UPDATE_AVAILABLE:
 			MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
-			dialog.setText("FinalKey GUI Version "+event.version+" available.");
-			dialog.setMessage("There's a new version of FinalKey GUI available.\nGo to http://cyberstalker.dk/finalkey/gui/ to download.\n\nNews:\n"+event.message);
+			dialog.setText(Messages.MainWin_52+event.version+Messages.MainWin_53);
+			dialog.setMessage(Messages.MainWin_54+event.message);
 			dialog.open();	
 			break;
 		}
 		
 	}
-
-
 }

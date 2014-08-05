@@ -98,7 +98,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 	
 	@Override
 	protected Void doInBackground() throws Exception {
-		publish("Trying to connect to "+dev);
+		publish(Messages.SerialWorker_0+dev);
 		/**
 		 * Connection strategy:
 		 * Open the port, wait for "The Final Key" followed by # on next line, (getLoginHeader)
@@ -109,31 +109,31 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		
 		int numAccounts=0;
 		try {
-			System.out.println("Port opened: " + serialPort.openPort());
-			System.out.println("Params setted: " + serialPort.setParams(9600, 8, 1, 0));
+			System.out.println(Messages.SerialWorker_1 + serialPort.openPort());
+			System.out.println(Messages.SerialWorker_2 + serialPort.setParams(9600, 8, 1, 0));
 
 			int mask = SerialPort.MASK_BREAK + SerialPort.MASK_ERR + SerialPort.MASK_RLSD;
 			serialPort.setEventsMask(mask);
 
 			serialPort.addEventListener(this);
-			String test = expectString("The Final Key", 1000);
+			String test = expectString("The Final Key", 1000); //$NON-NLS-1$
 			if( test != null )
 			{
-				publish("\n* Press the button on the Final Key *");
+				publish(Messages.SerialWorker_4);
 			} else {
 				//Try logging out.
 				serialPort.writeByte( (byte)'q');
-				publish("State error, try again.");
+				publish(Messages.SerialWorker_5);
 				disconnect();
 				return null;
 			}
 			
-			if( expectString( "Pass:", 0 ) != null )
+			if( expectString( "Pass:", 0 ) != null ) //$NON-NLS-1$
 			{
-				publish("Logging in.");
+				publish(Messages.SerialWorker_7);
 				postStateChange(SerialState.Working);
 			} else {
-				publish("Error: Did not get password prompt. Unplug and try again.");
+				publish(Messages.SerialWorker_8);
 				disconnect();
 				return null;
 			}
@@ -141,7 +141,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			enterString(pass);
 
 			serialPort.writeByte( (byte)13 );
-			pass = "";
+			pass = ""; //$NON-NLS-1$
 			
 			/*String str = expectString( "[Keyboard: ", 200 );
 			if( str != null )
@@ -151,18 +151,18 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				publish("Did not get Keyboard layout.");
 			}*/
 			
-			if( expectString( "[Granted]", 200 ) != null )
+			if( expectString( "[Granted]", 200 ) != null ) //$NON-NLS-1$
 			{
-				publish("\nAccess Granted.");
+				publish(Messages.SerialWorker_11);
 			} else {
-				publish("\nError: Access Denied.");
+				publish(Messages.SerialWorker_12);
 				disconnect();
 				return null;
 			}
 
-			publish("Getting account list.");
+			publish(Messages.SerialWorker_13);
 			serialPort.writeByte( (byte)'X'); //Machine commands with uppercase X
-			expectString("[auto]", 200);
+			expectString("[auto]", 200); //$NON-NLS-1$
 			serialPort.writeByte( (byte)'l'); //Full list 
 
 			
@@ -176,7 +176,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				{
 					accounts += serialPort.readString();
 					String sub = accounts.substring( accounts.length()-3 );
-					if( sub.equals("\r\n>") )
+					if( sub.equals("\r\n>") ) //$NON-NLS-1$
 					{
 						accounts = accounts.substring( 0, accounts.length()-3 );
 						break;
@@ -186,7 +186,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 					timeOut-=10;
 					if(timeOut < 1)
 					{
-						publish("Error getting account list.");
+						publish(Messages.SerialWorker_16);
 						disconnect();
 						return null;
 					}
@@ -196,14 +196,14 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			//Trim first 3
 			accounts = accounts.substring(3);
 
-			String[] lines = accounts.split( "\r\n" );
+			String[] lines = accounts.split( "\r\n" ); //$NON-NLS-1$
 			numAccounts=lines.length;
 			Boolean kbList=false;
 			for(String l:lines)
 			{
 				if( ! kbList )
 				{
-					if( l.compareTo("[KBL]") == 0 )
+					if( l.compareTo("[KBL]") == 0 ) //$NON-NLS-1$
 					{
 						kbList=true;
 					} else {
@@ -213,13 +213,13 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 					}
 				} else {
 					//Next entries are supported keyboard layouts
-					publish("Supported layout:" + l);
+					publish(Messages.SerialWorker_3 + l);
 				}
 			}
 
 		}
 		catch (Exception ex){
-			publish("Error: Exception: "+ex.getMessage() );
+			publish("Error: Exception: "+ex.getMessage() ); //$NON-NLS-1$
 			disconnect();
 		}
 
@@ -227,12 +227,12 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		{
 			if(numAccounts==1)
 			{
-				publish(numAccounts+" account.");
+				publish(numAccounts+" account."); //$NON-NLS-1$
 			} else {
-				publish(numAccounts+" accounts ready.");
+				publish(numAccounts+" accounts ready."); //$NON-NLS-1$
 			}
 	
-			publish("\n* Use the FinalKey icon in the systray to access your logins *");
+			publish(Messages.SerialWorker_23);
 
 			state = SerialState.Connected;
 			postStateChange( state);
@@ -295,14 +295,14 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 	@Override
 	public void serialEvent(SerialPortEvent event) {
 		
-		System.out.println("Event!" + event.getEventType() );
+		System.out.println("Event!" + event.getEventType() ); //$NON-NLS-1$
 
 		if(event.isBREAK())
 		{
 			if(state!=SerialState.Disconnected)
 			{
 				disconnect();
-				System.out.println(">>Break);");
+				System.out.println(">>Break);"); //$NON-NLS-1$
 			}
 		}
 		if(event.isERR())
@@ -310,11 +310,11 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			if(state!=SerialState.Disconnected)
 			{
 				disconnect();
-				System.out.println(">>Error");
+				System.out.println(">>Error"); //$NON-NLS-1$
 			}
 		}
 		if(serialPort == null)
-			System.out.println(">>Null");
+			System.out.println(">>Null"); //$NON-NLS-1$
 
 	}
 

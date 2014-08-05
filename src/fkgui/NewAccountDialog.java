@@ -35,10 +35,10 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	
 	private enum FkNewAccStep { NAMES, PASSTYPE, PASS_MAN, PASS_AUT, SEPERATOR, REVIEW, CLICKBTN, SAVING };
 	
-	private String strAccountName = "";
-	private String strUserName = "";
-	private String strPassword = "";
-	private String autoPassSpecials = "!@#,.-_()";
+	private String strAccountName = ""; //$NON-NLS-1$
+	private String strUserName = ""; //$NON-NLS-1$
+	private String strPassword = ""; //$NON-NLS-1$
+	private String autoPassSpecials = "!@#,.-_()"; //$NON-NLS-1$
 	private Boolean autoPassword = true;
 	private Boolean autoPassAllSpecials = true;
 	private int autoPassLen = 16;
@@ -54,9 +54,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	
 	//ManPass
 	Label lblTypeThePassword;
-	FormData fd_lblTypeThePassword;	
 	Label lblPassword;
-	FormData fd_lblPassword;
 	Button chkShowPsw;
 	Button btnManPassPageNext;
 	
@@ -92,6 +90,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	 */
 	public Object open() {
 		createContents();
+		
 		shlNewAccount.open();
 		shlNewAccount.layout();
 		Display display = getParent().getDisplay();
@@ -125,15 +124,15 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		Label lblEnterNewName = new Label(composite, SWT.NONE);
 		FormData fd_lblEnterNewName = new FormData();
 		fd_lblEnterNewName.bottom = new FormAttachment(0, 112);
-		fd_lblEnterNewName.right = new FormAttachment(0, 603);
+		fd_lblEnterNewName.right = new FormAttachment(0, 613);
 		fd_lblEnterNewName.top = new FormAttachment(0, 10);
 		fd_lblEnterNewName.left = new FormAttachment(0, 10);
 		lblEnterNewName.setLayoutData(fd_lblEnterNewName);
-		lblEnterNewName.setText("This creates a new account on your FinalKey.\nTo begin, choose a name for your account, for example the\nname of the website or service you want to login to.\nThis is the name that will be visible in the list of accounts.");
+		lblEnterNewName.setText(Messages.NewAccountDialog_4);
 		Label lblUsername = new Label(composite, SWT.NONE);
 		FormData fd_lblUsername = new FormData();
 		lblUsername.setLayoutData(fd_lblUsername);
-		lblUsername.setText("Account Name:");
+		lblUsername.setText(Messages.NewAccountDialog_5);
 		
 		txtAccountName = new Text(composite, SWT.BORDER);
 		fd_lblUsername.bottom = new FormAttachment(txtAccountName, 0, SWT.BOTTOM);
@@ -143,6 +142,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		fd_txtAccountName.right = new FormAttachment(100, -274);
 		fd_txtAccountName.left = new FormAttachment(0, 180);
 		txtAccountName.setLayoutData(fd_txtAccountName);
+		txtAccountName.setTextLimit(31);
 		txtAccountName.addModifyListener( new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent arg0) {
@@ -157,14 +157,14 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		fd_lblNewLabel.right = new FormAttachment(100);
 		fd_lblNewLabel.top = new FormAttachment(lblUsername, 20);
 		lblNewLabel.setLayoutData(fd_lblNewLabel);
-		lblNewLabel.setText("The username is the name that The Final Key will\ntype into the service when logging in, it is typically an E-Mail address.");
+		lblNewLabel.setText(Messages.NewAccountDialog_6);
 		
 		Label lblUsername_1 = new Label(composite, SWT.NONE);
 		FormData fd_lblUsername_1 = new FormData();
 		fd_lblUsername_1.top = new FormAttachment(lblNewLabel, 6);
 		fd_lblUsername_1.right = new FormAttachment(lblUsername, 0, SWT.RIGHT);
 		lblUsername_1.setLayoutData(fd_lblUsername_1);
-		lblUsername_1.setText("Username:");
+		lblUsername_1.setText(Messages.NewAccountDialog_7);
 		
 		txtUserName = new Text(composite, SWT.BORDER);
 		FormData fd_txtUserName = new FormData();
@@ -188,9 +188,9 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		FormData fd_btnCancel = new FormData();
 		fd_btnCancel.bottom = new FormAttachment(100, -10);
-		fd_btnCancel.left = new FormAttachment(0, 10);
+		fd_btnCancel.left = new FormAttachment(lblEnterNewName, 0, SWT.LEFT);
 		btnCancel.setLayoutData(fd_btnCancel);
-		btnCancel.setText("Cancel");
+		btnCancel.setText(Messages.NewAccountDialog_8);
 		
 		btnNext0 = new Button(composite, SWT.NONE);
 		btnNext0.addSelectionListener(new SelectionAdapter() {
@@ -201,7 +201,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 				updatePage(FkNewAccStep.PASSTYPE);
 			}
 		});
-		btnNext0.setText("Next");
+		btnNext0.setText(Messages.NewAccountDialog_9);
 		FormData fd_btnNext0 = new FormData();
 		fd_btnNext0.bottom = new FormAttachment(btnCancel, 0, SWT.BOTTOM);
 		fd_btnNext0.right = new FormAttachment(lblEnterNewName, 0, SWT.RIGHT);
@@ -228,7 +228,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		fd_lblNextUpSetting.top = new FormAttachment(0, 10);
 		fd_lblNextUpSetting.left = new FormAttachment(0, 10);
 		lblNextUpSetting.setLayoutData(fd_lblNextUpSetting);
-		lblNextUpSetting.setText("Next up: Setting a safe password!\nYou have two options: Manually enter a password or to\nhave The Final Key generate a strong and random password,\nit is strongly recommended to let The Final Key generate a\nrandom password, select the longest that is allowed by the service.");
+		lblNextUpSetting.setText(Messages.NewAccountDialog_10);
 		
 		radAutPSW = new Button(composite, SWT.RADIO);
 		if( autoPassword )
@@ -239,7 +239,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		fd_radAutPSW.top = new FormAttachment(lblNextUpSetting, 37);
 		fd_radAutPSW.left = new FormAttachment(0, 213);
 		radAutPSW.setLayoutData(fd_radAutPSW);
-		radAutPSW.setText("Automatic");
+		radAutPSW.setText(Messages.NewAccountDialog_11);
 		
 		radManPSW = new Button(composite, SWT.RADIO);
 		if( !autoPassword )
@@ -250,10 +250,10 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		fd_radManPSW.top = new FormAttachment(radAutPSW, 6);
 		fd_radManPSW.left = new FormAttachment(radAutPSW, 0, SWT.LEFT);
 		radManPSW.setLayoutData(fd_radManPSW);
-		radManPSW.setText("Manual Entry");
+		radManPSW.setText(Messages.NewAccountDialog_12);
 		
 		Button btnNext1 = new Button(composite, SWT.NONE);
-		btnNext1.setText("Next");
+		btnNext1.setText(Messages.NewAccountDialog_13);
 		FormData fd_btnNext1 = new FormData();
 		fd_btnNext1.bottom = new FormAttachment(100, -10);
 		fd_btnNext1.right = new FormAttachment(100, -10);
@@ -280,7 +280,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		Button btnBack0 = new Button(composite, SWT.NONE);
-		btnBack0.setText("Back");
+		btnBack0.setText(Messages.NewAccountDialog_14);
 		FormData fd_btnBack0 = new FormData();
 		fd_btnBack0.bottom = new FormAttachment(btnNext1, 0, SWT.BOTTOM);
 		fd_btnBack0.left = new FormAttachment(lblNextUpSetting, 0, SWT.LEFT);
@@ -314,63 +314,81 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	void createPassAutPage()
 	{
 		composite = new Composite(shlNewAccount, SWT.NONE);
+		composite.setLayout(new FormLayout());
 		
 		Label lblBeforeCreatingA = new Label(composite, SWT.NONE);
-		lblBeforeCreatingA.setBounds(10, 10, 593, 104);
-		lblBeforeCreatingA.setText("Before creating a password, please select how long it should be.\nA longer password is safer, but the maximum allowed length varies,\ndepending on where you're using it. For example many websites do not\nallow passwords longer than 16 characters.");
+		FormData fd_lblBeforeCreatingA = new FormData();
+		fd_lblBeforeCreatingA.top = new FormAttachment(0, 10);
+		fd_lblBeforeCreatingA.left = new FormAttachment(0, 10);
+		lblBeforeCreatingA.setLayoutData(fd_lblBeforeCreatingA);
+		
+		lblBeforeCreatingA.setText(Messages.NewAccountDialog_15);
 		
 		Label lblPasswordLength = new Label(composite, SWT.NONE);
-		lblPasswordLength.setBounds(32, 132, 127, 23);
-		lblPasswordLength.setText("Password length:");
+		fd_lblBeforeCreatingA.bottom = new FormAttachment(100, -257);
+		FormData fd_lblPasswordLength = new FormData();
+		lblPasswordLength.setLayoutData(fd_lblPasswordLength);
+		lblPasswordLength.setText(Messages.NewAccountDialog_16);
 		
 		spnLen = new Spinner(composite, SWT.BORDER);
+		fd_lblPasswordLength.bottom = new FormAttachment(spnLen, 0, SWT.BOTTOM);
+		fd_lblPasswordLength.right = new FormAttachment(spnLen, -9);
+		FormData fd_spnLen = new FormData();
+		fd_spnLen.top = new FormAttachment(0, 119);
+		fd_spnLen.left = new FormAttachment(0, 310);
+		spnLen.setLayoutData(fd_spnLen);
 		spnLen.setMaximum(128);
 		spnLen.setSelection(autoPassLen);
-		spnLen.setBounds(165, 120, 62, 35);
 		
 		Label lblASafePassword = new Label(composite, SWT.NONE);
-		lblASafePassword.setBounds(10, 161, 593, 76);
-		lblASafePassword.setText("A strong password contains not only uppercase and lowercase\nletters and numbers, but also other symbols.\nIt differs which symbols are allowed, some allow all ASCII symbols.");
+		FormData fd_lblASafePassword = new FormData();
+		fd_lblASafePassword.right = new FormAttachment(lblBeforeCreatingA, 0, SWT.RIGHT);
+		fd_lblASafePassword.top = new FormAttachment(lblPasswordLength, 47);
+		fd_lblASafePassword.left = new FormAttachment(0, 10);
+		lblASafePassword.setLayoutData(fd_lblASafePassword);
+		lblASafePassword.setText(Messages.NewAccountDialog_17);
 		
 		radAllSymbols = new Button(composite, SWT.RADIO);
+		fd_lblASafePassword.bottom = new FormAttachment(100, -100);
+		FormData fd_radAllSymbols = new FormData();
+		fd_radAllSymbols.top = new FormAttachment(lblASafePassword, 6);
+		fd_radAllSymbols.left = new FormAttachment(0, 10);
+		radAllSymbols.setLayoutData(fd_radAllSymbols);
 		if( autoPassAllSpecials )
 		{
 			radAllSymbols.setSelection(true);
 		}
-		radAllSymbols.setBounds(10, 251, 120, 27);
-		radAllSymbols.setText("All symbols");
+		radAllSymbols.setText(Messages.NewAccountDialog_18);
+		radAllSymbols.pack();
 		
 		Button radOnlySelected = new Button(composite, SWT.RADIO);
+		FormData fd_radOnlySelected = new FormData();
+		fd_radOnlySelected.bottom = new FormAttachment(radAllSymbols, 0, SWT.BOTTOM);
+		fd_radOnlySelected.right = new FormAttachment(spnLen, 0, SWT.RIGHT);
+		radOnlySelected.setLayoutData(fd_radOnlySelected);
 		if( !autoPassAllSpecials )
 		{
 			radOnlySelected.setSelection(true);
 		}
-		radOnlySelected.setBounds(165, 251, 120, 27);
-		radOnlySelected.setText("Only these:");
+		radOnlySelected.setText(Messages.NewAccountDialog_19);
 		
 		txtSpecials = new Text(composite, SWT.BORDER);
+		FormData fd_txtSpecials = new FormData();
+		fd_txtSpecials.top = new FormAttachment(lblASafePassword, 6);
+		fd_txtSpecials.left = new FormAttachment(radOnlySelected, 6);
+		txtSpecials.setLayoutData(fd_txtSpecials);
 		txtSpecials.setText(autoPassSpecials);
 		txtSpecials.setBounds(291, 243, 312, 35);
 		
-		Button button_5 = new Button(composite, SWT.NONE);
-		button_5.setText("Back");
-		button_5.setBounds(10, 288, 48, 35);
-		button_5.addSelectionListener(new SelectionListener() {
-			
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				autoPassPageSaveValues();
-				updatePage( FkNewAccStep.PASSTYPE );
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {				
-			}
-		});
 		
 		Button button_6 = new Button(composite, SWT.NONE);
-		button_6.setText("Next");
-		button_6.setBounds(555, 288, 48, 35);
+		fd_lblBeforeCreatingA.right = new FormAttachment(button_6, 0, SWT.RIGHT);
+		button_6.setText(Messages.NewAccountDialog_21);
+		FormData fd_button_6 = new FormData();
+		fd_button_6.bottom = new FormAttachment(100, -10);
+		fd_button_6.right = new FormAttachment(100, -10);
+		button_6.setLayoutData(fd_button_6);
+		
 		button_6.addSelectionListener(new SelectionListener() {
 			
 			@Override
@@ -384,6 +402,29 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 			}
 		});
 		
+
+		Button button_5 = new Button(composite, SWT.NONE);
+		button_5.setText(Messages.NewAccountDialog_20);
+		FormData fd_button_5 = new FormData();
+		fd_button_5.left = new FormAttachment(0, 10);
+
+		fd_button_5.bottom = new FormAttachment(button_6, 0, SWT.BOTTOM);
+		button_5.setLayoutData(fd_button_5);
+		
+		button_5.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				autoPassPageSaveValues();
+				updatePage( FkNewAccStep.PASSTYPE );
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {				
+			}
+		});
+		
+		
         Control[] controls = new Control[] { spnLen, radAllSymbols, radOnlySelected, button_6, button_5 };
         composite.setTabList(controls);			
 		spnLen.setFocus();
@@ -394,11 +435,10 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	void makePswField(Boolean showPsw)
 	{
 		txtManPSW = new Text(composite, SWT.BORDER | ((showPsw)?0:SWT.PASSWORD) );
-		fd_lblPassword.bottom = new FormAttachment(txtManPSW, 0, SWT.BOTTOM);
 		FormData fd_txtManPSW = new FormData();
-		fd_txtManPSW.right = new FormAttachment(100, -10);
-		fd_txtManPSW.left = new FormAttachment(lblPassword, 6);
-		fd_txtManPSW.top = new FormAttachment(lblTypeThePassword, 6);
+		fd_txtManPSW.right = new FormAttachment(0, 613);
+		fd_txtManPSW.top = new FormAttachment(0, 62);
+		fd_txtManPSW.left = new FormAttachment(0, 92);
 		txtManPSW.setLayoutData(fd_txtManPSW);
 		txtManPSW.setText(strPassword);
 		txtManPSW.addModifyListener( new ModifyListener() {
@@ -418,10 +458,11 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		chkShowPsw = new Button(composite, SWT.CHECK);
 		FormData fd_chkShowPsw = new FormData();
-		fd_chkShowPsw.top = new FormAttachment(txtManPSW, 6);
-		fd_chkShowPsw.left = new FormAttachment(txtManPSW, 0, SWT.LEFT);
+		fd_chkShowPsw.right = new FormAttachment(0, 613);
+		fd_chkShowPsw.top = new FormAttachment(0, 103);
+		fd_chkShowPsw.left = new FormAttachment(0, 92);
 		chkShowPsw.setLayoutData(fd_chkShowPsw);
-		chkShowPsw.setText("Show Password");
+		chkShowPsw.setText(Messages.NewAccountDialog_22);
 		chkShowPsw.setSelection(showPsw);
 		
 		chkShowPsw.addSelectionListener( new SelectionListener() {
@@ -461,10 +502,9 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		Button BtnBack1 = new Button(composite, SWT.NONE);
 		FormData fd_BtnBack1 = new FormData();
-		fd_BtnBack1.top = new FormAttachment(0, 288);
-		fd_BtnBack1.left = new FormAttachment(0, 10);
+		fd_BtnBack1.bottom = new FormAttachment(100, -10);
 		BtnBack1.setLayoutData(fd_BtnBack1);
-		BtnBack1.setText("Back");
+		BtnBack1.setText(Messages.NewAccountDialog_23);
 		BtnBack1.addSelectionListener( new SelectionListener() {
 			
 			@Override
@@ -479,11 +519,10 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		btnManPassPageNext = new Button(composite, SWT.NONE);
-		FormData fd_button_4 = new FormData();
-		fd_button_4.top = new FormAttachment(0, 288);
-		fd_button_4.left = new FormAttachment(0, 555);
-		btnManPassPageNext.setLayoutData(fd_button_4);
-		btnManPassPageNext.setText("Next");
+		FormData fd_btnManPassPageNext = new FormData();
+		fd_btnManPassPageNext.bottom = new FormAttachment(BtnBack1, 0, SWT.BOTTOM);
+		btnManPassPageNext.setLayoutData(fd_btnManPassPageNext);
+		btnManPassPageNext.setText(Messages.NewAccountDialog_24);
 		btnManPassPageNext.setVisible(false);
 		btnManPassPageNext.addSelectionListener( new SelectionListener() {
 			
@@ -498,17 +537,21 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		lblTypeThePassword = new Label(composite, SWT.NONE);
-		fd_lblTypeThePassword = new FormData();
+		fd_btnManPassPageNext.right = new FormAttachment(lblTypeThePassword, 0, SWT.RIGHT);
+		fd_BtnBack1.left = new FormAttachment(lblTypeThePassword, 0, SWT.LEFT);
+		FormData fd_lblTypeThePassword = new FormData();
+		fd_lblTypeThePassword.right = new FormAttachment(0, 613);
 		fd_lblTypeThePassword.top = new FormAttachment(0, 10);
 		fd_lblTypeThePassword.left = new FormAttachment(0, 10);
 		lblTypeThePassword.setLayoutData(fd_lblTypeThePassword);
-		lblTypeThePassword.setText("Type the password your wish to use for ACCOUNT\nIn the box below.");
+		lblTypeThePassword.setText(Messages.NewAccountDialog_25);
 		
 		lblPassword = new Label(composite, SWT.NONE);
-		fd_lblPassword = new FormData();
-		fd_lblPassword.left = new FormAttachment(BtnBack1, 0, SWT.LEFT);
+		FormData fd_lblPassword = new FormData();
+		fd_lblPassword.top = new FormAttachment(0, 74);
+		fd_lblPassword.left = new FormAttachment(0, 10);
 		lblPassword.setLayoutData(fd_lblPassword);
-		lblPassword.setText("Password:");
+		lblPassword.setText(Messages.NewAccountDialog_26);
 		
 		makePswField(false);
 		
@@ -527,39 +570,42 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		Label lblToMakeFinalkey = new Label(composite, SWT.NONE);
 		FormData fd_lblToMakeFinalkey = new FormData();
+		fd_lblToMakeFinalkey.right = new FormAttachment(0, 613);
 		fd_lblToMakeFinalkey.top = new FormAttachment(0, 10);
 		fd_lblToMakeFinalkey.left = new FormAttachment(0, 10);
 		lblToMakeFinalkey.setLayoutData(fd_lblToMakeFinalkey);
-		lblToMakeFinalkey.setText("When you trigger the Final Key to type an account (Username + Password), it\nwill also type a \"seperation\" key, to jump from the Username input to the\nPassword input. On most websites, the \"tab\" key is used for this.\nHowever, in some applications, the \"enter\" key is used.\nHere you can select which key can be used between the username and password\nfor this account.");
+		lblToMakeFinalkey.setText(Messages.NewAccountDialog_27);
 		
 		radTabSep = new Button(composite, SWT.RADIO);
+		FormData fd_radTabSep = new FormData();
+		fd_radTabSep.right = new FormAttachment(0, 613);
+		fd_radTabSep.top = new FormAttachment(0, 172);
+		fd_radTabSep.left = new FormAttachment(0, 231);
+		radTabSep.setLayoutData(fd_radTabSep);
 		if( seperatorTab )
 		{
 			radTabSep.setSelection(true);
 		}
-		FormData fd_radTabSep = new FormData();
-		fd_radTabSep.top = new FormAttachment(lblToMakeFinalkey, 24);
-		fd_radTabSep.left = new FormAttachment(0, 231);
-		radTabSep.setLayoutData(fd_radTabSep);
-		radTabSep.setText("Tab");
+		radTabSep.setText(Messages.NewAccountDialog_28);
 		
 		Button radEnterSep = new Button(composite, SWT.RADIO);
+		FormData fd_radEnterSep = new FormData();
+		fd_radEnterSep.right = new FormAttachment(0, 613);
+		fd_radEnterSep.top = new FormAttachment(0, 205);
+		fd_radEnterSep.left = new FormAttachment(0, 231);
+		radEnterSep.setLayoutData(fd_radEnterSep);
 		if( !seperatorTab )
 		{
 			radEnterSep.setSelection(true);
 		}
-		FormData fd_radEnterSep = new FormData();
-		fd_radEnterSep.top = new FormAttachment(radTabSep, 6);
-		fd_radEnterSep.left = new FormAttachment(radTabSep, 0, SWT.LEFT);
-		radEnterSep.setLayoutData(fd_radEnterSep);
-		radEnterSep.setText("Enter");
+		radEnterSep.setText(Messages.NewAccountDialog_29);
 		
 		Button button_7 = new Button(composite, SWT.NONE);
-		button_7.setText("Back");
 		FormData fd_button_7 = new FormData();
-		fd_button_7.bottom = new FormAttachment(100, -10);
+		fd_button_7.top = new FormAttachment(0, 325);
 		fd_button_7.left = new FormAttachment(0, 10);
 		button_7.setLayoutData(fd_button_7);
+		button_7.setText(Messages.NewAccountDialog_30);
 		button_7.addSelectionListener(new SelectionListener() {
 			
 			@Override
@@ -579,11 +625,11 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		Button button_8 = new Button(composite, SWT.NONE);
-		button_8.setText("Next");
 		FormData fd_button_8 = new FormData();
-		fd_button_8.bottom = new FormAttachment(button_7, 0, SWT.BOTTOM);
-		fd_button_8.right = new FormAttachment(lblToMakeFinalkey, 0, SWT.RIGHT);
+		fd_button_8.top = new FormAttachment(0, 325);
+		fd_button_8.left = new FormAttachment(0, 565);
 		button_8.setLayoutData(fd_button_8);
+		button_8.setText(Messages.NewAccountDialog_31);
 		button_8.addSelectionListener(new SelectionListener() {
 			
 			@Override
@@ -612,53 +658,61 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		Label lblHeresAnOverview = new Label(composite, SWT.NONE);
 		FormData fd_lblHeresAnOverview = new FormData();
-		fd_lblHeresAnOverview.right = new FormAttachment(0, 603);
+		fd_lblHeresAnOverview.right = new FormAttachment(0, 613);
 		fd_lblHeresAnOverview.top = new FormAttachment(0, 10);
 		fd_lblHeresAnOverview.left = new FormAttachment(0, 10);
 		lblHeresAnOverview.setLayoutData(fd_lblHeresAnOverview);
-		lblHeresAnOverview.setText("Here's an overview of the account information");
+		lblHeresAnOverview.setText(Messages.NewAccountDialog_32);
 		
 		Label lblAccountName = new Label(composite, SWT.NONE);
+		lblAccountName.setAlignment(SWT.RIGHT);
 		FormData fd_lblAccountName = new FormData();
-		fd_lblAccountName.left = new FormAttachment(0, 120);
-		fd_lblAccountName.top = new FormAttachment(lblHeresAnOverview, 18);
+		fd_lblAccountName.left = new FormAttachment(0, 10);
+		fd_lblAccountName.top = new FormAttachment(0, 51);
 		lblAccountName.setLayoutData(fd_lblAccountName);
-		lblAccountName.setText("Account Name:");
+		lblAccountName.setText(Messages.NewAccountDialog_33);
 		
 		Label lblPasswordType = new Label(composite, SWT.NONE);
+		lblPasswordType.setAlignment(SWT.RIGHT);
 		FormData fd_lblPasswordType = new FormData();
 		fd_lblPasswordType.right = new FormAttachment(lblAccountName, 0, SWT.RIGHT);
+		fd_lblPasswordType.left = new FormAttachment(lblHeresAnOverview, 0, SWT.LEFT);
+		fd_lblPasswordType.top = new FormAttachment(0, 109);
 		lblPasswordType.setLayoutData(fd_lblPasswordType);
-		lblPasswordType.setText("Password:");
+		lblPasswordType.setText(Messages.NewAccountDialog_34);
 		
 		Label lblUserName = new Label(composite, SWT.NONE);
-		fd_lblPasswordType.top = new FormAttachment(lblUserName, 6);
+		lblUserName.setAlignment(SWT.RIGHT);
 		FormData fd_lblUserName = new FormData();
-		fd_lblUserName.top = new FormAttachment(lblAccountName, 6);
-		fd_lblUserName.right = new FormAttachment(lblAccountName, 0, SWT.RIGHT);
+		fd_lblUserName.right = new FormAttachment(lblHeresAnOverview, 220);
+		fd_lblUserName.left = new FormAttachment(lblHeresAnOverview, 0, SWT.LEFT);
+		fd_lblUserName.top = new FormAttachment(0, 80);
 		lblUserName.setLayoutData(fd_lblUserName);
-		lblUserName.setText("User Name:");
+		lblUserName.setText(Messages.NewAccountDialog_35);
 		
 		Label lblIfEverythingLooks = new Label(composite, SWT.NONE);
 		FormData fd_lblIfEverythingLooks = new FormData();
-		fd_lblIfEverythingLooks.top = new FormAttachment(lblPasswordType, 49);
-		fd_lblIfEverythingLooks.left = new FormAttachment(lblHeresAnOverview, 0, SWT.LEFT);
+		fd_lblIfEverythingLooks.bottom = new FormAttachment(0, 287);
+		fd_lblIfEverythingLooks.right = new FormAttachment(lblHeresAnOverview, 0, SWT.RIGHT);
+		fd_lblIfEverythingLooks.top = new FormAttachment(0, 181);
+		fd_lblIfEverythingLooks.left = new FormAttachment(0, 10);
 		lblIfEverythingLooks.setLayoutData(fd_lblIfEverythingLooks);
-		lblIfEverythingLooks.setText("If everything looks okay, press save and wait until the Final Key blinks,\nwhen it blinks, press the button to allow the account to be saved.");
+		lblIfEverythingLooks.setText(Messages.NewAccountDialog_36);
 		
 		Label lblSeperator = new Label(composite, SWT.NONE);
+		lblSeperator.setAlignment(SWT.RIGHT);
 		FormData fd_lblSeperator = new FormData();
-		fd_lblSeperator.top = new FormAttachment(lblPasswordType, 6);
-		fd_lblSeperator.right = new FormAttachment(lblAccountName, 0, SWT.RIGHT);
+		fd_lblSeperator.right = new FormAttachment(0, 230);
+		fd_lblSeperator.top = new FormAttachment(0, 138);
+		fd_lblSeperator.left = new FormAttachment(0, 10);
 		lblSeperator.setLayoutData(fd_lblSeperator);
-		lblSeperator.setText("Seperator:");
+		lblSeperator.setText(Messages.NewAccountDialog_37);
 		
 		Button button_9 = new Button(composite, SWT.NONE);
-		button_9.setText("Back");
 		FormData fd_button_9 = new FormData();
-		fd_button_9.bottom = new FormAttachment(100, -10);
 		fd_button_9.left = new FormAttachment(lblHeresAnOverview, 0, SWT.LEFT);
 		button_9.setLayoutData(fd_button_9);
+		button_9.setText(Messages.NewAccountDialog_38);
 		button_9.addSelectionListener( new SelectionListener() {
 			
 			@Override
@@ -672,11 +726,12 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		Button btnSave = new Button(composite, SWT.NONE);
+		fd_button_9.bottom = new FormAttachment(btnSave, 0, SWT.BOTTOM);
 		FormData fd_btnSave = new FormData();
-		fd_btnSave.bottom = new FormAttachment(button_9, 0, SWT.BOTTOM);
+		fd_btnSave.bottom = new FormAttachment(100, -10);
 		fd_btnSave.right = new FormAttachment(lblHeresAnOverview, 0, SWT.RIGHT);
 		btnSave.setLayoutData(fd_btnSave);
-		btnSave.setText("Save");
+		btnSave.setText(Messages.NewAccountDialog_39);
 		btnSave.setFocus();
 		
 		btnSave.addSelectionListener( new SelectionListener() {
@@ -684,8 +739,8 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
 				MessageBox dialog = new MessageBox(shlNewAccount, SWT.ICON_INFORMATION | SWT.OK );
-				dialog.setText("Get ready");
-				dialog.setMessage("When you press OK, The Final Key will start blinking, you then have 5 seconds to press the button to save the account.");
+				dialog.setText(Messages.NewAccountDialog_40);
+				dialog.setMessage(Messages.NewAccountDialog_41);
 				dialog.open();
 				FkManager.getInstance().createAccount( strAccountName, strUserName, autoPassword, autoPassLen, autoPassAllSpecials, autoPassSpecials, strPassword, seperatorTab, mySelf );
 				updatePage(FkNewAccStep.SAVING);
@@ -698,61 +753,62 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		Label lblAccName = new Label(composite, SWT.NONE);
+		fd_lblAccountName.right = new FormAttachment(lblAccName, -6);
 		FormData fd_lblAccName = new FormData();
-		fd_lblAccName.right = new FormAttachment(lblHeresAnOverview, 0, SWT.RIGHT);
-		fd_lblAccName.top = new FormAttachment(lblHeresAnOverview, 18);
-		fd_lblAccName.left = new FormAttachment(lblAccountName, 6);
+		fd_lblAccName.right = new FormAttachment(0, 603);
+		fd_lblAccName.top = new FormAttachment(0, 51);
+		fd_lblAccName.left = new FormAttachment(0, 236);
 		lblAccName.setLayoutData(fd_lblAccName);
 		lblAccName.setText(strAccountName);
 		
 		Label lblUsrName = new Label(composite, SWT.NONE);
 		FormData fd_lblUsrName = new FormData();
-		fd_lblUsrName.top = new FormAttachment(lblAccName, 6);
-		fd_lblUsrName.left = new FormAttachment(lblUserName, 6);
-		fd_lblUsrName.right = new FormAttachment(100, -10);
+		fd_lblUsrName.right = new FormAttachment(0, 613);
+		fd_lblUsrName.top = new FormAttachment(0, 80);
+		fd_lblUsrName.left = new FormAttachment(0, 236);
 		lblUsrName.setLayoutData(fd_lblUsrName);
 		lblUsrName.setText(strUserName);
 		
 		Label lblPasswordInfo = new Label(composite, SWT.NONE);
+		FormData fd_lblPasswordInfo = new FormData();
+		fd_lblPasswordInfo.right = new FormAttachment(0, 603);
+		fd_lblPasswordInfo.top = new FormAttachment(0, 109);
+		fd_lblPasswordInfo.left = new FormAttachment(0, 236);
+		lblPasswordInfo.setLayoutData(fd_lblPasswordInfo);
 		
 		String passInfo;
 		if( autoPassword )
 		{
-			passInfo = "Automatic, " + autoPassLen + " long, ";
+			passInfo = Messages.NewAccountDialog_42 + autoPassLen + Messages.NewAccountDialog_43;
 			if( autoPassAllSpecials )
 			{
-				passInfo += "all specials";
+				passInfo += Messages.NewAccountDialog_44;
 			} else {
-				passInfo += "{"+autoPassSpecials+ "}";
+				passInfo += "{"+autoPassSpecials+ "}"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			
 		} else {
-			passInfo ="Manual, " + strPassword.length() +" long";
+			passInfo =Messages.NewAccountDialog_47 + strPassword.length() +Messages.NewAccountDialog_48;
 		}
 		
 		lblPasswordInfo.setText(passInfo);
-		FormData fd_lblPasswordInfo = new FormData();
-		fd_lblPasswordInfo.right = new FormAttachment(lblPasswordType, 373, SWT.RIGHT);
-		fd_lblPasswordInfo.top = new FormAttachment(lblUsrName, 6);
-		fd_lblPasswordInfo.left = new FormAttachment(lblPasswordType, 6);
-		lblPasswordInfo.setLayoutData(fd_lblPasswordInfo);
 		
 		Label lblSeperatorInfo = new Label(composite, SWT.NONE);
+		FormData fd_lblSeperatorInfo = new FormData();
+		fd_lblSeperatorInfo.right = new FormAttachment(0, 603);
+		fd_lblSeperatorInfo.top = new FormAttachment(0, 138);
+		fd_lblSeperatorInfo.left = new FormAttachment(0, 236);
+		lblSeperatorInfo.setLayoutData(fd_lblSeperatorInfo);
 		
 		String sepInfo;
 		if( seperatorTab )
 		{
-			sepInfo = "Tab Key";
+			sepInfo = Messages.NewAccountDialog_49;
 		} else {
-			sepInfo = "Enter Key";
+			sepInfo = Messages.NewAccountDialog_50;
 		}
 		
 		lblSeperatorInfo.setText(sepInfo);
-		FormData fd_lblSeperatorInfo = new FormData();
-		fd_lblSeperatorInfo.right = new FormAttachment(lblSeperator, 373, SWT.RIGHT);
-		fd_lblSeperatorInfo.top = new FormAttachment(lblPasswordInfo, 6);
-		fd_lblSeperatorInfo.left = new FormAttachment(lblSeperator, 6);
-		lblSeperatorInfo.setLayoutData(fd_lblSeperatorInfo);
 		
         Control[] controls = new Control[] { btnSave, button_9 };
         composite.setTabList(controls);				
@@ -765,24 +821,26 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		composite.setLayout(new FormLayout());
 		
 		txtBUSYMSG = new Label(composite, SWT.NONE);
-		FormData fd_lblSaving = new FormData();
-		fd_lblSaving.right = new FormAttachment(0, 603);
-		fd_lblSaving.top = new FormAttachment(0, 10);
-		fd_lblSaving.left = new FormAttachment(0, 10);
-		txtBUSYMSG.setLayoutData(fd_lblSaving);
-		txtBUSYMSG.setText("Working...");
-		
-		animation = new Animation(shlNewAccount, SWT.NONE, 4);
-		animation.setBounds(10, 32, 32, 32);
-		animation.setVisible(true);
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") );
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") );
-		animation.setPlaying(true);
+		FormData fd_txtBUSYMSG = new FormData();
+		fd_txtBUSYMSG.top = new FormAttachment(0, 10);
+		fd_txtBUSYMSG.right = new FormAttachment(100, -10);
+		fd_txtBUSYMSG.left = new FormAttachment(0, 78);
+		txtBUSYMSG.setLayoutData(fd_txtBUSYMSG);
+		txtBUSYMSG.setText(Messages.NewAccountDialog_51);
 		FormData fdAni = new FormData();
 		fdAni.top = new FormAttachment(txtBUSYMSG);
 		
+		animation = new Animation(composite, SWT.NONE, 4);
+		FormData fd_animation = new FormData();
+		fd_animation.top = new FormAttachment(0, 10);
+		fd_animation.left = new FormAttachment(0, 10);
+		animation.setLayoutData(fd_animation);
+		animation.setBounds(10, 32, 32, 32);
+		animation.setVisible(true);
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") ); //$NON-NLS-1$
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") ); //$NON-NLS-1$
+		animation.setPlaying(true);
 
-		
 	}
 	
 	
@@ -831,7 +889,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	private void createContents() {
 		shlNewAccount = new Shell(getParent(), getStyle());
 		shlNewAccount.setSize(625, 394);
-		shlNewAccount.setText("Create New Account");
+		shlNewAccount.setText(Messages.NewAccountDialog_54);
 		shlNewAccount.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
 	//	TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
@@ -852,35 +910,35 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		switch(event.type)
 		{
 		case ACTION_ABORTED:
-			txtBUSYMSG.setText("Error.");
+			txtBUSYMSG.setText(Messages.NewAccountDialog_55);
 			dialog = new MessageBox(shlNewAccount, SWT.ICON_WARNING);
-			dialog.setText("Account not created");
-			dialog.setMessage("The account was not created.\nMaybe you were not quick enough to press FinalKey button?\nPlease try again.");
+			dialog.setText(Messages.NewAccountDialog_56);
+			dialog.setMessage(Messages.NewAccountDialog_57);
 			dialog.open();
 			updatePage(FkNewAccStep.REVIEW);			
 			break;
 		case ACTION_ERROR:
-			txtBUSYMSG.setText("Error.");
+			txtBUSYMSG.setText(Messages.NewAccountDialog_58);
 
 			dialog = new MessageBox(shlNewAccount, SWT.ICON_ERROR);
-			dialog.setText("Error");
-			dialog.setMessage("There was an error creating the acccount, please reconnect to FinalKey and try again.");
+			dialog.setText(Messages.NewAccountDialog_59);
+			dialog.setMessage(Messages.NewAccountDialog_60);
 			dialog.open();
 			closeSelf=true;
 			break;
 		case ACTION_OKAY:
-			txtBUSYMSG.setText("Account saved.");
+			txtBUSYMSG.setText(Messages.NewAccountDialog_61);
 			dialog = new MessageBox(shlNewAccount, SWT.ICON_INFORMATION);
-			dialog.setText("Account created");
-			dialog.setMessage("The account was created.");
+			dialog.setText(Messages.NewAccountDialog_62);
+			dialog.setMessage(Messages.NewAccountDialog_63);
 			dialog.open();
 			closeSelf=true;
 			break;
 		case ACTION_WAITING:
-			txtBUSYMSG.setText("Waiting for buttonpress...");
+			txtBUSYMSG.setText(Messages.NewAccountDialog_64);
 			break;
 		case ACTION_WORKING:
-			txtBUSYMSG.setText("Saving...");
+			txtBUSYMSG.setText(Messages.NewAccountDialog_65);
 			animation.setVisible(false);
 			break;
 		}

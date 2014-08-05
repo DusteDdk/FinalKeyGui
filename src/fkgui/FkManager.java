@@ -425,7 +425,7 @@ public class FkManager implements ActionListener {
 				seq += '2';
 			}
 			
-			System.out.println("Seq ["+seq+"]");
+			//System.out.println("Seq ["+seq+"]");
 			
 			NewAccountTask newTask = new NewAccountTask(seq, delegate, strAccountName);
 			new Thread(newTask).start();			
@@ -433,7 +433,4 @@ public class FkManager implements ActionListener {
 	}
 
 
-
-	
-	
 }
