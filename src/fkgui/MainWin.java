@@ -1,15 +1,12 @@
 package fkgui;
 
 
-import java.util.Locale;
 import  java.util.prefs.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -36,7 +33,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import fkgui.FkManager.Account;
 import fkgui.SerialWorker.SerialState;
-import fkgui.UpdateChecker.AutoUpdaterResultListener;
+import fkgui.UpdateChecker.UpdateCheckResultListener;
 
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -48,7 +45,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.List;
 
 
-public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
+public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 	protected Shell shell;
 	private Text txtPsw;

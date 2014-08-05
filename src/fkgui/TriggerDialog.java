@@ -1,12 +1,5 @@
 package fkgui;
 
-import java.awt.Color;
-import java.io.Closeable;
-
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-
-import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
@@ -246,6 +239,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 
 	}
 
+	@SuppressWarnings("incomplete-switch")
 	@Override
 	public void fkActionEvent(FkActionEvent event) {
 		MessageBox dialog;

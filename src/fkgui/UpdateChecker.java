@@ -1,27 +1,28 @@
 package fkgui;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Locale;
 
 import org.eclipse.swt.widgets.Display;
 
-import fkgui.UpdateChecker.AutoUpdaterResultListener.AutoUpdaterResultEvent;
-import fkgui.UpdateChecker.AutoUpdaterResultListener.UpdateCheckResult;
+import fkgui.UpdateChecker.UpdateCheckResultListener.AutoUpdaterResultEvent;
+import fkgui.UpdateChecker.UpdateCheckResultListener.UpdateCheckResult;
 
 
 public class UpdateChecker implements Runnable {
 	
+	//Change locale with -Duser.country=DK -Duser.language=da parms for the java command.
+	
 	static final String CHECK_URL="http://cyberstalker.dk/finalkey/gui/update.php";
-	static final String CUR_VER="0.0";
-	static final String PLATFORM="lin_x64";
-	static final String LANG = "US";
+	static final String CUR_VER="0.1";
+	static final String PLATFORM=System.getProperty("os.name")+"_"+System.getProperty("os.arch");
+	static final String LANG = Locale.getDefault().getLanguage();
 
 	public static final String REQUEST_STRING = CHECK_URL + "?version="+CUR_VER+"&platform="+PLATFORM+"&lang="+LANG;
 	
-	public interface AutoUpdaterResultListener {
+	public interface UpdateCheckResultListener {
 		public class AutoUpdaterResultEvent
 		{
 			public String version;
@@ -39,8 +40,8 @@ public class UpdateChecker implements Runnable {
 		public void updateCheckFinished( AutoUpdaterResultEvent event );
 	}	
 	
-	AutoUpdaterResultListener delegate;
-	public UpdateChecker( AutoUpdaterResultListener del )
+	UpdateCheckResultListener delegate;
+	public UpdateChecker( UpdateCheckResultListener del )
 	{
 		delegate=del;
 	}
@@ -48,8 +49,8 @@ public class UpdateChecker implements Runnable {
 	public class AutoUpdaterResultTask implements Runnable
 	{
 		private AutoUpdaterResultEvent e;
-		private AutoUpdaterResultListener d;
-		public AutoUpdaterResultTask( AutoUpdaterResultEvent event, AutoUpdaterResultListener delegate )
+		private UpdateCheckResultListener d;
+		public AutoUpdaterResultTask( AutoUpdaterResultEvent event, UpdateCheckResultListener delegate )
 		{
 			e=event;
 			d=delegate;
@@ -58,7 +59,6 @@ public class UpdateChecker implements Runnable {
 		public void run() {
 			d.updateCheckFinished(e);			
 		}
-		
 	}
 	
 	@Override
@@ -67,7 +67,7 @@ public class UpdateChecker implements Runnable {
 		String res="";
 		String ver="No Version";
 		String msg="No Update";
-
+		System.out.println("Checking for new version: "+REQUEST_STRING);
 		try {
 			URL url = new URL(REQUEST_STRING);
 			BufferedReader  in = new BufferedReader ( new InputStreamReader( url.openStream() ) );

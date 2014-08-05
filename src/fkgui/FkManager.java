@@ -2,25 +2,12 @@ package fkgui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Vector;
-import java.util.concurrent.ExecutionException;
-
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-
-import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
 
-import jssc.SerialPortException;
 import fkgui.FkActionEventListener.FkActionEvent;
 import fkgui.FkActionEventListener.FkActionEventType;
-import fkgui.FkManager.Account;
-import fkgui.SerialWorker.SerialState;
 
 public class FkManager implements ActionListener {
 	private static FkManager instance = null;

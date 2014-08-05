@@ -1,7 +1,5 @@
 package fkgui;
 
-import java.awt.Menu;
-import java.awt.MenuItem;
 import java.util.List;
 
 import jssc.SerialPort;
