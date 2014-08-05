@@ -273,6 +273,8 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			result = (Object)new Boolean(true);
 			if( event.action == 's' )
 			{
+				result = (Object)new Boolean(false); //Don't close main window after "show"
+
 				int begin = event.data.lastIndexOf("Account: "+ event.acc.num); //$NON-NLS-1$
 				if( begin == -1 )
 				{
