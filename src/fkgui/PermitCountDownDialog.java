@@ -63,8 +63,8 @@ public class PermitCountDownDialog extends Dialog {
 		Animation animation = new Animation(shell, SWT.NONE, 4);
 		animation.setBounds(10, 32, 32, 32);
 		animation.setVisible(true);
-		animation.addFrame( SWTResourceManager.getImage("/home/dusted/Downloads/finalkey1.png") );
-		animation.addFrame( SWTResourceManager.getImage("/home/dusted/Downloads/finalkey2.png") );
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") );
+		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") );
 		animation.setPlaying(true);
 		
 		

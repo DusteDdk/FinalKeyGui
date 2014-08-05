@@ -33,16 +33,17 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 	private FormData fd_grpChange;
 	private Group grpMakeFinalKey;
 	private Group grpChange;
-	private Boolean askPermitShow = false;
+	ConsoleMsg delegate;
 	PermitCountDownDialog permitCountdownDialog = null;
 	/**
 	 * Create the dialog.
 	 * @param parent
 	 * @param style
 	 */
-	public TriggerDialog(Shell parent, int style, Account a) {
+	public TriggerDialog(Shell parent, int style, Account a, ConsoleMsg d) {
 		super(parent, style);
 		account = a;
+		delegate = d;
 		setText("Use "+ account.name);
 	}
 
@@ -106,7 +107,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				permitCountdownDialog.open();
 			}
 		});
-		btnUsernamePassword.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/both.png"));
+		btnUsernamePassword.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png"));
 		FormData fd_btnUsernamePassword = new FormData();
 		fd_btnUsernamePassword.top = new FormAttachment(0, 10);
 		fd_btnUsernamePassword.left = new FormAttachment(0, 10);
@@ -125,7 +126,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				permitCountdownDialog.open();
 			}
 		});
-		btnUsernameOnly.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/Deep_User.png"));
+		btnUsernameOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/user.png"));
 		FormData fd_btnUsernameOnly = new FormData();
 		fd_btnUsernameOnly.top = new FormAttachment(btnUsernamePassword, -35);
 		fd_btnUsernameOnly.bottom = new FormAttachment(btnUsernamePassword, 0, SWT.BOTTOM);
@@ -147,7 +148,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				permitCountdownDialog.open();
 			}
 		});
-		btnPasswordOnly.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/key-icon.png"));
+		btnPasswordOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/key-icon.png"));
 		FormData fd_btnPasswordOnly = new FormData();
 		fd_btnPasswordOnly.left = new FormAttachment(btnUsernameOnly, 29);
 		fd_btnPasswordOnly.top = new FormAttachment(btnUsernamePassword, 0, SWT.TOP);
@@ -167,7 +168,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				grpChange.setLayoutData(fd_grpChange);
 				
 				Button btnEdit = new Button(grpChange, SWT.NONE);
-				btnEdit.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/gtk_edit.png"));
+				btnEdit.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/gtk_edit.png"));
 				FormData fd_btnEdit = new FormData();
 				fd_btnEdit.top = new FormAttachment(0, 10);
 				fd_btnEdit.left = new FormAttachment(0, 10);
@@ -187,13 +188,15 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 						{
 							permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + ": Confirm deletion", "Press button to show delete "+account.name+".\nPress and hold to cancel.", 5000);
 							shell.setMinimized(true);
+							FkManager.getInstance().trig(account, 'd', mySelf);
 							permitCountdownDialog.open();
+							
 
 						}
 					}
 				});
 				fd_btnEdit.right = new FormAttachment(btnDelete, -6);
-				btnDelete.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/trashdelete.gif"));
+				btnDelete.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/trashdelete.gif"));
 				FormData fd_btnDelete = new FormData();
 				fd_btnDelete.top = new FormAttachment(0, 10);
 				fd_btnDelete.left = new FormAttachment(0, 166);
@@ -203,7 +206,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 
 				Button btnCancel = new Button(shell, SWT.NONE);
 				fd_grpChange.bottom = new FormAttachment(btnCancel, -6);
-				btnCancel.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/Delete.png"));
+				btnCancel.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/Delete.png"));
 				FormData fd_btnCancel = new FormData();
 				fd_btnCancel.left = new FormAttachment(grpMakeFinalKey, 0, SWT.LEFT);
 				fd_btnCancel.bottom = new FormAttachment(100, -10);
@@ -232,12 +235,11 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					public void widgetSelected(SelectionEvent e) {
 						FkManager.getInstance().trig(account, 's', mySelf);
 						permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + ": Ready for display", "Press button to show username and password.\nPress and hold to cancel.", 30000);
-						askPermitShow=true;
 						shell.setMinimized(true);
 						permitCountdownDialog.open();
 					}
 				});
-				btnShowUsername.setImage(SWTResourceManager.getImage("/home/dusted/Downloads/both.png"));
+				btnShowUsername.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png"));
 				btnShowUsername.setBounds(10, 36, 327, 35);
 				btnShowUsername.setText("Show Username + Password");				
 				
@@ -269,14 +271,37 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			break;
 		case ACTION_OKAY:
 			result = (Object)new Boolean(true);
-			if( askPermitShow )
+			if( event.action == 's' )
 			{
-				String s = event.data.substring( event.data.indexOf( "Account: "+ event.acc.num), event.data.lastIndexOf("[done]") );
+				int begin = event.data.lastIndexOf("Account: "+ event.acc.num);
+				if( begin == -1 )
+				{
+					begin=0;
+				}
+				int end = event.data.lastIndexOf("[done]");
+				String s = event.data.substring( begin,end  );
 				dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
 				dialog.setText("Account information");
 				dialog.setMessage(s);
 				dialog.open();
 			}
+			
+			if( event.action == 'd' )
+			{
+				result = (Object)new Boolean(false); //We want the mainwin to get back after deleting an account.
+				dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+				dialog.setText("Account deleted");
+				dialog.setMessage(event.acc.name + " has been erased.");
+				dialog.open();
+				Display.getDefault().asyncExec( new Runnable() {
+					@Override
+					public void run() {
+						delegate.updateAccountList();
+					}
+					
+				} );
+			}
+			
 			if( !shell.isDisposed() )
 			{
 				shell.close();
