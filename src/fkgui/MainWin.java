@@ -79,8 +79,9 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 
 	
 	static final String PREF_PORT ="lastUsedPortPref"; //$NON-NLS-1$
-	static final String DEFAULT_DEVICE = "/dev/FinalKey"; //$NON-NLS-1$
+	static final String PREF_DEFAULT_DEVICE = "/dev/FinalKey"; //$NON-NLS-1$
 	static final String PREF_AUTOHIDE = "hideMainWinAfterConnect"; //$NON-NLS-1$
+	private static final String PREF_SORT_BY_ID_KEY = Messages.MainWin_0;
 	public Composite cmpConnect;
 	private Composite cmpAccounts;
 	ListViewer lstAccounts;
@@ -266,6 +267,8 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		
 		prefs = Preferences.userNodeForPackage(this.getClass());
 		
+		FkManager.getInstance().sortById( prefs.getBoolean(PREF_SORT_BY_ID_KEY, false) );		
+		
 
 		mySelf = this;
 		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -330,16 +333,18 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			}
 		});
 		
-		txtLog = new Text(cmpConnect, SWT.BORDER | SWT.V_SCROLL | SWT.MULTI);
+		txtLog = new Text(cmpConnect, SWT.BORDER | SWT.V_SCROLL | SWT.MULTI | SWT.WRAP);
 		FormData fd_txtLog = new FormData();
+		fd_txtLog.top = new FormAttachment(btnConnect, 6);
 		fd_txtLog.left = new FormAttachment(0, 10);
 		fd_txtLog.right = new FormAttachment(100, -10);
 		fd_txtLog.bottom = new FormAttachment(100, -10);
-		fd_txtLog.top = new FormAttachment(0, 58);
 		txtLog.setLayoutData(fd_txtLog);
 		txtLog.setEditable(false);
 		
+		
 		lblPort = new Label(cmpConnect, SWT.NONE);
+		lblPort.setAlignment(SWT.RIGHT);
 		fd_btnConnect.top = new FormAttachment(lblPort, 0, SWT.TOP);
 		FormData fd_lblPort = new FormData();
 		fd_lblPort.right = new FormAttachment(0, 86);
@@ -356,8 +361,9 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		fd_txtDev.left = new FormAttachment(0, 102);
 		txtDev.setLayoutData(fd_txtDev);
 		txtDev.setFont(SWTResourceManager.getFont("Cantarell", 9, SWT.NORMAL)); //$NON-NLS-1$
-		txtDev.setText( prefs.get(PREF_PORT, DEFAULT_DEVICE));
+		txtDev.setText( prefs.get(PREF_PORT, PREF_DEFAULT_DEVICE));
 		lblPassword = new Label(cmpConnect, SWT.NONE);
+		lblPassword.setAlignment(SWT.RIGHT);
 		FormData fd_lblPassword = new FormData();
 		fd_lblPassword.right = new FormAttachment(0, 95);
 		fd_lblPassword.top = new FormAttachment(0, 29);
@@ -387,8 +393,6 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 
 		
 		animation.setVisible(false);
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") ); //$NON-NLS-1$
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") ); //$NON-NLS-1$
 		animation.setPlaying(false);
 		cmpConnect.setTabList(new Control[]{txtPsw, btnConnect});
 		
@@ -400,17 +404,12 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		shell.addShellListener( new ShellListener() {
 			
 			public void shellIconified(ShellEvent e) {
-				// TODO Auto-generated method stub
-
 			}
 
 			public void shellDeiconified(ShellEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			public void shellDeactivated(ShellEvent e) {
-				// TODO Auto-generated method stub
 			}
 			
 			public void shellClosed(ShellEvent e) {
@@ -418,7 +417,6 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			}
 			
 			public void shellActivated(ShellEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 		} );
@@ -449,7 +447,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			free--;
 			lstAccounts.add( a );
 							
-			Menu menu = new Menu(a.name+" ["+a.num+"]"); //$NON-NLS-1$ //$NON-NLS-1$
+			Menu menu = new Menu(a.name+" ["+a.num+"]"); //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-2$
 			MenuItem both = new MenuItem(Messages.MainWin_25);
 			MenuItem usr = new MenuItem(Messages.MainWin_26);
 			MenuItem psw = new MenuItem(Messages.MainWin_27);
@@ -600,9 +598,8 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 			}
 		});
 		FormData fd_btnNewAccoount = new FormData();
-		fd_btnNewAccoount.left = new FormAttachment(0, 530);
+		fd_btnNewAccoount.bottom = new FormAttachment(100, -6);
 		fd_btnNewAccoount.right = new FormAttachment(100, -10);
-		fd_btnNewAccoount.bottom = new FormAttachment(100, -10);
 		btnNewAccoount.setLayoutData(fd_btnNewAccoount);
 		btnNewAccoount.setText(Messages.MainWin_47);
 		
@@ -610,29 +607,49 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 		lblNumFree.setText("Hello World!"); //$NON-NLS-1$
 		
 		FormData fd_lblNumFree = new FormData();
-		fd_lblNumFree.left = new FormAttachment(0,0);
-		fd_lblNumFree.bottom = new FormAttachment(100,-10);
+		fd_lblNumFree.bottom = new FormAttachment(btnNewAccoount, 0, SWT.BOTTOM);
+		fd_lblNumFree.right = new FormAttachment(0, 133);
 		lblNumFree.setLayoutData(fd_lblNumFree);
 		
 		
 		lstAccounts = new ListViewer(cmpAccounts, SWT.BORDER | SWT.V_SCROLL);
 		List list = lstAccounts.getList();
+		fd_lblNumFree.left = new FormAttachment(list, 0, SWT.LEFT);
 		list.setLayoutData(new FormData());
 		FormData fd_lstAccounts = new FormData();
 		fd_lstAccounts.bottom = new FormAttachment(btnNewAccoount, -6);
 		
 		btnActivateAccount = new Button(cmpAccounts, SWT.NONE);
-		btnActivateAccount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightbulb.png"));
+		fd_btnNewAccoount.left = new FormAttachment(btnActivateAccount, 6);
+		btnActivateAccount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightbulb.png")); //$NON-NLS-1$
 		FormData fd_btnActivateAccount = new FormData();
-		fd_btnActivateAccount.right = new FormAttachment(btnNewAccoount, -71);
-		fd_btnActivateAccount.left = new FormAttachment(lblNumFree, 78);
-		fd_btnActivateAccount.top = new FormAttachment(btnNewAccoount, 0, SWT.TOP);
+		fd_btnActivateAccount.right = new FormAttachment(100, -169);
+		fd_btnActivateAccount.top = new FormAttachment(0, 546);
+		fd_btnActivateAccount.bottom = new FormAttachment(100, -6);
 		btnActivateAccount.setLayoutData(fd_btnActivateAccount);
-		btnActivateAccount.setText(Messages.MainWin_btnNewButton_text);
 		fd_lstAccounts.top = new FormAttachment(0, 10);
 		fd_lstAccounts.left = new FormAttachment(0, 10);
 		fd_lstAccounts.right = new FormAttachment(100, -10);
 		btnActivateAccount.setVisible(false);
+		
+		Button btnByAccountId = new Button(cmpAccounts, SWT.CHECK);
+		fd_btnActivateAccount.left = new FormAttachment(btnByAccountId, 6);
+		btnByAccountId.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Button btnAccId = (Button)e.getSource();
+				FkManager.getInstance().sortById( btnAccId.getSelection() );
+				prefs.putBoolean( PREF_SORT_BY_ID_KEY, btnAccId.getSelection() );
+				updateAccountList();
+			}
+		});
+		FormData fd_btnByAccountId = new FormData();
+		fd_btnByAccountId.left = new FormAttachment(100, -541);
+		fd_btnByAccountId.bottom = new FormAttachment(100, -6);
+		fd_btnByAccountId.right = new FormAttachment(100, -381);
+		btnByAccountId.setLayoutData(fd_btnByAccountId);
+		btnByAccountId.setText(Messages.MainWin_btnByAccountId_text);
+		btnByAccountId.setSelection( prefs.getBoolean( PREF_SORT_BY_ID_KEY, false));
 		
 		
 		//lstAccounts.setLayoutData(fd_lstAccounts);
@@ -646,22 +663,15 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 				if( !selection.isEmpty() )
 				{
 					Account acc = (Account)selection.getFirstElement();
-					TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc, mySelf );
-
-					shell.setMinimized(true);
-					shell.setEnabled(false);
-					if( !((Boolean)diag.open()) )
-					{
-						shell.setMinimized(false);
-					}
-					
-					shell.setEnabled(true);
+					showTrigDialog(acc);
 				} else {
 					System.out.println("Selected nothing."); //$NON-NLS-1$
 				}
 				
 				
 			}
+
+
 		});
 		
 		lstAccounts.addSelectionChangedListener( new ISelectionChangedListener() {
@@ -675,10 +685,10 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 					btnActivateAccount.setVisible(true);
 					btnActivateAccount.setText(acc.name);
 					
+					//Remove any listeners
 					for( Listener s :btnActivateAccount.getListeners(SWT.Selection) )
 					{
 						btnActivateAccount.removeListener(SWT.Selection, s);
-
 					}
 					
 					btnActivateAccount.addSelectionListener( new SelectionListener() {
@@ -688,16 +698,7 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 							
 							StructuredSelection selection = (StructuredSelection) lstAccounts.getSelection();
 							Account acc = (Account)selection.getFirstElement();
-							TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc, mySelf );
-
-							shell.setMinimized(true);
-							shell.setEnabled(false);
-							if( !((Boolean)diag.open()) )
-							{
-								shell.setMinimized(false);
-							}
-							
-							shell.setEnabled(true);
+							showTrigDialog(acc);
 						}
 						
 						@Override
@@ -714,6 +715,19 @@ public class MainWin implements ConsoleMsg, AutoUpdaterResultListener {
 				
 	}
 
+	private void showTrigDialog(Account acc) {
+		TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc, mySelf );
+
+		shell.setMinimized(true);
+		shell.setEnabled(false);
+		if( !((Boolean)diag.open()) )
+		{
+			shell.setMinimized(false);
+		}
+		
+		shell.setEnabled(true);
+		
+	}
 
 	@Override
 	public void updateCheckFinished(AutoUpdaterResultEvent event) {

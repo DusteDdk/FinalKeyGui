@@ -37,8 +37,15 @@ public class Animation extends Composite {
 		fd_label.bottom = new FormAttachment(0, 32);
 		fd_label.right = new FormAttachment(0, 32);
 		label.setLayoutData(fd_label);
-		frames = new Vector<Image>(0);
+		frames = new Vector<Image>(7);
 		setFPS(FPS);
+		addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/ani/1.png") ); //$NON-NLS-1$
+		addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/ani/2.png") ); //$NON-NLS-1$
+		addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/ani/3.png") ); //$NON-NLS-1$
+		addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/ani/4.png") ); //$NON-NLS-1$
+		addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/ani/5.png") ); //$NON-NLS-1$
+		addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/ani/6.png") ); //$NON-NLS-1$
+		addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/ani/7.png") ); //$NON-NLS-1$
 	}
 	
 	public void setPlaying(Boolean state )
@@ -89,11 +96,11 @@ public class Animation extends Composite {
 		// Disable the check that prevents subclassing of SWT components
 	}
 
-	public void addFrame(Image image) {
+	private void addFrame(Image image) {
 		frames.addElement(image);
 	}
 	
-	public void setFPS( float fps )
+	private void setFPS( float fps )
 	{
 		msDelay = (int)(1000.0 / fps);
 	}

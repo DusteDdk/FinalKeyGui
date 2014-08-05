@@ -4,6 +4,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "fkgui.messages"; //$NON-NLS-1$
+	public static String MainWin_0;
 	public static String MainWin_12;
 	public static String MainWin_15;
 	public static String MainWin_18;
@@ -135,7 +136,7 @@ public class Messages extends NLS {
 	public static String TriggerDialog_6;
 	public static String TriggerDialog_7;
 	public static String TriggerDialog_8;
-	public static String MainWin_btnNewButton_text;
+	public static String MainWin_btnByAccountId_text;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

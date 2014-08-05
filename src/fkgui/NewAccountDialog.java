@@ -837,8 +837,6 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		animation.setLayoutData(fd_animation);
 		animation.setBounds(10, 32, 32, 32);
 		animation.setVisible(true);
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey1.png") ); //$NON-NLS-1$
-		animation.addFrame( SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey2.png") ); //$NON-NLS-1$
 		animation.setPlaying(true);
 
 	}

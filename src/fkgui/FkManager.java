@@ -26,6 +26,8 @@ public class FkManager implements ActionListener {
 	private static FkManager instance = null;
 	private SerialWorker com = null;
 
+	private Comparator<Account> sortMethod = null;
+	
 	public class Account
 	{
 		public String name;
@@ -184,17 +186,32 @@ public class FkManager implements ActionListener {
 	}
 	
 	
+	
+	private class SortByName implements Comparator<Account>
+	{
+		@Override
+		public int compare(Account o1, Account o2) {
+			return o1.name.compareTo(o2.name);
+		}
+	}
+	
+	private class SortById implements Comparator<Account>
+	{
+		@Override
+		public int compare(Account o1, Account o2) {
+			int a = Integer.valueOf(o1.num, 16);
+			int b = Integer.valueOf(o2.num, 16);
+			return( a - b );
+		}
+	}
+	
+	
+	
 	public void listAddAcc(String num, String name)
 	{
 		list.addElement( new Account(num,name) );
-		list.sort( new Comparator<Account>() {
-
-			@Override
-			public int compare(Account o1, Account o2) {
-				
-				return o1.name.compareTo(o2.name);
-			}
-		} );
+		
+		list.sort( sortMethod );
 	}
 	
 	public void listClear()
@@ -430,6 +447,19 @@ public class FkManager implements ActionListener {
 			NewAccountTask newTask = new NewAccountTask(seq, delegate, strAccountName);
 			new Thread(newTask).start();			
 		
+	}
+
+	public void sortById(boolean byId) {
+		if( byId )
+		{
+			sortMethod = new SortById();
+		} else {
+			sortMethod = new SortByName();
+		}
+		if(list != null )
+		{
+			list.sort(sortMethod);
+		}
 	}
 
 

@@ -273,12 +273,12 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			result = (Object)new Boolean(true);
 			if( event.action == 's' )
 			{
-				int begin = event.data.lastIndexOf("Account: "+ event.acc.num);
+				int begin = event.data.lastIndexOf("Account: "+ event.acc.num); //$NON-NLS-1$
 				if( begin == -1 )
 				{
 					begin=0;
 				}
-				int end = event.data.lastIndexOf("[done]");
+				int end = event.data.lastIndexOf("[done]"); //$NON-NLS-1$
 				String s = event.data.substring( begin,end  );
 				dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
 				dialog.setText(Messages.TriggerDialog_39);
