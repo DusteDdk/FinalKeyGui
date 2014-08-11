@@ -2,8 +2,13 @@ package fkgui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
+
+import jssc.SerialPort;
+
 import org.eclipse.swt.widgets.Display;
 
 import fkgui.FkActionEventListener.FkActionEvent;
@@ -12,7 +17,9 @@ import fkgui.FkActionEventListener.FkActionEventType;
 public class FkManager implements ActionListener {
 	private static FkManager instance = null;
 	private SerialWorker com = null;
-
+	static final char ENTER_KEY = (char)13;
+	static final char PAUSE_CODE = (char)23; 
+	static final char SPACE_KEY = (char)32;
 	private Comparator<Account> sortMethod = null;
 	
 	public class Account
@@ -73,6 +80,47 @@ public class FkManager implements ActionListener {
 		}
 	}
 	
+	
+	private Boolean checkState()
+	{
+
+		int t=0;
+		String msg="";
+		Boolean stateOk=false;
+
+		try {
+			com.serialPort.writeByte((byte)SPACE_KEY);
+			while( t < 100 )
+			{
+				t++;
+				Thread.sleep(5);
+				
+				if( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					msg += com.serialPort.readString();
+					if( msg.endsWith("\r\n>") )
+					{
+						stateOk=true;
+						msg="";
+						break;
+					}
+				}
+				
+			}
+		
+		} catch(Exception e)
+		{
+			stateOk=false;
+		}
+		flushSerial();
+		if( !stateOk )
+		{
+			return(false);
+		}
+		return(true);
+		
+	}
+	
 	private class TrigTask implements Runnable
 	{
 		private Account acc;
@@ -88,25 +136,32 @@ public class FkManager implements ActionListener {
 		@Override
 		public void run() {
 			
-			flushSerial();
-			
-			if(action != '%' )
-			{
-				try
-				{
-					
-					if( action == 'd' || action == 'o' )
-					{
-						com.serialPort.writeByte((byte)'x');
-					}
-					com.serialPort.writeByte((byte)action);
-				} catch( Exception ex )
-				{
-					ex.printStackTrace();
-				}
-			}
-			
+			int t=0;
+			String msg = "";
+
+
 			try {
+			
+				//First check that we get a prompt
+				if( !checkState() )
+				{
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",acc,action) );
+					return;
+				}
+
+				//if it's not '%' we need to type which action.
+				if(action != '%' )
+				{
+	
+						
+						if( action == 'd' || action == 'o' )
+						{
+							com.serialPort.writeByte((byte)'x');
+						}
+						com.serialPort.writeByte((byte)action);
+	
+				}
+			
 				com.serialPort.writeBytes(acc.num.toLowerCase().getBytes());
 		
 				if( action == 'd' || action == 'o' )
@@ -114,25 +169,14 @@ public class FkManager implements ActionListener {
 					com.serialPort.writeByte((byte)'y');
 				}				
 				
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
-				int t=0;
+				Thread.sleep(200);
 
-				String msg = "";
+				
+				t=0;
 				while( t < 1200 )
 				{
 					t++;
-					try {
-						Thread.sleep(50);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					Thread.sleep(50);
 					if( com.serialPort.getInputBufferBytesCount() > 0 )
 					{
 						msg += com.serialPort.readString();
@@ -156,7 +200,6 @@ public class FkManager implements ActionListener {
 				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, msg,acc,action) );
 
 			} catch (Exception e1) {
-				// TODO Auto-generated catch block
 				System.out.println("TrigTask Exception:");
 				e1.printStackTrace();
 				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "EXCEPTION",acc,action) );
@@ -198,7 +241,7 @@ public class FkManager implements ActionListener {
 	{
 		list.addElement( new Account(num,name) );
 		
-		list.sort( sortMethod );
+		Collections.sort(list, sortMethod);
 	}
 	
 	public void listClear()
@@ -264,8 +307,15 @@ public class FkManager implements ActionListener {
 		@Override
 		public void run() {
 			System.out.println("NewAccountTask run");
+			Boolean noTimeOut = false;
 
-			flushSerial();
+			//First check that we get a prompt
+			if( !checkState() )
+			{
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",acc,'A') );
+				return;
+			}
+			
 			String data="";
 			int timeOut;
 			try {			
@@ -300,40 +350,84 @@ public class FkManager implements ActionListener {
 
 					for(int p=0; p < seq.length();p++)
 					{
-						
+
 						if( com.serialPort.getOutputBufferBytesCount() > 1 )
 						{
-							Thread.sleep(50);
+							Thread.sleep(100);
+							System.out.println("[SLEEP]");
 						} else {
-							com.serialPort.writeByte( (byte)seq.charAt(p) );
-							Thread.sleep(5);
+							if( seq.charAt(p) == PAUSE_CODE)
+							{
+								Thread.sleep(100);
+								System.out.println("[DELAY]");
+							} else {
+								if( seq.charAt(p) == ENTER_KEY )
+								{
+									System.out.println( "[ENTER]" );
+								} else {
+									System.out.println( "Type from pos ("+p+"):" + seq.charAt(p));
+								}
+	
+								com.serialPort.writeByte( (byte)seq.charAt(p) );
+								Thread.sleep(5);
+							}
 							
 						}
-						System.out.println( "Type:" + seq.charAt(p));
-						while( com.serialPort.getInputBufferBytesCount() > 0 )
+						
+						if(  com.serialPort.getInputBufferBytesCount() > 0 )
 						{
-							String in = com.serialPort.readString();
-							data += in;
-							System.out.println("Read:" + in);
+							System.out.print("Reading "+com.serialPort.getInputBufferBytesCount()+ " bytes: ");
+							data="";
+							while( com.serialPort.getInputBufferBytesCount() > 0 )
+							{
+								String in = com.serialPort.readString();
+								data += in;
+								
+							}
+							if( data.contains("[generate]") )
+							{
+								noTimeOut=true;
+								System.out.println("1: noTimeOut");
+							}							
+							System.out.println(data);
 						}
-					}
-					System.out.println("All chars typed, waiting for [done]");
+					}//While typing
+					System.out.println("All chars typed, waiting for [save entry ");
+					
+					int step=0;
 					
 					timeOut = 30000;
-					while( timeOut > 0 )
+					while( timeOut > 0 || noTimeOut )
 					{
-						timeOut -= 50;
-						Thread.sleep(50);
+						
 						if( com.serialPort.getInputBufferBytesCount() > 0 )
 						{
 							String in = com.serialPort.readString();
-							System.out.println("Read>"+in);
+							//System.out.println("Read>"+in);
 							data += in;
-							if( data.contains("[done]") )
+							System.out.println("Data:"+data);
+							
+							//Check for abort first, in that case, we don't want to do anything.
+							if( data.contains("[abort]") )
+							{
+								Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "ERROR:"+data,null,'A') );
+								return;
+							}
+							
+							//If we're generating a password, we don't want to timeout
+							if( data.contains("[generate]") )
+							{
+								noTimeOut=true;
+								System.out.println("2: noTimeOut");
+								
+							}
+							
+							//If we're at step0 and have the saveentry string and there's a ] after it, we're good to fetch the account number.
+							if( step==0 && data.contains("[save entry ") && (data.lastIndexOf(']') > data.lastIndexOf("[save entry ")) )
 							{
 								int begin = data.lastIndexOf("[save entry ")+12;
 								String subStr = data.substring(begin);
-								int end = subStr.indexOf("]");
+								int end = subStr.indexOf(']');
 								subStr = subStr.substring(0,end);
 								if( subStr.length()==1)
 								{
@@ -342,24 +436,30 @@ public class FkManager implements ActionListener {
 								acc.num = subStr;
 								listAddAcc( acc.num, acc.name);
 								System.out.println("Account: "+acc.num+" " + acc.name);
-								Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "DONE:"+data,acc,'A') );
-								break;
-							} else if( data.contains("[abort]") )
-							{
-								Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "ERROR:"+data,null,'A') );
-								break;
+								
+								//Cut data, so that the [done] step1 looks for will not be the one after [generate].
+								data = data.substring(begin+end);
+								
+								System.out.println("Found [save entry, looking for done.");
+								step++;
 							}
+							
+							if( step==1 && data.contains("[done]") )
+							{
+								System.out.println("Found [done] in: {"+data+"}");
+								Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "DONE:"+data,acc,'A') );
+								return;
+							}
+
+						} else {
+							Thread.sleep(50);
+							timeOut -= 50;
 						}
-					}
-					if(timeOut < 1)
-					{
-						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "TIMEOUT1:"+data,null,'A') );
-					}
-				} else {
-					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "TIMEOUT2:"+data,null,'A') );
-				}
+					} //While !timeout 
+				} //If !timeout
 				
-				
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "TIMEOUT:"+data,null,'A') );
+
 			} catch (Exception e) {
 				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "EXCEPTION",null,'A') );
 			}
@@ -371,15 +471,18 @@ public class FkManager implements ActionListener {
 
 	private void flushSerial() {
 		try {
-		Thread.sleep(10);
-		
-		while( com.serialPort.getInputBufferBytesCount()!=0 )
-		{
-			System.out.println("Flushed "+com.serialPort.getInputBufferBytesCount()+" bytes >>>" + com.serialPort.readString() + "<<<");
-		}
+			Thread.sleep(10);
+			com.serialPort.purgePort(SerialPort.PURGE_RXCLEAR | SerialPort.PURGE_TXCLEAR);
+			
+			System.out.println("Flushed "+com.serialPort.getInputBufferBytesCount()+" bytes.");
+			while( com.serialPort.getInputBufferBytesCount() > 0 )
+			{
+				com.serialPort.readBytes();
+			}
+			
 		} catch(Exception e)
 		{
-			
+			System.out.println("FkManager flushSerial Exception:"+e.getMessage() );
 		}
 		
 	}	
@@ -389,47 +492,60 @@ public class FkManager implements ActionListener {
 			String autoPassSpecials, String strPassword, Boolean seperatorTab,
 			FkActionEventListener delegate) {
 			
-			String seq = new String();
+			StringBuilder sb = new StringBuilder(256);
+		
 			
-			seq += strAccountName;
-			seq += (char)13;
-			seq	+= strUserName;
-			seq += (char)13;
+			
+			sb.append(strAccountName);
+			sb.append(ENTER_KEY);
+			sb.append(PAUSE_CODE);
+			sb.append(strUserName);
+			sb.append(ENTER_KEY);
+			sb.append(PAUSE_CODE);
 			
 			if( autoPassword )
 			{
-				seq += '2';
-				seq += autoPassLen;
-				seq += (char)13;
+				sb.append('2'); //Select automatic password
+				sb.append(PAUSE_CODE);
+				sb.append(autoPassLen);
+				sb.append(ENTER_KEY);
+
+				
 				if( autoPassAllSpecials )
 				{
-					seq += '1';
+					sb.append('1'); //Allow all characters
 				} else {
 					if( autoPassSpecials.length() > 0 )
 					{
-						seq += '2';
-						seq += autoPassSpecials;
-						seq += (char)13;
+						sb.append('2'); //Allow only characters specified below
+						sb.append(PAUSE_CODE);
+						sb.append(autoPassSpecials);
+						sb.append(ENTER_KEY);
 					} else {
-						seq += '3';
+						sb.append('3'); // Allow no special characters
 					}
 				}
 			} else {
 				//Manual entered password
-				seq += '1';
-				seq += strPassword;
-				seq += (char)13;
+				sb.append('1'); // Select manual password
+				sb.append(PAUSE_CODE);
+				sb.append(strPassword);
+				sb.append(ENTER_KEY);
 			}
 			
+			sb.append(PAUSE_CODE);
+
 			//Tab/Enter sep
 			if( seperatorTab )
 			{
-				seq += '1';
+				sb.append('1'); //Select tab seperator
 			} else {
-				seq += '2';
+				sb.append('2'); //Select enter seperator
 			}
 			
-			//System.out.println("Seq ["+seq+"]");
+			String seq = sb.toString();
+			
+			System.out.println("Seq ["+seq.replace(PAUSE_CODE, 'ø').replace(ENTER_KEY, 'å')+"]");
 			
 			NewAccountTask newTask = new NewAccountTask(seq, delegate, strAccountName);
 			new Thread(newTask).start();			
@@ -445,7 +561,7 @@ public class FkManager implements ActionListener {
 		}
 		if(list != null )
 		{
-			list.sort(sortMethod);
+			Collections.sort(list, sortMethod);
 		}
 	}
 

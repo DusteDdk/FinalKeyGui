@@ -19,6 +19,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Spinner;
 
 public class NewAccountDialog extends Dialog implements FkActionEventListener {
@@ -87,6 +88,15 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	 */
 	public Object open() {
 		createContents();
+		Point p = getParent().getSize();
+		p.x /= 2;
+		p.y /= 2;
+		p.x -= shlNewAccount.getSize().x/2;
+		p.y -= shlNewAccount.getSize().y/2;
+		p.x += getParent().getLocation().x;
+		p.y += getParent().getLocation().y;
+		shlNewAccount.setLocation( p );
+
 		
 		shlNewAccount.open();
 		shlNewAccount.layout();
@@ -845,7 +855,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		{
 			composite.dispose();
 		}
-		System.out.println(curPage);
+		//System.out.println(curPage);
 		
 		switch(curPage)
 		{
@@ -914,7 +924,6 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 			break;
 		case ACTION_ERROR:
 			txtBUSYMSG.setText(Messages.NewAccountDialog_58);
-
 			dialog = new MessageBox(shlNewAccount, SWT.ICON_ERROR);
 			dialog.setText(Messages.NewAccountDialog_59);
 			dialog.setMessage(Messages.NewAccountDialog_60);
@@ -936,6 +945,15 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 			txtBUSYMSG.setText(Messages.NewAccountDialog_65);
 			animation.setVisible(false);
 			break;
+		case STATE_ERROR:
+			txtBUSYMSG.setText(Messages.NewAccountDialog_0);
+			dialog = new MessageBox(shlNewAccount, SWT.ICON_ERROR);
+			dialog.setText(Messages.NewAccountDialog_1);
+			dialog.setMessage(Messages.NewAccountDialog_2);
+			dialog.open();
+			closeSelf=true;
+			break;
+
 		}
 		
 		if( !shlNewAccount.isDisposed() && closeSelf )

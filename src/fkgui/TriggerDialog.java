@@ -244,6 +244,11 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 	public void fkActionEvent(FkActionEvent event) {
 		MessageBox dialog;
 		
+		if( shell.isDisposed() )
+		{
+			return;
+		}
+		
 		if( permitCountdownDialog != null && !permitCountdownDialog.shell.isDisposed() )
 		{
 			permitCountdownDialog.shell.close();
@@ -251,6 +256,12 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		
 		switch(event.type)
 		{
+		case STATE_ERROR:
+			dialog = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
+			dialog.setText(Messages.TriggerDialog_5);
+			dialog.setMessage(Messages.TriggerDialog_9);
+			dialog.open();			
+		break;
 		case ACTION_ABORTED:
 			dialog = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
 			dialog.setText(event.acc.name);
@@ -297,13 +308,10 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					
 				} );
 			}
-			
-			if( !shell.isDisposed() )
-			{
-				shell.close();
-			}			
+			shell.close();
 			break;
-		}
+		} //Switch
+		
 
 
 		

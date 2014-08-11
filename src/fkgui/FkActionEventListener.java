@@ -18,6 +18,6 @@ public interface FkActionEventListener {
 			action=act;
 		}
 	}
-	public enum FkActionEventType { ACTION_ABORTED, ACTION_OKAY, ACTION_ERROR, ACTION_WAITING, ACTION_WORKING };
+	public enum FkActionEventType { ACTION_ABORTED, ACTION_OKAY, ACTION_ERROR, ACTION_WAITING, ACTION_WORKING, STATE_ERROR };
 	public void fkActionEvent( FkActionEvent event );
 }

@@ -595,16 +595,17 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 		FormData fd_btnNewAccoount = new FormData();
-		fd_btnNewAccoount.bottom = new FormAttachment(100, -6);
 		fd_btnNewAccoount.right = new FormAttachment(100, -10);
 		btnNewAccoount.setLayoutData(fd_btnNewAccoount);
 		btnNewAccoount.setText(Messages.MainWin_47);
 		
 		lblNumFree = new Label(cmpAccounts, SWT.NONE);
+		fd_btnNewAccoount.top = new FormAttachment(lblNumFree, -35);
+		fd_btnNewAccoount.bottom = new FormAttachment(lblNumFree, 0, SWT.BOTTOM);
 		lblNumFree.setText("Hello World!"); //$NON-NLS-1$
 		
 		FormData fd_lblNumFree = new FormData();
-		fd_lblNumFree.bottom = new FormAttachment(btnNewAccoount, 0, SWT.BOTTOM);
+		fd_lblNumFree.bottom = new FormAttachment(100, -6);
 		fd_lblNumFree.right = new FormAttachment(0, 133);
 		lblNumFree.setLayoutData(fd_lblNumFree);
 		
@@ -620,9 +621,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_btnNewAccoount.left = new FormAttachment(btnActivateAccount, 6);
 		btnActivateAccount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightbulb.png")); //$NON-NLS-1$
 		FormData fd_btnActivateAccount = new FormData();
+		fd_btnActivateAccount.top = new FormAttachment(btnNewAccoount, 0, SWT.TOP);
+		fd_btnActivateAccount.bottom = new FormAttachment(100, -10);
 		fd_btnActivateAccount.right = new FormAttachment(100, -169);
-		fd_btnActivateAccount.top = new FormAttachment(0, 546);
-		fd_btnActivateAccount.bottom = new FormAttachment(100, -6);
 		btnActivateAccount.setLayoutData(fd_btnActivateAccount);
 		fd_lstAccounts.top = new FormAttachment(0, 10);
 		fd_lstAccounts.left = new FormAttachment(0, 10);

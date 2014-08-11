@@ -295,6 +295,11 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		
 		System.out.println("Event!" + event.getEventType() ); //$NON-NLS-1$
 
+		if( event.isRXCHAR() )
+		{
+			System.out.print("{char}");
+		}
+		
 		if(event.isBREAK())
 		{
 			if(state!=SerialState.Disconnected)

@@ -31,6 +31,8 @@ public class Messages extends NLS {
 	public static String MainWin_54;
 	public static String MainWin_7;
 	public static String MainWin_8;
+	public static String NewAccountDialog_0;
+	public static String NewAccountDialog_1;
 	public static String NewAccountDialog_10;
 	public static String NewAccountDialog_11;
 	public static String NewAccountDialog_12;
@@ -41,6 +43,7 @@ public class Messages extends NLS {
 	public static String NewAccountDialog_17;
 	public static String NewAccountDialog_18;
 	public static String NewAccountDialog_19;
+	public static String NewAccountDialog_2;
 	public static String NewAccountDialog_20;
 	public static String NewAccountDialog_21;
 	public static String NewAccountDialog_22;
@@ -133,9 +136,11 @@ public class Messages extends NLS {
 	public static String TriggerDialog_4;
 	public static String TriggerDialog_40;
 	public static String TriggerDialog_41;
+	public static String TriggerDialog_5;
 	public static String TriggerDialog_6;
 	public static String TriggerDialog_7;
 	public static String TriggerDialog_8;
+	public static String TriggerDialog_9;
 	public static String MainWin_btnByAccountId_text;
 	static {
 		// initialize resource bundle
