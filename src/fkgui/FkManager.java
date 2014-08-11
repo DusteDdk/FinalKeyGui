@@ -2,7 +2,6 @@ package fkgui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
