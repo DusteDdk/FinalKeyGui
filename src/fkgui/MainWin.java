@@ -370,9 +370,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		
 		chkAutoHide = new Button(cmpConnect, SWT.CHECK);
 		FormData fd_chkAutoHide = new FormData();
+		fd_chkAutoHide.top = new FormAttachment(btnConnect, 0, SWT.TOP);
+		fd_chkAutoHide.left = new FormAttachment(txtDev, 6);
 		fd_chkAutoHide.right = new FormAttachment(0, 501);
-		fd_chkAutoHide.top = new FormAttachment(0);
-		fd_chkAutoHide.left = new FormAttachment(0, 262);
 		chkAutoHide.setLayoutData(fd_chkAutoHide);
 		chkAutoHide.setText(Messages.MainWin_19);
 		
@@ -621,8 +621,8 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_btnNewAccoount.left = new FormAttachment(btnActivateAccount, 6);
 		btnActivateAccount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightbulb.png")); //$NON-NLS-1$
 		FormData fd_btnActivateAccount = new FormData();
+		fd_btnActivateAccount.bottom = new FormAttachment(btnNewAccoount, 0, SWT.BOTTOM);
 		fd_btnActivateAccount.top = new FormAttachment(btnNewAccoount, 0, SWT.TOP);
-		fd_btnActivateAccount.bottom = new FormAttachment(100, -10);
 		fd_btnActivateAccount.right = new FormAttachment(100, -169);
 		btnActivateAccount.setLayoutData(fd_btnActivateAccount);
 		fd_lstAccounts.top = new FormAttachment(0, 10);
@@ -716,11 +716,11 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private void showTrigDialog(Account acc) {
 		TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc, mySelf );
 
-		shell.setMinimized(true);
+		//shell.setMinimized(true);
 		shell.setEnabled(false);
 		if( !((Boolean)diag.open()) )
 		{
-			shell.setMinimized(false);
+			//shell.setMinimized(false);
 		}
 		
 		shell.setEnabled(true);

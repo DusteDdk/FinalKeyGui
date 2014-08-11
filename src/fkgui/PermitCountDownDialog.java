@@ -50,7 +50,7 @@ public class PermitCountDownDialog extends Dialog {
 		lblMsg.setText(msg);
 		
 		lblTimeLeft = new Label(shell, SWT.NONE);
-		lblTimeLeft.setBounds(48, 56, 201, 32);
+		lblTimeLeft.setBounds(48, 70, 461, 27);
 		
 		Animation animation = new Animation(shell, SWT.NONE, 4);
 		animation.setBounds(10, 32, 32, 32);

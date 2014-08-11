@@ -96,12 +96,14 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			public void widgetSelected(SelectionEvent e) {
 				FkManager.getInstance().trig(account, '%', mySelf);
 				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_3, Messages.TriggerDialog_4, 30000);
-				shell.setMinimized(true);
+				//shell.setMinimized(true);
+				shell.setEnabled(false); //Fisk
 				permitCountdownDialog.open();
 			}
 		});
 		btnUsernamePassword.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png")); //$NON-NLS-1$
 		FormData fd_btnUsernamePassword = new FormData();
+		fd_btnUsernamePassword.bottom = new FormAttachment(0, 45);
 		fd_btnUsernamePassword.top = new FormAttachment(0, 10);
 		fd_btnUsernamePassword.left = new FormAttachment(0, 10);
 		fd_btnUsernamePassword.right = new FormAttachment(0, 224);
@@ -115,21 +117,22 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			public void widgetSelected(SelectionEvent e) {
 				FkManager.getInstance().trig(account, 'u', mySelf);
 				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_7, Messages.TriggerDialog_8, 30000);
-				shell.setMinimized(true);
+				//shell.setMinimized(true);
+				shell.setEnabled(false); //Fisk
 				permitCountdownDialog.open();
 			}
 		});
 		btnUsernameOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/user.png")); //$NON-NLS-1$
 		FormData fd_btnUsernameOnly = new FormData();
-		fd_btnUsernameOnly.top = new FormAttachment(btnUsernamePassword, -35);
-		fd_btnUsernameOnly.bottom = new FormAttachment(btnUsernamePassword, 0, SWT.BOTTOM);
-		fd_btnUsernameOnly.left = new FormAttachment(btnUsernamePassword, 6);
-		fd_btnUsernameOnly.right = new FormAttachment(0, 405);
+		fd_btnUsernameOnly.bottom = new FormAttachment(100, -15);
+		fd_btnUsernameOnly.top = new FormAttachment(0, 10);
+		fd_btnUsernameOnly.left = new FormAttachment(btnUsernamePassword);
 		btnUsernameOnly.setLayoutData(fd_btnUsernameOnly);
 
 		btnUsernameOnly.setText(Messages.TriggerDialog_10);
 		
 		Button btnPasswordOnly = new Button(grpMakeFinalKey, SWT.NONE);
+		fd_btnUsernameOnly.right = new FormAttachment(btnPasswordOnly, -29);
 		btnPasswordOnly.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -137,16 +140,17 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				
 				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_11, Messages.TriggerDialog_12, 30000);
 
-				shell.setMinimized(true);
+				//shell.setMinimized(true);
+				shell.setEnabled(false); //Fisk
 				permitCountdownDialog.open();
 			}
 		});
 		btnPasswordOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/key-icon.png")); //$NON-NLS-1$
 		FormData fd_btnPasswordOnly = new FormData();
-		fd_btnPasswordOnly.left = new FormAttachment(btnUsernameOnly, 29);
-		fd_btnPasswordOnly.top = new FormAttachment(btnUsernamePassword, 0, SWT.TOP);
-		fd_btnPasswordOnly.right = new FormAttachment(100, -9);
-		fd_btnPasswordOnly.bottom = new FormAttachment(0, 45);
+		fd_btnPasswordOnly.bottom = new FormAttachment(100, -15);
+		fd_btnPasswordOnly.top = new FormAttachment(0, 10);
+		fd_btnPasswordOnly.left = new FormAttachment(0, 431);
+		fd_btnPasswordOnly.right = new FormAttachment(100, -21);
 		btnPasswordOnly.setLayoutData(fd_btnPasswordOnly);
 
 		btnPasswordOnly.setText(Messages.TriggerDialog_14);
@@ -163,14 +167,16 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				Button btnEdit = new Button(grpChange, SWT.NONE);
 				btnEdit.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/gtk_edit.png")); //$NON-NLS-1$
 				FormData fd_btnEdit = new FormData();
-				fd_btnEdit.top = new FormAttachment(0, 10);
+				fd_btnEdit.bottom = new FormAttachment(0, 48);
 				fd_btnEdit.left = new FormAttachment(0, 10);
+				fd_btnEdit.top = new FormAttachment(0, 10);
 				btnEdit.setLayoutData(fd_btnEdit);
 				btnEdit.setText(Messages.TriggerDialog_17);
 				///TODO: Inplement edit box..
 				btnEdit.setVisible(false);
 				
 				Button btnDelete = new Button(grpChange, SWT.NONE);
+				fd_btnEdit.right = new FormAttachment(100, -138);
 				btnDelete.addSelectionListener(new SelectionAdapter() {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
@@ -180,20 +186,22 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 						if( dialog.open() == SWT.YES )
 						{
 							permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_22, Messages.TriggerDialog_23+account.name+Messages.TriggerDialog_24, 5000);
-							shell.setMinimized(true);
+							//shell.setMinimized(true);
 							FkManager.getInstance().trig(account, 'd', mySelf);
+							shell.setEnabled(false); //Fisk
 							permitCountdownDialog.open();
+							
 							
 
 						}
 					}
 				});
-				fd_btnEdit.right = new FormAttachment(btnDelete, -6);
 				btnDelete.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/trashdelete.gif")); //$NON-NLS-1$
 				FormData fd_btnDelete = new FormData();
+				fd_btnDelete.bottom = new FormAttachment(100, -20);
 				fd_btnDelete.top = new FormAttachment(0, 10);
-				fd_btnDelete.left = new FormAttachment(0, 166);
-				fd_btnDelete.right = new FormAttachment(100, -11);
+				fd_btnDelete.right = new FormAttachment(100, -16);
+				fd_btnDelete.left = new FormAttachment(btnEdit, 10);
 				btnDelete.setLayoutData(fd_btnDelete);
 				btnDelete.setText(Messages.TriggerDialog_26);
 
@@ -228,12 +236,14 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					public void widgetSelected(SelectionEvent e) {
 						FkManager.getInstance().trig(account, 's', mySelf);
 						permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_30, Messages.TriggerDialog_31, 30000);
-						shell.setMinimized(true);
+						//shell.setMinimized(true);
+						shell.setEnabled(false); //Fisk
 						permitCountdownDialog.open();
+						
 					}
 				});
 				btnShowUsername.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png")); //$NON-NLS-1$
-				btnShowUsername.setBounds(10, 36, 327, 35);
+				btnShowUsername.setBounds(10, 28, 327, 35);
 				btnShowUsername.setText(Messages.TriggerDialog_33);				
 				
 
@@ -253,6 +263,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		{
 			permitCountdownDialog.shell.close();
 		}
+		
 		
 		switch(event.type)
 		{
@@ -312,7 +323,10 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			break;
 		} //Switch
 		
-
+		if( !shell.isDisposed() && !shell.isEnabled())
+		{
+			shell.setEnabled(true); //Fisk
+		}
 
 		
 	}

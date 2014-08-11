@@ -59,6 +59,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 	public String expectString(String expect, int timeOut)
 	{
 		
+		System.out.println("Searching for string:"+expect+" timeout:"+timeOut);
 		//Read from port, and if not found within 2 seconds, exit with null
 		String in=new String();
 		int msLeft=timeOut;
@@ -67,8 +68,8 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			try {
 				if( serialPort.getInputBufferBytesCount() > 0)
 				{
-					in += serialPort.readString(serialPort.getInputBufferBytesCount());
-					
+					in += serialPort.readString();
+					System.out.println("In:"+in);
 					if( in.contains(expect))
 					{
 						return(in);
@@ -86,7 +87,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				}
 			} catch (Exception e)
 			{
-				//I don't care
+				System.out.println("Exception from expectString:" + e.getMessage() );
 			}
 		}
 		
@@ -121,9 +122,15 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			} else {
 				//Try logging out.
 				serialPort.writeByte( (byte)'q');
-				publish(Messages.SerialWorker_5);
-				disconnect();
-				return null;
+				test = expectString("The Final Key", 1000); //$NON-NLS-1$
+				if( test != null )
+				{
+					publish(Messages.SerialWorker_4);
+				} else {
+					publish(Messages.SerialWorker_5);
+					disconnect();
+					return null;
+				}
 			}
 			
 			if( expectString( "Pass:", 0 ) != null ) //$NON-NLS-1$

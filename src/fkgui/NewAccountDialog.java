@@ -210,8 +210,8 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		btnNext0.setText(Messages.NewAccountDialog_9);
 		FormData fd_btnNext0 = new FormData();
-		fd_btnNext0.bottom = new FormAttachment(btnCancel, 0, SWT.BOTTOM);
-		fd_btnNext0.right = new FormAttachment(lblEnterNewName, 0, SWT.RIGHT);
+		fd_btnNext0.top = new FormAttachment(btnCancel, 0, SWT.TOP);
+		fd_btnNext0.right = new FormAttachment(100, -10);
 		btnNext0.setLayoutData(fd_btnNext0);
 		btnNext0.setVisible(false);
 		
@@ -262,7 +262,6 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		Button btnNext1 = new Button(composite, SWT.NONE);
 		btnNext1.setText(Messages.NewAccountDialog_13);
 		FormData fd_btnNext1 = new FormData();
-		fd_btnNext1.bottom = new FormAttachment(100, -10);
 		fd_btnNext1.right = new FormAttachment(100, -10);
 		btnNext1.setLayoutData(fd_btnNext1);
 		btnNext1.addSelectionListener(new SelectionListener() {
@@ -287,9 +286,10 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		Button btnBack0 = new Button(composite, SWT.NONE);
+		fd_btnNext1.top = new FormAttachment(btnBack0, 0, SWT.TOP);
 		btnBack0.setText(Messages.NewAccountDialog_14);
 		FormData fd_btnBack0 = new FormData();
-		fd_btnBack0.bottom = new FormAttachment(btnNext1, 0, SWT.BOTTOM);
+		fd_btnBack0.bottom = new FormAttachment(100, -10);
 		fd_btnBack0.left = new FormAttachment(lblNextUpSetting, 0, SWT.LEFT);
 		btnBack0.setLayoutData(fd_btnBack0);
 		btnBack0.addSelectionListener( new SelectionListener() {
@@ -325,8 +325,9 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		Label lblBeforeCreatingA = new Label(composite, SWT.NONE);
 		FormData fd_lblBeforeCreatingA = new FormData();
-		fd_lblBeforeCreatingA.top = new FormAttachment(0, 10);
 		fd_lblBeforeCreatingA.left = new FormAttachment(0, 10);
+		fd_lblBeforeCreatingA.right = new FormAttachment(100, -10);
+		fd_lblBeforeCreatingA.top = new FormAttachment(0, 10);
 		lblBeforeCreatingA.setLayoutData(fd_lblBeforeCreatingA);
 		
 		lblBeforeCreatingA.setText(Messages.NewAccountDialog_15);
@@ -389,11 +390,9 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		
 		Button button_6 = new Button(composite, SWT.NONE);
-		fd_lblBeforeCreatingA.right = new FormAttachment(button_6, 0, SWT.RIGHT);
 		button_6.setText(Messages.NewAccountDialog_21);
 		FormData fd_button_6 = new FormData();
-		fd_button_6.bottom = new FormAttachment(100, -10);
-		fd_button_6.right = new FormAttachment(100, -10);
+		fd_button_6.right = new FormAttachment(lblBeforeCreatingA, 0, SWT.RIGHT);
 		button_6.setLayoutData(fd_button_6);
 		
 		button_6.addSelectionListener(new SelectionListener() {
@@ -411,11 +410,11 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 
 		Button button_5 = new Button(composite, SWT.NONE);
+		fd_button_6.top = new FormAttachment(button_5, 0, SWT.TOP);
 		button_5.setText(Messages.NewAccountDialog_20);
 		FormData fd_button_5 = new FormData();
+		fd_button_5.bottom = new FormAttachment(100, -10);
 		fd_button_5.left = new FormAttachment(0, 10);
-
-		fd_button_5.bottom = new FormAttachment(button_6, 0, SWT.BOTTOM);
 		button_5.setLayoutData(fd_button_5);
 		
 		button_5.addSelectionListener(new SelectionListener() {
@@ -527,7 +526,8 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		btnManPassPageNext = new Button(composite, SWT.NONE);
 		FormData fd_btnManPassPageNext = new FormData();
-		fd_btnManPassPageNext.bottom = new FormAttachment(BtnBack1, 0, SWT.BOTTOM);
+		fd_btnManPassPageNext.top = new FormAttachment(BtnBack1, 0, SWT.TOP);
+		fd_btnManPassPageNext.right = new FormAttachment(100, -10);
 		btnManPassPageNext.setLayoutData(fd_btnManPassPageNext);
 		btnManPassPageNext.setText(Messages.NewAccountDialog_24);
 		btnManPassPageNext.setVisible(false);
@@ -544,7 +544,6 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		lblTypeThePassword = new Label(composite, SWT.NONE);
-		fd_btnManPassPageNext.right = new FormAttachment(lblTypeThePassword, 0, SWT.RIGHT);
 		fd_BtnBack1.left = new FormAttachment(lblTypeThePassword, 0, SWT.LEFT);
 		FormData fd_lblTypeThePassword = new FormData();
 		fd_lblTypeThePassword.right = new FormAttachment(0, 613);
@@ -609,8 +608,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		Button button_7 = new Button(composite, SWT.NONE);
 		FormData fd_button_7 = new FormData();
-		fd_button_7.top = new FormAttachment(0, 325);
-		fd_button_7.left = new FormAttachment(0, 10);
+		fd_button_7.left = new FormAttachment(lblToMakeFinalkey, 0, SWT.LEFT);
 		button_7.setLayoutData(fd_button_7);
 		button_7.setText(Messages.NewAccountDialog_30);
 		button_7.addSelectionListener(new SelectionListener() {
@@ -632,9 +630,10 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		Button button_8 = new Button(composite, SWT.NONE);
+		fd_button_7.top = new FormAttachment(button_8, 0, SWT.TOP);
 		FormData fd_button_8 = new FormData();
-		fd_button_8.top = new FormAttachment(0, 325);
-		fd_button_8.left = new FormAttachment(0, 565);
+		fd_button_8.bottom = new FormAttachment(100, -10);
+		fd_button_8.right = new FormAttachment(100, -10);
 		button_8.setLayoutData(fd_button_8);
 		button_8.setText(Messages.NewAccountDialog_31);
 		button_8.addSelectionListener(new SelectionListener() {
@@ -717,6 +716,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		Button button_9 = new Button(composite, SWT.NONE);
 		FormData fd_button_9 = new FormData();
+		fd_button_9.bottom = new FormAttachment(100, -10);
 		fd_button_9.left = new FormAttachment(lblHeresAnOverview, 0, SWT.LEFT);
 		button_9.setLayoutData(fd_button_9);
 		button_9.setText(Messages.NewAccountDialog_38);
@@ -733,10 +733,9 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		Button btnSave = new Button(composite, SWT.NONE);
-		fd_button_9.bottom = new FormAttachment(btnSave, 0, SWT.BOTTOM);
 		FormData fd_btnSave = new FormData();
-		fd_btnSave.bottom = new FormAttachment(100, -10);
-		fd_btnSave.right = new FormAttachment(lblHeresAnOverview, 0, SWT.RIGHT);
+		fd_btnSave.top = new FormAttachment(button_9, 0, SWT.TOP);
+		fd_btnSave.right = new FormAttachment(100, -10);
 		btnSave.setLayoutData(fd_btnSave);
 		btnSave.setText(Messages.NewAccountDialog_39);
 		btnSave.setFocus();
@@ -829,6 +828,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		txtBUSYMSG = new Label(composite, SWT.NONE);
 		FormData fd_txtBUSYMSG = new FormData();
+		fd_txtBUSYMSG.bottom = new FormAttachment(0, 113);
 		fd_txtBUSYMSG.top = new FormAttachment(0, 10);
 		fd_txtBUSYMSG.right = new FormAttachment(100, -10);
 		fd_txtBUSYMSG.left = new FormAttachment(0, 78);
@@ -855,8 +855,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		{
 			composite.dispose();
 		}
-		//System.out.println(curPage);
-		
+
 		switch(curPage)
 		{
 		case CLICKBTN:
