@@ -1,12 +1,14 @@
 package fkgui;
 
 
+import java.util.Map;
 import  java.util.prefs.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.UIManager;
+
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -419,6 +421,22 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		} );
 		
 
+		if( System.getProperty("os.name").compareTo("Linux") == 0 )
+		{
+			Boolean gtkOk=false;
+	        Map<String, String> env = System.getenv();
+	        for (String envName : env.keySet()) {
+	        	if( envName.compareTo("SWT_GTK3") == 0 && env.get(envName).compareTo("0") == 0 )
+	        	{
+	        		gtkOk=true;
+	        	}
+	        }
+	        
+	        if( !gtkOk )
+	        {
+	        	log("Warning: Enviroment variable GTK_SWT3 is not set to 0, if FinalKey GUI looks weird or crashes after connecting, try export GTK_SWT3=0 before running.");
+	        }
+		}
 
 	}
 
