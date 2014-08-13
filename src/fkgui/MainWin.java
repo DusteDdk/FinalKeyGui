@@ -86,6 +86,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	ListViewer lstAccounts;
 	Label lblNumFree;
 	Button btnNewAccoount;
+	Boolean hiddenAtStart=false;
  
 	
 	/**
@@ -96,6 +97,15 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 		try {
 			MainWin window = new MainWin();
+
+			for(String s : args )
+			{
+				if( s.compareTo("--hide") == 0 )
+				{
+					window.hiddenAtStart=true;
+				}
+			}
+
 			window.open();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -110,11 +120,18 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		Display display = Display.getDefault();
 		createContents();
 		addAccountsTab();
-		shell.open();
-		shell.layout();
 		createSysTrayIcon();
+
 		serialEvent(SerialState.Disconnected);
 		new Thread(new UpdateChecker(this)).start();
+
+		if( hiddenAtStart )
+		{
+			hideToTray();
+		} else {
+			shell.open();
+			shell.layout();
+		}
 
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -434,7 +451,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	        
 	        if( !gtkOk )
 	        {
-	        	log("Warning: Enviroment variable GTK_SWT3 is not set to 0, if FinalKey GUI looks weird or crashes after connecting, try export GTK_SWT3=0 before running.");
+	        	log("Warning: Enviroment variable SWT_GTK3 is not set to 0, if FinalKey GUI looks weird or crashes after connecting, try export GTK_SWT3=0 before running.");
 	        }
 		}
 
