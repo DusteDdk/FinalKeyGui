@@ -16,7 +16,7 @@ public class UpdateChecker implements Runnable {
 	//Change locale with -Duser.country=DK -Duser.language=da parms for the java command.
 	
 	static final String CHECK_URL="http://cyberstalker.dk/finalkey/gui/update.php";
-	static final String CUR_VER="0.1";
+	static final String CUR_VER="0.1.1";
 	static final String PLATFORM=System.getProperty("os.name")+"_"+System.getProperty("os.arch");
 	static final String LANG = Locale.getDefault().getLanguage();
 
