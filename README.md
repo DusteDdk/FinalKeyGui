@@ -13,6 +13,7 @@ Todo
 * Check/Fix tab order on all screens.
 * Make sure that no-cache are sent when asking about updates.
 * Catch banner on connect, use in title.
+* Check that selected keyboardlayout is consistent with system?
 * Prevent multiple instances of application at launch.
 * Add "repeat" to both icon menu and main app.
 * Add "search" to both icon menu and main app.
