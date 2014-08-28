@@ -113,8 +113,9 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 			int mask = SerialPort.MASK_BREAK + SerialPort.MASK_ERR + SerialPort.MASK_RLSD;
 			serialPort.setEventsMask(mask);
-
 			serialPort.addEventListener(this);
+			
+			// Getting to the login
 			String test = expectString("The Final Key", 1000); //$NON-NLS-1$
 			if( test != null )
 			{
@@ -133,6 +134,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				}
 			}
 			
+			// Enter the password
 			if( expectString( "Pass:", 0 ) != null ) //$NON-NLS-1$
 			{
 				publish(Messages.SerialWorker_7);
@@ -142,10 +144,9 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				disconnect();
 				return null;
 			}
-
 			enterString(pass);
 
-			serialPort.writeByte( (byte)13 );
+			serialPort.writeByte( (byte)13 ); // press enter
 			pass = ""; //$NON-NLS-1$
 			
 			/*String str = expectString( "[Keyboard: ", 200 );
@@ -155,7 +156,8 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			} else {
 				publish("Did not get Keyboard layout.");
 			}*/
-			
+
+
 			if( expectString( "[Granted]", 200 ) != null ) //$NON-NLS-1$
 			{
 				publish(Messages.SerialWorker_11);
@@ -166,77 +168,53 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			}
 
 			publish(Messages.SerialWorker_13);
-			serialPort.writeByte( (byte)'X'); //Machine commands with uppercase X
-			expectString("[auto]", 200); //$NON-NLS-1$
-			serialPort.writeByte( (byte)'l'); //Full list 
-
-			
-			String accounts = new String();
-			
-			int timeOut = 10000;
-			while(true)
-			{
+	
+			// Iterate through all 6 pages and collect the accounts
+			expectString(">", 200);
+			for (int page=0; page <=5; page++) {
+				serialPort.writeByte((byte)'l'); //Full list
+				serialPort.readBytes(8); // chop of the command itself
 				
-				if( serialPort.getInputBufferBytesCount() > 0 )
-				{
-					accounts += serialPort.readString();
-					String sub = accounts.substring( accounts.length()-3 );
-					if( sub.equals("\r\n>") ) //$NON-NLS-1$
-					{
-						accounts = accounts.substring( 0, accounts.length()-3 );
-						break;
-					}
-				} else {
-					Thread.sleep(10);
-					timeOut-=10;
-					if(timeOut < 1)
-					{
-						publish(Messages.SerialWorker_16);
-						disconnect();
-						return null;
-					}
+				String data = expectString(">", 500);
+				
+				// Timeout, we stop here.
+				if (data == null) {
+					publish(Messages.SerialWorker_16);
+					disconnect();
+					return null;
 				}
-			}
-			
-			//Trim first 3
-			accounts = accounts.substring(3);
-
-			String[] lines = accounts.split( "\r\n" ); //$NON-NLS-1$
-			numAccounts=lines.length;
-			Boolean kbList=false;
-			for(String l:lines)
-			{
-				if( ! kbList )
-				{
-					if( l.compareTo("[KBL]") == 0 ) //$NON-NLS-1$
-					{
-						kbList=true;
+				
+				// We have a bunch of data which we need to process
+				String[] lines = data.split("\r\n");		
+				for (String line:lines) {
+					if (line.startsWith(">")) break; // end of page
+					if (line.startsWith("Accounts")) continue; // page title
+					
+					// Check if we have more than one account in one line
+					if (line.length() > 44) {
+						String first = line.substring(0, 43).trim();
+						String second = line.substring(43).trim();
+						
+						addAccount(first);
+						addAccount(second);
+						numAccounts += 2;
+						
+					// Single line
 					} else {
-						String ac = l.substring(0,2);
-						String an = l.substring(2);
-						FkManager.getInstance().listAddAcc(ac, an);
+						String first = line.trim();
+						addAccount(first);
+						numAccounts++;
 					}
-				} else {
-					//Next entries are supported keyboard layouts
-					publish(Messages.SerialWorker_3 + l);
 				}
 			}
 
-		}
-		catch (Exception ex){
+		} catch (Exception ex){
 			publish("Error: Exception: "+ex.getMessage() ); //$NON-NLS-1$
 			disconnect();
 		}
 
-		if( state != SerialState.Disconnected )
-		{
-			if(numAccounts==1)
-			{
-				publish(numAccounts+" account."); //$NON-NLS-1$
-			} else {
-				publish(numAccounts+" accounts ready."); //$NON-NLS-1$
-			}
-	
+		if (state != SerialState.Disconnected) {
+			publish(numAccounts+" accounts ready."); //$NON-NLS-1$
 			publish(Messages.SerialWorker_23);
 
 			state = SerialState.Connected;
@@ -245,7 +223,11 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		
 		return null;
 	}
-
+	
+	private void addAccount(String accountString) {
+		String[] parts = accountString.split(" - ");
+		FkManager.getInstance().listAddAcc(parts[0], parts[1]);
+	}
 
 	private void enterString(String str) throws SerialPortException, InterruptedException {
 		for(int i=0; i < str.length(); i++)
@@ -254,7 +236,6 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			Thread.sleep(20);
 		}
 	}
-
 
 	private class MainWinMsg implements Runnable {
 		private String msg;
