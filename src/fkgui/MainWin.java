@@ -776,7 +776,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	}
 
 	@Override
-	public void updateCheckFinished(AutoUpdaterResultEvent event) {
+	public void updateCheckFinished(UpdateResultEvent event) {
 		switch(event.result)
 		{
 		case CHECK_FAILED:

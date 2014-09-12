@@ -7,28 +7,28 @@ import java.util.Locale;
 
 import org.eclipse.swt.widgets.Display;
 
-import fkgui.UpdateChecker.UpdateCheckResultListener.AutoUpdaterResultEvent;
 import fkgui.UpdateChecker.UpdateCheckResultListener.UpdateCheckResult;
+import fkgui.UpdateChecker.UpdateCheckResultListener.UpdateResultEvent;
 
 
 public class UpdateChecker implements Runnable {
-	
+
 	//Change locale with -Duser.country=DK -Duser.language=da parms for the java command.
-	
+
 	static final String CHECK_URL="http://cyberstalker.dk/finalkey/gui/update.php";
 	static final String CUR_VER="0.1.1";
 	static final String PLATFORM=System.getProperty("os.name")+"_"+System.getProperty("os.arch");
 	static final String LANG = Locale.getDefault().getLanguage();
 
 	public static final String REQUEST_STRING = CHECK_URL + "?version="+CUR_VER+"&platform="+PLATFORM+"&lang="+LANG;
-	
+
 	public interface UpdateCheckResultListener {
-		public class AutoUpdaterResultEvent
+		public class UpdateResultEvent
 		{
 			public String version;
 			public String message;
 			public UpdateCheckResult result;
-			public AutoUpdaterResultEvent( UpdateCheckResult res, String ver, String msg )
+			public UpdateResultEvent( UpdateCheckResult res, String ver, String msg )
 			{
 				result=res;
 				version=ver;
@@ -36,10 +36,10 @@ public class UpdateChecker implements Runnable {
 			}
 		}
 		public enum UpdateCheckResult { NO_UPDATE, CHECK_FAILED, UPDATE_AVAILABLE };
-		
-		public void updateCheckFinished( AutoUpdaterResultEvent event );
-	}	
-	
+
+		public void updateCheckFinished( UpdateResultEvent event );
+	}
+
 	UpdateCheckResultListener delegate;
 	public UpdateChecker( UpdateCheckResultListener del )
 	{
@@ -48,21 +48,22 @@ public class UpdateChecker implements Runnable {
 
 	public class AutoUpdaterResultTask implements Runnable
 	{
-		private AutoUpdaterResultEvent e;
+		private UpdateResultEvent e;
 		private UpdateCheckResultListener d;
-		public AutoUpdaterResultTask( AutoUpdaterResultEvent event, UpdateCheckResultListener delegate )
+		public AutoUpdaterResultTask( UpdateResultEvent event, UpdateCheckResultListener delegate )
 		{
 			e=event;
 			d=delegate;
 		}
 		@Override
 		public void run() {
-			d.updateCheckFinished(e);			
+			d.updateCheckFinished(e);
 		}
 	}
-	
+
 	@Override
 	public void run() {
+
 		UpdateCheckResult state = UpdateCheckResult.CHECK_FAILED;
 		String res="";
 		String ver="No Version";
@@ -87,12 +88,14 @@ public class UpdateChecker implements Runnable {
 
 			}
 
+			in.close();
+
 		} catch (Exception e) {
 			System.out.println("Trouble checking for new version: "+e.getMessage() );
 		}
 
-		Display.getDefault().asyncExec( new AutoUpdaterResultTask(new AutoUpdaterResultEvent(state , ver, msg), delegate) );
-		
+		Display.getDefault().asyncExec( new AutoUpdaterResultTask(new UpdateResultEvent(state , ver, msg), delegate) );
+
 	}
 
 }
