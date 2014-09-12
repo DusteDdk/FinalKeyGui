@@ -284,22 +284,19 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		shell.setSize(711, 655);
 
 
-		
-		
 		prefs = Preferences.userNodeForPackage(this.getClass());
-		
+
 		FkManager.getInstance().sortById( prefs.getBoolean(PREF_SORT_BY_ID_KEY, false) );		
-		
 
 		mySelf = this;
 		shell.setLayout(new FillLayout(SWT.HORIZONTAL));
-		
+
 		tabFolder = new TabFolder(shell, SWT.NONE);
 		tabFolder.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-		
+
 		TabItem tbtmConnection = new TabItem(tabFolder, SWT.NONE);
 		tbtmConnection.setText(Messages.MainWin_12);
-		
+
 		cmpConnect = new Composite(tabFolder, SWT.BORDER);
 		tbtmConnection.setControl(cmpConnect);
 		cmpConnect.setLayout(new FormLayout());
@@ -391,7 +388,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_lblPassword.left = new FormAttachment(0, 10);
 		lblPassword.setLayoutData(fd_lblPassword);
 		lblPassword.setText(Messages.MainWin_18);
-		
+
 		chkAutoHide = new Button(cmpConnect, SWT.CHECK);
 		FormData fd_chkAutoHide = new FormData();
 		fd_chkAutoHide.top = new FormAttachment(btnConnect, 0, SWT.TOP);
@@ -399,22 +396,20 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_chkAutoHide.right = new FormAttachment(0, 501);
 		chkAutoHide.setLayoutData(fd_chkAutoHide);
 		chkAutoHide.setText(Messages.MainWin_19);
-		
+
 		chkAutoHide.setSelection( prefs.getBoolean(PREF_AUTOHIDE, false)) ;
-		
+
 		animation = new Animation(cmpConnect, SWT.NONE, 4);
 
 		FormData fd_animation = new FormData();
-		fd_animation.right = new FormAttachment(0, 86);
-		fd_animation.top = new FormAttachment(0);
-		fd_animation.left = new FormAttachment(0, 10);
+		fd_animation.top = new FormAttachment(btnConnect, 0, SWT.CENTER);
+		fd_animation.right = new FormAttachment(btnConnect,-16);
 
 		animation.setLayoutData(fd_animation);
 
-
 		animation.setVisible(false);
 		animation.setPlaying(false);
-		cmpConnect.setTabList(new Control[]{txtPsw, btnConnect});
+		cmpConnect.setTabList(new Control[]{txtPsw, btnConnect, txtDev, chkAutoHide});
 
 		log(Messages.MainWin_22);
 
@@ -475,12 +470,12 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		int free=256;
 		clearSystray();
 		lstAccounts.getList().removeAll();
-		
+
 		for( FkManager.Account a : FkManager.getInstance().getList() )
 		{
 			free--;
 			lstAccounts.add( a );
-							
+
 			Menu menu = new Menu(a.name+" ["+a.num+"]"); //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-2$
 			MenuItem both = new MenuItem(Messages.MainWin_25);
 			MenuItem usr = new MenuItem(Messages.MainWin_26);
@@ -522,25 +517,23 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		{
 		case Connected:
 			shell.setText(Messages.MainWin_33);
-			
+
 			animation.setVisible(false);
 			animation.setPlaying(false);
 
-
 			btnConnect.setText(Messages.MainWin_34);
-			btnConnect.setVisible(true);
-			
+			btnConnect.setEnabled(true);
+
 			//Should we hide?
 			if( prefs.getBoolean(PREF_AUTOHIDE, false) == true)
 			{
 				hideToTray();
 			}
-			
+
 			addAccountsTab();
-			
-			
+
 			tabFolder.setSelection(1);
-			
+
 			updateAccountList();
 
 			//Update icons for systray and window
@@ -554,7 +547,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 						TrayIcon.MessageType.INFO);
 			}
 
-			
 			log(Messages.MainWin_40);
 			break;
 		case Connecting:
@@ -562,12 +554,13 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			animation.setVisible(true);
 			animation.setPlaying(true);
 
-			txtPsw.setVisible(false);
-			txtDev.setVisible(false);
-			btnConnect.setVisible(false);
-			lblPort.setVisible(false);
-			lblPassword.setVisible(false);
-			chkAutoHide.setVisible(false);
+			txtPsw.setEnabled(false);
+			txtDev.setEnabled(false);
+			btnConnect.setEnabled(false);
+
+			lblPort.setEnabled(false);
+			lblPassword.setEnabled(false);
+			chkAutoHide.setEnabled(false);
 			break;
 		case Disconnected:
 			fkSerial=null;
@@ -575,17 +568,22 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			animation.setPlaying(false);
 
 			remAccountsTab();
-			
+
 			tabFolder.setSelection(0);
 
 			shell.setText(Messages.MainWin_42);
-			txtPsw.setVisible(true);
-			txtDev.setVisible(true);
 			btnConnect.setText(Messages.MainWin_43);
-			btnConnect.setVisible(true);
-			lblPort.setVisible(true);
-			lblPassword.setVisible(true);
-			chkAutoHide.setVisible(true);
+
+			btnConnect.setEnabled(true);
+
+			lblPort.setEnabled(true);
+			lblPassword.setEnabled(true);
+			chkAutoHide.setEnabled(true);
+			txtPsw.setEnabled(true);
+			txtDev.setEnabled(true);
+
+			cmpConnect.update();
+
 			clearSystray();
 
 			//Update icons for systray and window
