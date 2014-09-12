@@ -152,7 +152,8 @@ public class FkManager implements ActionListener {
 				if(action != '%' )
 				{
 	
-						
+						//If the action is to delete or override, we start by deleting the account number.
+						//Those commands are xd or xo so we type an x before the action.
 						if( action == 'd' || action == 'o' )
 						{
 							com.serialPort.writeByte((byte)'x');
