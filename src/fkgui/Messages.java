@@ -4,7 +4,8 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "fkgui.messages"; //$NON-NLS-1$
-	public static String MainWin_0;
+	public static String MainWin_2;
+	public static String MainWin_1;
 	public static String MainWin_12;
 	public static String MainWin_15;
 	public static String MainWin_18;
@@ -16,8 +17,6 @@ public class Messages extends NLS {
 	public static String MainWin_32;
 	public static String MainWin_33;
 	public static String MainWin_34;
-	public static String MainWin_36;
-	public static String MainWin_38;
 	public static String MainWin_39;
 	public static String MainWin_40;
 	public static String MainWin_41;

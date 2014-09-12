@@ -80,7 +80,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	static final String PREF_PORT ="lastUsedPortPref"; //$NON-NLS-1$
 	static final String PREF_DEFAULT_DEVICE = "/dev/FinalKey"; //$NON-NLS-1$
 	static final String PREF_AUTOHIDE = "hideMainWinAfterConnect"; //$NON-NLS-1$
-	private static final String PREF_SORT_BY_ID_KEY = Messages.MainWin_0;
+	private static final String PREF_SORT_BY_ID_KEY = "sortAccountListById"; //$NON-NLS-1$
 	public Composite cmpConnect;
 	private Composite cmpAccounts;
 	ListViewer lstAccounts;
@@ -105,7 +105,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 			for(String s : args )
 			{
-				if( s.compareTo("--hide") == 0 )
+				if( s.compareTo("--hide") == 0 ) //$NON-NLS-1$
 				{
 					window.hiddenAtStart=true;
 				}
@@ -407,57 +407,54 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		FormData fd_animation = new FormData();
 		fd_animation.right = new FormAttachment(0, 86);
 		fd_animation.top = new FormAttachment(0);
-		fd_animation.left = new FormAttachment(0, 10);		
-		
+		fd_animation.left = new FormAttachment(0, 10);
+
 		animation.setLayoutData(fd_animation);
 
 
-		
 		animation.setVisible(false);
 		animation.setPlaying(false);
 		cmpConnect.setTabList(new Control[]{txtPsw, btnConnect});
-		
-	
-		
+
 		log(Messages.MainWin_22);
 
 
 		shell.addShellListener( new ShellListener() {
-			
+
 			public void shellIconified(ShellEvent e) {
 			}
 
 			public void shellDeiconified(ShellEvent e) {
 			}
-			
+
 			public void shellDeactivated(ShellEvent e) {
 			}
-			
+
 			public void shellClosed(ShellEvent e) {
 				shutDownApp();
 			}
-			
+
 			public void shellActivated(ShellEvent e) {
-				
+
 			}
 		} );
-		
 
-		if( System.getProperty("os.name").compareTo("Linux") == 0 )
+
+		if( System.getProperty("os.name").compareTo("Linux") == 0 ) //$NON-NLS-1$ //$NON-NLS-2$
 		{
 			Boolean gtkOk=false;
-	        Map<String, String> env = System.getenv();
-	        for (String envName : env.keySet()) {
-	        	if( envName.compareTo("SWT_GTK3") == 0 && env.get(envName).compareTo("0") == 0 )
-	        	{
-	        		gtkOk=true;
-	        	}
-	        }
-	        
-	        if( !gtkOk )
-	        {
-	        	log("Warning: Enviroment variable SWT_GTK3 is not set to 0, if FinalKey GUI looks weird or crashes after connecting, try export GTK_SWT3=0 before running.");
-	        }
+			Map<String, String> env = System.getenv();
+			for (String envName : env.keySet()) {
+				if( envName.compareTo("SWT_GTK3") == 0 && env.get(envName).compareTo("0") == 0 ) //$NON-NLS-1$ //$NON-NLS-2$
+				{
+					gtkOk=true;
+				}
+			}
+
+			if( !gtkOk )
+			{
+				log("Warning: Enviroment variable SWT_GTK3 is not set to 0, if FinalKey GUI looks weird or crashes after connecting, try export GTK_SWT3=0 before running."); //$NON-NLS-1$
+			}
 		}
 
 	}
@@ -553,8 +550,8 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			int numAccounts=FkManager.getInstance().getList().size();
 			if( numAccounts>0 )
 			{
-				trayIcon.displayMessage("FinalKey", numAccounts + Messages.MainWin_36+(( numAccounts >1)?"s":Messages.MainWin_38)+Messages.MainWin_39,  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			            TrayIcon.MessageType.INFO);
+				trayIcon.displayMessage("FinalKey", numAccounts +" "+ (( numAccounts >1)?Messages.MainWin_1:Messages.MainWin_2), //$NON-NLS-1$ //$NON-NLS-2$
+						TrayIcon.MessageType.INFO);
 			}
 
 			
@@ -639,7 +636,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				dialog.open();
 				shell.setEnabled(true);
 				updateAccountList();
-				
 			}
 		});
 		FormData fd_btnNewAccoount = new FormData();
