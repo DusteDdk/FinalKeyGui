@@ -31,7 +31,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		dev=d;
 		pass=p;
 		
-		serialPort = new SerialPort(dev);		
+		serialPort = new SerialPort(dev);
 
 		state = SerialState.Connecting;
 		postStateChange( state );
@@ -44,9 +44,17 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		if(serialPort != null && serialPort.isOpened() )
 		{
 			try {
-				serialPort.writeByte( (byte)'q'); //Machine commands with uppercase X
-				Thread.sleep(400);
-				serialPort.closePort();
+				serialPort.setDTR(false);
+				serialPort.setRTS(false);
+
+				serialPort.removeEventListener();
+
+				if( serialPort.closePort() )
+				{
+					publish("Disconnect: OK.");
+				} else {
+					publish("Disconnect: Failed.");
+				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -88,6 +96,8 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			} catch (Exception e)
 			{
 				System.out.println("Exception from expectString:" + e.getMessage() );
+				publish("Error: Unplug FinalKey from USB port and reconnect, then try again.");
+				break;
 			}
 		}
 		
@@ -111,7 +121,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			System.out.println(Messages.SerialWorker_1 + serialPort.openPort());
 			System.out.println(Messages.SerialWorker_2 + serialPort.setParams(9600, 8, 1, 0));
 
-			int mask = SerialPort.MASK_BREAK + SerialPort.MASK_ERR + SerialPort.MASK_RLSD;
+			int mask = SerialPort.MASK_BREAK | SerialPort.MASK_ERR;
 			serialPort.setEventsMask(mask);
 
 			serialPort.addEventListener(this);
@@ -147,22 +157,68 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 			serialPort.writeByte( (byte)13 );
 			pass = ""; //$NON-NLS-1$
-			
-			/*String str = expectString( "[Keyboard: ", 200 );
-			if( str != null )
+
+			Boolean granted = false;
+			Boolean gotKbLayout=false;
+			String keyboard = null;
+			StringBuilder sb = new StringBuilder();
+			int timeOut=0;
+			while(true)
 			{
-				FkManager.getInstance().setCurrentLayout( str );
-			} else {
-				publish("Did not get Keyboard layout.");
-			}*/
-			
-			if( expectString( "[Granted]", 200 ) != null ) //$NON-NLS-1$
-			{
-				publish(Messages.SerialWorker_11);
-			} else {
-				publish(Messages.SerialWorker_12);
-				disconnect();
-				return null;
+				if( serialPort.getInputBufferBytesCount() > 0 )
+				{
+					System.out.println("Sb1:"+sb.toString());
+					sb.append( serialPort.readString());
+					System.out.println("Sb2:"+sb.toString());
+
+					String s = sb.toString();
+
+					if( s.contains( "[Denied]") )
+					{
+						publish(Messages.SerialWorker_12);
+						disconnect();
+						return null;
+					} else if( s.contains("[Granted]") )
+					{
+						granted=true;
+						publish(Messages.SerialWorker_11);
+					}
+
+					if( granted )
+					{
+						if( s.contains("[Keyboard: ") )
+						{
+							gotKbLayout=true;
+						}
+
+						if(gotKbLayout)
+						{
+							//Look for the ] after "[Keyboard: "
+							String ks = s.substring( s.indexOf("[Keyboard: ") + 11 );
+							if( ks.contains("]") )
+							{
+								keyboard = ks.substring(0, ks.indexOf("]" ) );
+								//Older firmware had a dash between country and platform (US-PC) when reporting the language.
+								keyboard=keyboard.replace("-", "");
+								publish("Current FinalKey keyboard layout: " + keyboard );
+								FkManager.getInstance().setCurrentLayout(keyboard);
+								break;
+							}
+						} else {
+							Thread.sleep(10);
+							timeOut++;
+							if(timeOut == 10 )
+							{
+								publish("Note: The firmware on this FinalKey does report Keyboard layout.");
+								break;
+							}
+						}
+
+					}
+
+				} else {
+					Thread.sleep(25);
+				}
 			}
 
 			publish(Messages.SerialWorker_13);
@@ -173,7 +229,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			
 			String accounts = new String();
 			
-			int timeOut = 10000;
+			timeOut = 10000;
 			while(true)
 			{
 				
@@ -224,7 +280,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 		}
 		catch (Exception ex){
-			publish("Error: Exception: "+ex.getMessage() ); //$NON-NLS-1$
+			publish("Error: Unplug FinalKey from USB and reconnect, then try again." ); //$NON-NLS-1$
 			disconnect();
 		}
 
@@ -300,12 +356,6 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 	@Override
 	public void serialEvent(SerialPortEvent event) {
 		
-		System.out.println("Event!" + event.getEventType() ); //$NON-NLS-1$
-
-		if( event.isRXCHAR() )
-		{
-			System.out.print("{char}");
-		}
 		
 		if(event.isBREAK())
 		{
