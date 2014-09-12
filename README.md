@@ -6,7 +6,6 @@ This application lives in the SystemTray and lets you trigger account logins eas
 Todo
 ====
 * Make a "n most used" dialog for quick access to favorite accounts.
-* Gray systray icon when disconnected
 * Blinking systray icon for countdown and saveaccount dialogs when buttonpress is needed.
 * Add "Don't check for new versions" option.
 * Fix button size in trigger-dialog.

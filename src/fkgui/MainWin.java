@@ -88,6 +88,11 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	Button btnNewAccoount;
 	Boolean hiddenAtStart=false;
  
+	//Icons
+	private org.eclipse.swt.graphics.Image iconProgramOnline  = SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey.png");  //$NON-NLS-1$
+	private org.eclipse.swt.graphics.Image iconProgramOffline  = SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey-big-offline.png");  //$NON-NLS-1$
+	private Image iconSystrayOnline = Toolkit.getDefaultToolkit().createImage(getClass().getResource("gfx/systray-color.png"));  //$NON-NLS-1$
+	private Image iconSystrayOffline= Toolkit.getDefaultToolkit().createImage(getClass().getResource("gfx/systray-offline.png"));  //$NON-NLS-1$
 	
 	/**
 	 * Launch the application.
@@ -172,7 +177,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
         popup = new PopupMenu();
         trayIcon =
-                new TrayIcon(Toolkit.getDefaultToolkit().createImage(getClass().getResource("gfx/finalkey.png"))); //$NON-NLS-1$
+                new TrayIcon( iconSystrayOffline ); //$NON-NLS-1$
         trayIcon.setToolTip("The Final Key - Hardware password manager"); //$NON-NLS-1$
         trayIcon.setImageAutoSize(true);
         final SystemTray tray = SystemTray.getSystemTray();
@@ -192,7 +197,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 					}
 				} );
 			}
-				
+
 		});
         
         hideMain.addActionListener(new ActionListener() {
@@ -275,7 +280,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		
 		
 		shell = new Shell();
-		shell.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey.png")); //$NON-NLS-1$
+		shell.setImage( iconProgramOffline ); //$NON-NLS-1$
 		shell.setSize(711, 655);
 
 
@@ -540,8 +545,11 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			tabFolder.setSelection(1);
 			
 			updateAccountList();
-			
-			
+
+			//Update icons for systray and window
+			shell.setImage( iconProgramOnline );
+			trayIcon.setImage( iconSystrayOnline );
+
 			int numAccounts=FkManager.getInstance().getList().size();
 			if( numAccounts>0 )
 			{
@@ -582,6 +590,11 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			lblPassword.setVisible(true);
 			chkAutoHide.setVisible(true);
 			clearSystray();
+
+			//Update icons for systray and window
+			shell.setImage( iconProgramOffline );
+			trayIcon.setImage( iconSystrayOffline );
+
 			if(lastState != state)
 			{
 				log(Messages.MainWin_44);
@@ -631,17 +644,16 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 		FormData fd_btnNewAccoount = new FormData();
 		fd_btnNewAccoount.right = new FormAttachment(100, -10);
+		fd_btnNewAccoount.top = new FormAttachment(0, 549);
+		fd_btnNewAccoount.bottom = new FormAttachment(100, -6);
 		btnNewAccoount.setLayoutData(fd_btnNewAccoount);
 		btnNewAccoount.setText(Messages.MainWin_47);
 		
 		lblNumFree = new Label(cmpAccounts, SWT.NONE);
-		fd_btnNewAccoount.top = new FormAttachment(lblNumFree, -35);
-		fd_btnNewAccoount.bottom = new FormAttachment(lblNumFree, 0, SWT.BOTTOM);
 		lblNumFree.setText("Hello World!"); //$NON-NLS-1$
 		
 		FormData fd_lblNumFree = new FormData();
-		fd_lblNumFree.bottom = new FormAttachment(100, -6);
-		fd_lblNumFree.right = new FormAttachment(0, 133);
+		fd_lblNumFree.bottom = new FormAttachment(100, -10);
 		lblNumFree.setLayoutData(fd_lblNumFree);
 		
 		
@@ -656,9 +668,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_btnNewAccoount.left = new FormAttachment(btnActivateAccount, 6);
 		btnActivateAccount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightbulb.png")); //$NON-NLS-1$
 		FormData fd_btnActivateAccount = new FormData();
+		fd_btnActivateAccount.right = new FormAttachment(100, -169);
 		fd_btnActivateAccount.bottom = new FormAttachment(btnNewAccoount, 0, SWT.BOTTOM);
 		fd_btnActivateAccount.top = new FormAttachment(btnNewAccoount, 0, SWT.TOP);
-		fd_btnActivateAccount.right = new FormAttachment(100, -169);
 		btnActivateAccount.setLayoutData(fd_btnActivateAccount);
 		fd_lstAccounts.top = new FormAttachment(0, 10);
 		fd_lstAccounts.left = new FormAttachment(0, 10);
@@ -667,6 +679,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		
 		Button btnByAccountId = new Button(cmpAccounts, SWT.CHECK);
 		fd_btnActivateAccount.left = new FormAttachment(btnByAccountId, 6);
+		fd_lblNumFree.right = new FormAttachment(btnByAccountId, -6);
 		btnByAccountId.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -677,9 +690,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 		FormData fd_btnByAccountId = new FormData();
-		fd_btnByAccountId.left = new FormAttachment(100, -541);
-		fd_btnByAccountId.bottom = new FormAttachment(100, -6);
-		fd_btnByAccountId.right = new FormAttachment(100, -381);
+		fd_btnByAccountId.left = new FormAttachment(0, 139);
+		fd_btnByAccountId.right = new FormAttachment(100, -398);
+		fd_btnByAccountId.bottom = new FormAttachment(btnNewAccoount, 0, SWT.BOTTOM);
 		btnByAccountId.setLayoutData(fd_btnByAccountId);
 		btnByAccountId.setText(Messages.MainWin_btnByAccountId_text);
 		btnByAccountId.setSelection( prefs.getBoolean( PREF_SORT_BY_ID_KEY, false));
