@@ -25,16 +25,26 @@ public class FkManager implements ActionListener {
 	{
 		public String name;
 		public String num;
-		
+		private Boolean showNumInName;
 		public Account( String acNum, String acName )
 		{
 			name = acName;
 			num = acNum;
 		}
-		
+
+		//Used by the ListView
 		public String toString()
 		{
+			if( showNumInName )
+			{
+				return( "["+num+"] "+name);
+			}
 			return(name);
+		}
+
+		public Account showNumInName(Boolean showAccountId) {
+			showNumInName=showAccountId;
+			return this;
 		}
 	}
 		
@@ -249,9 +259,26 @@ public class FkManager implements ActionListener {
 		list.clear();
 	}
 	
+	//Return the full list
 	public Vector<Account> getList()
 	{
 		return(list);
+	}
+	
+	//Return a vector of accounts matching the keyword
+	public Vector<Account> getList(String key)
+	{
+		Vector<Account> res = new Vector<Account>();
+		String k = key.toLowerCase();
+		for( Account a : list )
+		{
+			if( a.name.toLowerCase().contains( k ) ) 
+			{
+				res.add(a);
+			}
+		}
+		
+		return(res);
 	}
 	
 	public void getCurrentLayout()

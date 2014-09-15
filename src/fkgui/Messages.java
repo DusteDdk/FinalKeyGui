@@ -4,8 +4,10 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "fkgui.messages"; //$NON-NLS-1$
+	public static String MainWin_0;
 	public static String MainWin_2;
 	public static String MainWin_1;
+	public static String MainWin_10;
 	public static String MainWin_12;
 	public static String MainWin_15;
 	public static String MainWin_18;
@@ -14,10 +16,12 @@ public class Messages extends NLS {
 	public static String MainWin_25;
 	public static String MainWin_26;
 	public static String MainWin_27;
+	public static String MainWin_3;
 	public static String MainWin_32;
 	public static String MainWin_33;
 	public static String MainWin_34;
 	public static String MainWin_39;
+	public static String MainWin_4;
 	public static String MainWin_40;
 	public static String MainWin_41;
 	public static String MainWin_42;
@@ -25,11 +29,14 @@ public class Messages extends NLS {
 	public static String MainWin_44;
 	public static String MainWin_45;
 	public static String MainWin_47;
+	public static String MainWin_5;
 	public static String MainWin_52;
 	public static String MainWin_53;
 	public static String MainWin_54;
+	public static String MainWin_6;
 	public static String MainWin_7;
 	public static String MainWin_8;
+	public static String MainWin_9;
 	public static String NewAccountDialog_0;
 	public static String NewAccountDialog_1;
 	public static String NewAccountDialog_10;
@@ -69,6 +76,7 @@ public class Messages extends NLS {
 	public static String NewAccountDialog_42;
 	public static String NewAccountDialog_43;
 	public static String NewAccountDialog_44;
+	public static String NewAccountDialog_45;
 	public static String NewAccountDialog_47;
 	public static String NewAccountDialog_48;
 	public static String NewAccountDialog_49;
@@ -141,6 +149,11 @@ public class Messages extends NLS {
 	public static String TriggerDialog_8;
 	public static String TriggerDialog_9;
 	public static String MainWin_btnByAccountId_text;
+	public static String MainWin_tbtmSettings_text;
+	public static String MainWin_btnCheckForUpdates_text;
+	public static String MainWin_btnShowAccountId_text;
+	public static String MainWin_btnShowaccountsReady_text;
+	public static String NewAccountDialog_btnNoSpecialSymbols_text;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

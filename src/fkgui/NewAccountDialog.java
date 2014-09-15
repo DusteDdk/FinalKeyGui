@@ -32,15 +32,17 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	private Text txtSpecials;
 	
 	private enum FkNewAccStep { NAMES, PASSTYPE, PASS_MAN, PASS_AUT, SEPERATOR, REVIEW, CLICKBTN, SAVING };
+	private enum FkNewAccAutoSpecials { ALL, SELECTED, NONE };
 	
 	private String strAccountName = ""; //$NON-NLS-1$
 	private String strUserName = ""; //$NON-NLS-1$
 	private String strPassword = ""; //$NON-NLS-1$
 	private String autoPassSpecials = "!@#,.-_()"; //$NON-NLS-1$
+	private FkNewAccAutoSpecials allowedAutoSpecials = FkNewAccAutoSpecials.ALL;
 	private Boolean autoPassword = true;
-	private Boolean autoPassAllSpecials = true;
 	private int autoPassLen = 16;
 	private Boolean seperatorTab=true;
+	private Button btnManPassBack;
 
 	//NamePage
 	Button btnNext0;
@@ -58,6 +60,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	
 	//Autopass
 	Button radAllSymbols;
+	Button radOnlySelected;
 	Spinner spnLen;
 	
 	//Seperator
@@ -219,7 +222,8 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		txtAccountName.setText( strAccountName );
 
         Control[] controls = new Control[] { txtAccountName, txtUserName, btnNext0, btnCancel };
-        composite.setTabList(controls);		
+        composite.setTabList(controls);
+        txtAccountName.setFocus();
 		
 	}
 	
@@ -314,7 +318,15 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	
 	void autoPassPageSaveValues()
 	{
-		autoPassAllSpecials = radAllSymbols.getSelection();
+		if( radAllSymbols.getSelection() )
+		{
+			allowedAutoSpecials = FkNewAccAutoSpecials.ALL;
+		} else if( radOnlySelected.getSelection() )
+		{
+			allowedAutoSpecials = FkNewAccAutoSpecials.SELECTED;
+		} else {
+			allowedAutoSpecials = FkNewAccAutoSpecials.NONE;
+		}
 		autoPassSpecials = txtSpecials.getText();
 		autoPassLen = spnLen.getSelection();		
 	}
@@ -362,27 +374,29 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		fd_radAllSymbols.top = new FormAttachment(lblASafePassword, 6);
 		fd_radAllSymbols.left = new FormAttachment(0, 10);
 		radAllSymbols.setLayoutData(fd_radAllSymbols);
-		if( autoPassAllSpecials )
+		if( allowedAutoSpecials == FkNewAccAutoSpecials.ALL )
 		{
 			radAllSymbols.setSelection(true);
 		}
 		radAllSymbols.setText(Messages.NewAccountDialog_18);
 		radAllSymbols.pack();
 		
-		Button radOnlySelected = new Button(composite, SWT.RADIO);
+		radOnlySelected = new Button(composite, SWT.RADIO);
 		FormData fd_radOnlySelected = new FormData();
-		fd_radOnlySelected.bottom = new FormAttachment(radAllSymbols, 0, SWT.BOTTOM);
-		fd_radOnlySelected.right = new FormAttachment(spnLen, 0, SWT.RIGHT);
+		fd_radOnlySelected.top = new FormAttachment(lblASafePassword, 6);
+		fd_radOnlySelected.left = new FormAttachment(lblPasswordLength, 0, SWT.LEFT);
 		radOnlySelected.setLayoutData(fd_radOnlySelected);
-		if( !autoPassAllSpecials )
+		if( allowedAutoSpecials == FkNewAccAutoSpecials.SELECTED )
 		{
 			radOnlySelected.setSelection(true);
 		}
 		radOnlySelected.setText(Messages.NewAccountDialog_19);
 		
+		
+		
 		txtSpecials = new Text(composite, SWT.BORDER);
 		FormData fd_txtSpecials = new FormData();
-		fd_txtSpecials.top = new FormAttachment(lblASafePassword, 6);
+		fd_txtSpecials.bottom = new FormAttachment(radAllSymbols, 0, SWT.BOTTOM);
 		fd_txtSpecials.left = new FormAttachment(radOnlySelected, 6);
 		txtSpecials.setLayoutData(fd_txtSpecials);
 		txtSpecials.setText(autoPassSpecials);
@@ -431,10 +445,24 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		});
 		
 		
-        Control[] controls = new Control[] { spnLen, radAllSymbols, radOnlySelected, button_6, button_5 };
+        
+        Button radNoSpecialSymbols = new Button(composite, SWT.RADIO);
+        FormData fd_radNoSpecialSymbols = new FormData();
+        fd_radNoSpecialSymbols.top = new FormAttachment(lblASafePassword, 6);
+        fd_radNoSpecialSymbols.left = new FormAttachment(txtSpecials, 57);
+        radNoSpecialSymbols.setLayoutData(fd_radNoSpecialSymbols);
+        radNoSpecialSymbols.setText(Messages.NewAccountDialog_btnNoSpecialSymbols_text);
+		if( allowedAutoSpecials == FkNewAccAutoSpecials.NONE )
+		{
+			radNoSpecialSymbols.setSelection(true);
+		}        
+        
+
+		Control[] controls = new Control[] { spnLen, radAllSymbols, radOnlySelected, radNoSpecialSymbols, button_6, button_5 };
         composite.setTabList(controls);			
 		spnLen.setFocus();
 
+		
 	}
 	
 	
@@ -462,40 +490,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 			}
 		});
 		
-		chkShowPsw = new Button(composite, SWT.CHECK);
-		FormData fd_chkShowPsw = new FormData();
-		fd_chkShowPsw.right = new FormAttachment(0, 613);
-		fd_chkShowPsw.top = new FormAttachment(0, 103);
-		fd_chkShowPsw.left = new FormAttachment(0, 92);
-		chkShowPsw.setLayoutData(fd_chkShowPsw);
-		chkShowPsw.setText(Messages.NewAccountDialog_22);
-		chkShowPsw.setSelection(showPsw);
-		
-		chkShowPsw.addSelectionListener( new SelectionListener() {
 
-			@Override
-			public void widgetSelected(SelectionEvent arg0) {
-				Button btnChk = (Button)arg0.getSource();
-
-				txtManPSW.dispose();
-				
-				
-				if( btnChk.getSelection() )
-				{
-					chkShowPsw.dispose();
-					makePswField(true);
-				} else {
-					chkShowPsw.dispose();
-					makePswField(false);
-				}
-				
-				
-			}
-			
-			@Override
-			public void widgetDefaultSelected(SelectionEvent arg0) {
-			}
-		});		
 		composite.layout();
 	}
 	
@@ -505,13 +500,13 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	{
 		composite = new Composite(shlNewAccount, SWT.NONE);
 		composite.setLayout(new FormLayout());
-		
-		Button BtnBack1 = new Button(composite, SWT.NONE);
+
+		btnManPassBack = new Button(composite, SWT.NONE);
 		FormData fd_BtnBack1 = new FormData();
 		fd_BtnBack1.bottom = new FormAttachment(100, -10);
-		BtnBack1.setLayoutData(fd_BtnBack1);
-		BtnBack1.setText(Messages.NewAccountDialog_23);
-		BtnBack1.addSelectionListener( new SelectionListener() {
+		btnManPassBack.setLayoutData(fd_BtnBack1);
+		btnManPassBack.setText(Messages.NewAccountDialog_23);
+		btnManPassBack.addSelectionListener( new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
@@ -526,11 +521,11 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		btnManPassPageNext = new Button(composite, SWT.NONE);
 		FormData fd_btnManPassPageNext = new FormData();
-		fd_btnManPassPageNext.top = new FormAttachment(BtnBack1, 0, SWT.TOP);
+		fd_btnManPassPageNext.top = new FormAttachment(btnManPassBack, 0, SWT.TOP);
 		fd_btnManPassPageNext.right = new FormAttachment(100, -10);
 		btnManPassPageNext.setLayoutData(fd_btnManPassPageNext);
 		btnManPassPageNext.setText(Messages.NewAccountDialog_24);
-		btnManPassPageNext.setVisible(false);
+		
 		btnManPassPageNext.addSelectionListener( new SelectionListener() {
 			
 			@Override
@@ -554,17 +549,44 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		
 		lblPassword = new Label(composite, SWT.NONE);
 		FormData fd_lblPassword = new FormData();
-		fd_lblPassword.top = new FormAttachment(0, 74);
+		fd_lblPassword.top = new FormAttachment(0, 62);
 		fd_lblPassword.left = new FormAttachment(0, 10);
 		lblPassword.setLayoutData(fd_lblPassword);
 		lblPassword.setText(Messages.NewAccountDialog_26);
 		
 		makePswField(false);
+
+		chkShowPsw = new Button(composite, SWT.CHECK);
+		FormData fd_chkShowPsw = new FormData();
+		fd_chkShowPsw.right = new FormAttachment(0, 613);
+		fd_chkShowPsw.top = new FormAttachment(0, 103);
+		fd_chkShowPsw.left = new FormAttachment(0, 92);
+		chkShowPsw.setLayoutData(fd_chkShowPsw);
+		chkShowPsw.setText(Messages.NewAccountDialog_22);
+		chkShowPsw.setSelection(false);
 		
+		chkShowPsw.addSelectionListener( new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				Button btnChk = (Button)arg0.getSource();
+
+				txtManPSW.dispose();
+				
+				makePswField(btnChk.getSelection());
+		        Control[] controls = new Control[] { txtManPSW, chkShowPsw, btnManPassPageNext, btnManPassBack };
+		        composite.setTabList(controls);					
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {
+			}
+		});		
 		
-        Control[] controls = new Control[] { txtManPSW, btnManPassPageNext, BtnBack1 };
+        Control[] controls = new Control[] { txtManPSW, chkShowPsw, btnManPassPageNext, btnManPassBack };
         composite.setTabList(controls);	
         txtManPSW.setFocus();
+        btnManPassPageNext.setVisible( (txtManPSW.getText().length() > 0) );
 		
 	}
 	
@@ -748,7 +770,16 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 				dialog.setText(Messages.NewAccountDialog_40);
 				dialog.setMessage(Messages.NewAccountDialog_41);
 				dialog.open();
-				FkManager.getInstance().createAccount( strAccountName, strUserName, autoPassword, autoPassLen, autoPassAllSpecials, autoPassSpecials, strPassword, seperatorTab, mySelf );
+				
+				//In case of automatic password the
+				//FkManager takes a boolean after AutoPassLen telling if it should use all specials (true) or only those from the string in the next argument (autoPassSpecials) (false) 
+				//If then the no-specials radiobutton is selected, remove content of that string such that no specials are selected
+				if( allowedAutoSpecials == FkNewAccAutoSpecials.NONE)
+				{
+					autoPassSpecials = ""; //$NON-NLS-1$
+				}
+				
+				FkManager.getInstance().createAccount( strAccountName, strUserName, autoPassword, autoPassLen, (allowedAutoSpecials == FkNewAccAutoSpecials.ALL), autoPassSpecials, strPassword, seperatorTab, mySelf );
 				updatePage(FkNewAccStep.SAVING);
 			}
 			
@@ -786,11 +817,14 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		if( autoPassword )
 		{
 			passInfo = Messages.NewAccountDialog_42 + autoPassLen + Messages.NewAccountDialog_43;
-			if( autoPassAllSpecials )
+			if( allowedAutoSpecials == FkNewAccAutoSpecials.ALL )
 			{
 				passInfo += Messages.NewAccountDialog_44;
-			} else {
+			} else if( allowedAutoSpecials == FkNewAccAutoSpecials.SELECTED )
+			{
 				passInfo += "{"+autoPassSpecials+ "}"; //$NON-NLS-1$ //$NON-NLS-2$
+			} else {
+				passInfo += Messages.NewAccountDialog_45;
 			}
 			
 		} else {
@@ -817,7 +851,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		lblSeperatorInfo.setText(sepInfo);
 		
         Control[] controls = new Control[] { btnSave, button_9 };
-        composite.setTabList(controls);				
+        composite.setTabList(controls);	
 
 	}
 	
@@ -895,12 +929,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		shlNewAccount.setSize(625, 394);
 		shlNewAccount.setText(Messages.NewAccountDialog_54);
 		shlNewAccount.setLayout(new FillLayout(SWT.HORIZONTAL));
-		
-	//	TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
-		
-		//TabItem tbtmStepUsername = new TabItem(tabFolder, SWT.NONE);
-		//tbtmStepUsername.setText("Name");
-		
+				
 		updatePage(FkNewAccStep.NAMES);
 
 	}

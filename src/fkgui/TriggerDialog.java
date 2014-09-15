@@ -1,6 +1,7 @@
 package fkgui;
 
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -24,7 +25,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 	private Account account;
 	public TriggerDialog mySelf;
 	private FormData fd_grpChange;
-	private Group grpMakeFinalKey;
+	private Group grpUseAccount;
 	private Group grpChange;
 	ConsoleMsg delegate;
 	PermitCountDownDialog permitCountdownDialog = null;
@@ -37,7 +38,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		super(parent, style);
 		account = a;
 		delegate = d;
-		setText(Messages.TriggerDialog_0+ account.name);
+		setText(account.name);
 	}
 
 	/**
@@ -80,17 +81,17 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 		shell.setText(getText());
 		shell.setLayout(new FormLayout());
 		mySelf = this;
-		grpMakeFinalKey = new Group(shell, SWT.NONE);
-		grpMakeFinalKey.setLayout(new FormLayout());
+		grpUseAccount = new Group(shell, SWT.NONE);
+		grpUseAccount.setLayout(new FormLayout());
 		FormData fd_grpMakeFinalKey = new FormData();
 		fd_grpMakeFinalKey.top = new FormAttachment(0, 10);
 		fd_grpMakeFinalKey.bottom = new FormAttachment(0, 88);
 		fd_grpMakeFinalKey.left = new FormAttachment(0, 10);
 		fd_grpMakeFinalKey.right = new FormAttachment(100, -10);
-		grpMakeFinalKey.setLayoutData(fd_grpMakeFinalKey);
-		grpMakeFinalKey.setText(Messages.TriggerDialog_2 + account.name);
+		grpUseAccount.setLayoutData(fd_grpMakeFinalKey);
+		grpUseAccount.setText(Messages.TriggerDialog_2);
 		
-		Button btnUsernamePassword = new Button(grpMakeFinalKey, SWT.NONE);
+		Button btnUsernamePassword = new Button(grpUseAccount, SWT.NONE);
 		btnUsernamePassword.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -111,33 +112,39 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 
 		btnUsernamePassword.setText(Messages.TriggerDialog_6);
 		
-		Button btnUsernameOnly = new Button(grpMakeFinalKey, SWT.NONE);
+		Button btnUsernameOnly = new Button(grpUseAccount, SWT.CENTER);
 		btnUsernameOnly.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				FkManager.getInstance().trig(account, 'u', mySelf);
 				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_7, Messages.TriggerDialog_8, 30000);
-				//shell.setMinimized(true);
-				shell.setEnabled(false); //Fisk
+				shell.setEnabled(false);
 				permitCountdownDialog.open();
 			}
 		});
 		btnUsernameOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/user.png")); //$NON-NLS-1$
 		FormData fd_btnUsernameOnly = new FormData();
-		fd_btnUsernameOnly.bottom = new FormAttachment(100, -15);
-		fd_btnUsernameOnly.top = new FormAttachment(0, 10);
-		fd_btnUsernameOnly.left = new FormAttachment(btnUsernamePassword);
+		fd_btnUsernameOnly.left = new FormAttachment(btnUsernamePassword, 6);
+		fd_btnUsernameOnly.bottom = new FormAttachment(btnUsernamePassword, 0, SWT.BOTTOM);
+		fd_btnUsernameOnly.top = new FormAttachment(btnUsernamePassword, 0, SWT.TOP);
 		btnUsernameOnly.setLayoutData(fd_btnUsernameOnly);
-
 		btnUsernameOnly.setText(Messages.TriggerDialog_10);
+
 		
-		Button btnPasswordOnly = new Button(grpMakeFinalKey, SWT.NONE);
-		fd_btnUsernameOnly.right = new FormAttachment(btnPasswordOnly, -29);
+		Button btnPasswordOnly = new Button(grpUseAccount, SWT.NONE);
+		fd_btnUsernameOnly.right = new FormAttachment(btnPasswordOnly, -6);
+		btnPasswordOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/key-icon.png")); //$NON-NLS-1$
+		FormData fd_btnPasswordOnly = new FormData();
+		fd_btnPasswordOnly.top = new FormAttachment(btnUsernamePassword, 0, SWT.TOP);
+		fd_btnPasswordOnly.right = new FormAttachment(100, -10);
+		fd_btnPasswordOnly.left = new FormAttachment(100, -243);
+		fd_btnPasswordOnly.bottom = new FormAttachment( btnUsernameOnly,0, SWT.BOTTOM);
+		btnPasswordOnly.setLayoutData(fd_btnPasswordOnly);
 		btnPasswordOnly.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				FkManager.getInstance().trig(account, 'p', mySelf);
-				
+
 				permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_11, Messages.TriggerDialog_12, 30000);
 
 				//shell.setMinimized(true);
@@ -145,25 +152,20 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				permitCountdownDialog.open();
 			}
 		});
-		btnPasswordOnly.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/key-icon.png")); //$NON-NLS-1$
-		FormData fd_btnPasswordOnly = new FormData();
-		fd_btnPasswordOnly.bottom = new FormAttachment(100, -15);
-		fd_btnPasswordOnly.top = new FormAttachment(0, 10);
-		fd_btnPasswordOnly.left = new FormAttachment(0, 431);
-		fd_btnPasswordOnly.right = new FormAttachment(100, -21);
-		btnPasswordOnly.setLayoutData(fd_btnPasswordOnly);
+		
 
 		btnPasswordOnly.setText(Messages.TriggerDialog_14);
-				
+		//btnPasswordOnly.getShell().layout();
+		
 				grpChange = new Group(shell, SWT.NONE);
-				grpChange.setText(Messages.TriggerDialog_15+account.name);
+				grpChange.setText(Messages.TriggerDialog_15);
 				grpChange.setLayout(new FormLayout());
 				fd_grpChange = new FormData();
-				fd_grpChange.left = new FormAttachment(grpMakeFinalKey, 353, SWT.LEFT);
-				fd_grpChange.right = new FormAttachment(grpMakeFinalKey, 0, SWT.RIGHT);
-				fd_grpChange.top = new FormAttachment(grpMakeFinalKey, 6);
+				fd_grpChange.left = new FormAttachment(grpUseAccount, 353, SWT.LEFT);
+				fd_grpChange.right = new FormAttachment(grpUseAccount, 0, SWT.RIGHT);
+				fd_grpChange.top = new FormAttachment(grpUseAccount, 6);
 				grpChange.setLayoutData(fd_grpChange);
-				
+
 				Button btnEdit = new Button(grpChange, SWT.NONE);
 				btnEdit.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/gtk_edit.png")); //$NON-NLS-1$
 				FormData fd_btnEdit = new FormData();
@@ -190,16 +192,13 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 							FkManager.getInstance().trig(account, 'd', mySelf);
 							shell.setEnabled(false); //Fisk
 							permitCountdownDialog.open();
-							
-							
-
 						}
 					}
 				});
 				btnDelete.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/trashdelete.gif")); //$NON-NLS-1$
 				FormData fd_btnDelete = new FormData();
-				fd_btnDelete.bottom = new FormAttachment(100, -20);
-				fd_btnDelete.top = new FormAttachment(0, 10);
+				fd_btnDelete.bottom = new FormAttachment(btnEdit, 0, SWT.BOTTOM);
+				fd_btnDelete.top = new FormAttachment(btnEdit, 0, SWT.TOP);
 				fd_btnDelete.right = new FormAttachment(100, -16);
 				fd_btnDelete.left = new FormAttachment(btnEdit, 10);
 				btnDelete.setLayoutData(fd_btnDelete);
@@ -209,9 +208,9 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				fd_grpChange.bottom = new FormAttachment(btnCancel, -6);
 				btnCancel.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/Delete.png")); //$NON-NLS-1$
 				FormData fd_btnCancel = new FormData();
-				fd_btnCancel.left = new FormAttachment(grpMakeFinalKey, 0, SWT.LEFT);
+				fd_btnCancel.left = new FormAttachment(grpUseAccount, 0, SWT.LEFT);
 				fd_btnCancel.bottom = new FormAttachment(100, -10);
-				fd_btnCancel.right = new FormAttachment(grpMakeFinalKey, 2, SWT.RIGHT);
+				fd_btnCancel.right = new FormAttachment(grpUseAccount, 0, SWT.RIGHT);
 				btnCancel.setLayoutData(fd_btnCancel);
 				
 				btnCancel.setText(Messages.TriggerDialog_28);
@@ -222,12 +221,12 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 					}
 				});				
 				Group grpShow = new Group(shell, SWT.NONE);
-				grpShow.setText(Messages.TriggerDialog_29+account.name);
+				grpShow.setText(Messages.TriggerDialog_29);
 				FormData fd_grpShow = new FormData();
 				fd_grpShow.bottom = new FormAttachment(grpChange, 0, SWT.BOTTOM);
 				fd_grpShow.right = new FormAttachment(grpChange, -6);
-				fd_grpShow.left = new FormAttachment(grpMakeFinalKey, 0, SWT.LEFT);
-				fd_grpShow.top = new FormAttachment(grpMakeFinalKey, 6);
+				fd_grpShow.left = new FormAttachment(grpUseAccount, 0, SWT.LEFT);
+				fd_grpShow.top = new FormAttachment(grpUseAccount, 6);
 				grpShow.setLayoutData(fd_grpShow);
 				
 				Button btnShowUsername = new Button(grpShow, SWT.NONE);
@@ -247,6 +246,9 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				btnShowUsername.setText(Messages.TriggerDialog_33);				
 				
 
+		        Control[] controls = new Control[] { grpUseAccount, grpShow , btnCancel, grpChange  };
+		        shell.setTabList(controls);	
+				
 	}
 
 	@SuppressWarnings("incomplete-switch")
