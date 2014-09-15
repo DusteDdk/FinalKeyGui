@@ -377,7 +377,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 			@Override
 			public void keyPressed(KeyEvent arg0) {
-				if( arg0.character==(char)13 )
+				if( arg0.character==SWT.CR )
 				{
 					connect();
 				}
@@ -745,6 +745,11 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 			@Override
 			public void keyReleased(KeyEvent arg0) {
+				if( arg0.keyCode == SWT.ESC )
+				{
+					txtFilter.setText("");
+				}
+
 				txtFilterKeyPressEvent(arg0);
 			}
 
@@ -825,6 +830,24 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				}
 			}
 		});
+		
+		lstAccountsControl.addFocusListener( new FocusListener() {
+			
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				System.out.println("lost");
+				
+			}
+			
+			@Override
+			public void focusGained(FocusEvent arg0) {
+				if( lstAccountsControl.getItemCount() == 0 )
+				{
+					updateFilteredList(FkManager.getInstance().getList());
+				}
+				
+			}
+		});
 
 		cmpAccounts.setTabList(new Control[]{txtFilter,lstAccountsControl, btnOpenAccount, btnNewAccount});
 	}
@@ -842,7 +865,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			} else if( res.size() == 1 )
 			{
 				txtFilter.setBackground( greenColor );
-				if( arg0.character==(char)13 )
+				if( arg0.character== SWT.CR)
 				{
 					showTrigDialog(res.get(0));
 				}
