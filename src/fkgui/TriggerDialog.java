@@ -236,9 +236,8 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 						FkManager.getInstance().trig(account, 's', mySelf);
 						permitCountdownDialog = new PermitCountDownDialog(shell,SWT.SHELL_TRIM, account.name + Messages.TriggerDialog_30, Messages.TriggerDialog_31, 30000);
 						//shell.setMinimized(true);
-						shell.setEnabled(false); //Fisk
+						shell.setEnabled(false);
 						permitCountdownDialog.open();
-						
 					}
 				});
 				btnShowUsername.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/both.png")); //$NON-NLS-1$

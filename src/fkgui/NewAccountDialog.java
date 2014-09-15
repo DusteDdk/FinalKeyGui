@@ -221,10 +221,10 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 		txtUserName.setText( strUserName );
 		txtAccountName.setText( strAccountName );
 
-        Control[] controls = new Control[] { txtAccountName, txtUserName, btnNext0, btnCancel };
-        composite.setTabList(controls);
-        txtAccountName.setFocus();
-		
+		Control[] controls = new Control[] { txtAccountName, txtUserName, btnNext0, btnCancel };
+		composite.setTabList(controls);
+		txtAccountName.setFocus();
+
 	}
 	
 	

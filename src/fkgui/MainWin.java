@@ -108,6 +108,8 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private org.eclipse.swt.graphics.Image iconProgramOffline  = SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/finalkey-big-offline.png");  //$NON-NLS-1$
 	private Image iconSystrayOnline = Toolkit.getDefaultToolkit().createImage(getClass().getResource("gfx/systray-color.png"));  //$NON-NLS-1$
 	private Image iconSystrayOffline= Toolkit.getDefaultToolkit().createImage(getClass().getResource("gfx/systray-offline.png"));  //$NON-NLS-1$
+
+	private TabItem tbtmAccounts;
 	private TabItem tbtmSettings;
 	private Composite cmpSettings;
 	private Button chkAutoHide;
@@ -115,6 +117,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private Button chkShowAccountId;
 	private Thread updateCheckThread;
 	private Text txtFilter;
+
 	
 	
 	/**
@@ -251,7 +254,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 					}
 				} );
 			}
-
 		});
 
 		clearSystray();
@@ -347,7 +349,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_btnConnect.top = new FormAttachment(0, 8);
 		fd_btnConnect.left = new FormAttachment(100, -125);
 		fd_btnConnect.right = new FormAttachment(100, -10);
-		
+
 		btnConnect.setLayoutData(fd_btnConnect);
 
 		btnConnect.addSelectionListener(new SelectionAdapter() {
@@ -365,7 +367,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		btnConnect.setText(Messages.MainWin_15);
 		txtPsw = new Text(cmpConnect, SWT.BORDER | SWT.PASSWORD);
 		FormData fd_txtPsw = new FormData();
-		
+
 		fd_txtPsw.left = new FormAttachment(0, 102);
 		txtPsw.setLayoutData(fd_txtPsw);
 		txtPsw.setFocus();
@@ -404,11 +406,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_lblPort.top = new FormAttachment(txtDev,0,SWT.CENTER);
 		fd_lblPort.right = new FormAttachment(txtDev, -7);
 		FormData fd_txtDev = new FormData();
-		//fd_txtDev.bottom = new FormAttachment(txtPsw, -6);
 		fd_txtDev.top = new FormAttachment(btnConnect,0,SWT.TOP);
 		fd_txtDev.left = new FormAttachment(0, 102);
 		txtDev.setLayoutData(fd_txtDev);
-//		txtDev.setFont(SWTResourceManager.getFont("Cantarell", 9, SWT.NORMAL)); //$NON-NLS-1$
 		txtDev.setText( prefs.get(PREF_PORT, PREF_DEFAULT_DEVICE));
 		lblPassword = new Label(cmpConnect, SWT.NONE);
 		lblPassword.setAlignment(SWT.RIGHT);
@@ -422,7 +422,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		animation = new Animation(cmpConnect, SWT.NONE, 4);
 		fd_txtDev.right = new FormAttachment(animation,-16, SWT.LEFT );
 		fd_txtPsw.right = new FormAttachment(animation,-16, SWT.LEFT );
-		
+
 		FormData fd_animation = new FormData();
 		fd_animation.right = new FormAttachment(btnConnect, -16);
 		fd_animation.top = new FormAttachment(0, 10);
@@ -473,25 +473,24 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				log("Warning: Enviroment variable SWT_GTK3 is not set to 0, if FinalKey GUI looks weird or crashes after connecting, try export GTK_SWT3=0 before running."); //$NON-NLS-1$
 			}
 		}
-		
+
 		Device display = Display.getCurrent();
-		 blackColor = display.getSystemColor(SWT.COLOR_BLACK );
-		  grayColor = display.getSystemColor(SWT.COLOR_GRAY );
-		  defaultBgColor = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND );
-		  greenColor = display.getSystemColor(SWT.COLOR_DARK_GREEN );
-		  redColor = display.getSystemColor(SWT.COLOR_RED );		
-		
+		blackColor = display.getSystemColor(SWT.COLOR_BLACK );
+		grayColor = display.getSystemColor(SWT.COLOR_GRAY );
+		defaultBgColor = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND );
+		greenColor = display.getSystemColor(SWT.COLOR_DARK_GREEN );
+		redColor = display.getSystemColor(SWT.COLOR_RED );
+
 	}
 
-	
+
 	private void connect() {
 		fkSerial = new SerialWorker(mySelf);
 		prefs.put(PREF_PORT, txtDev.getText() );
 		fkSerial.connect(txtDev.getText(),txtPsw.getText());
 		txtPsw.setText(""); //$NON-NLS-1$
 	}
-	
-	
+
 	@Override
 	public void updateAccountList()
 	{
@@ -500,7 +499,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		lstAccounts.getList().removeAll();
 
 		Boolean showAccountId = prefs.getBoolean( PREF_SHOW_ACCOUNT_ID_IN_NAME_KEY, false);
-		
+
 		for( FkManager.Account a : FkManager.getInstance().getList() )
 		{
 			free--;
@@ -532,13 +531,15 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 		lblNumFree.setText(" "+free+Messages.MainWin_32); //$NON-NLS-1$
 		lblNumFree.pack();
+		lblNumFree.getParent().layout();
+
 		if( free == 0 )
 		{
 			btnNewAccount.setVisible(false);
 		} else {
 			btnNewAccount.setVisible(true);
 		}
-		
+
 	}
 
 	@Override
@@ -565,6 +566,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			tabFolder.setSelection(1);
 
 			updateAccountList();
+			txtFilter.setFocus();
 
 			//Update icons for systray and window
 			shell.setImage( iconProgramOnline );
@@ -643,13 +645,13 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		}
 
 	}
-	
+
 	void updateFilteredList(Vector<Account> source)
 	{
 		lstAccounts.getList().removeAll();
 
 		Boolean showAccountId = prefs.getBoolean( PREF_SHOW_ACCOUNT_ID_IN_NAME_KEY, false);
-		
+
 		for( FkManager.Account a : source )
 		{
 			lstAccounts.add( a.showNumInName( showAccountId ) );
@@ -658,7 +660,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 	private void addAccountsTab() {
 
-		TabItem tbtmAccounts = new TabItem(tabFolder, SWT.NONE, 1);//TabItem(tabFolder, SWT.NONE);
+		tbtmAccounts = new TabItem(tabFolder, SWT.NONE, 1);//TabItem(tabFolder, SWT.NONE);
 		tbtmAccounts.setText(Messages.MainWin_45);
 
 		cmpAccounts = new Composite(tabFolder, SWT.BORDER);
@@ -691,14 +693,14 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		lstAccountsControl.setLayoutData(new FormData());
 
 		lblNumFree = new Label(cmpAccounts, SWT.NONE);
-		lblNumFree.setText("Hello World!"); //$NON-NLS-1$
+		//lblNumFree.setText("Hello World!"); //$NON-NLS-1$
 		FormData fd_lblNumFree = new FormData();
 		fd_lblNumFree.left = new FormAttachment(lstAccountsControl,0,SWT.LEFT);
 		fd_lblNumFree.bottom = new FormAttachment(btnNewAccount, 0, SWT.CENTER);
 		lblNumFree.setLayoutData(fd_lblNumFree);
 
 		btnOpenAccount = new Button(cmpAccounts, SWT.NONE);
-		fd_lblNumFree.right = new FormAttachment(btnOpenAccount, -224);
+		//fd_lblNumFree.right = new FormAttachment(btnOpenAccount, -224);
 		btnOpenAccount.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/lightbulb.png")); //$NON-NLS-1$
 		FormData fd_btnOpenAccount = new FormData();
 		fd_btnOpenAccount.top = new FormAttachment(btnNewAccount, 0, SWT.TOP);
@@ -711,9 +713,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 
 		FormData fd_lstAccounts = new FormData();
-		fd_lstAccounts.top = new FormAttachment(0, 10);
+		fd_lstAccounts.top = new FormAttachment(0, 8);
 		fd_lstAccounts.bottom = new FormAttachment(btnNewAccount, -6);
-		
+
 		txtFilter = new Text(cmpAccounts, SWT.BORDER);
 		txtFilter.setText(Messages.MainWin_10);
 		FormData fd_txtFilter = new FormData();
@@ -728,63 +730,30 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				txtFilter.setText(Messages.MainWin_10);
 				txtFilter.setForeground( grayColor );
 				txtFilter.setBackground( defaultBgColor );
-				btnOpenAccount.setEnabled(false);
 			}
-			
+
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				btnOpenAccount.setEnabled(false);
 				updateFilteredList( FkManager.getInstance().getList() );
 				txtFilter.setForeground( blackColor );
 				txtFilter.setText(""); //$NON-NLS-1$
-				
+				btnOpenAccount.setEnabled(false);
 			}
 		});
-		
-		txtFilter.addKeyListener( new KeyListener() {
-			
 
-			
+		txtFilter.addKeyListener( new KeyListener() {
+
 			@Override
 			public void keyReleased(KeyEvent arg0) {
-				btnOpenAccount.setEnabled(false);
-				
-				if( txtFilter.getText().length() == 0 )
-				{
-					updateFilteredList( FkManager.getInstance().getList() );
-					txtFilter.setBackground( defaultBgColor );
-				} else {
-					
-					Vector<Account> res = FkManager.getInstance().getList(txtFilter.getText());
-					
-					if( res.size() < 1 )
-					{
-						txtFilter.setBackground( redColor );
-	
-					} else if( res.size() == 1 )
-					{
-						txtFilter.setBackground( greenColor );
-						btnOpenAccount.setEnabled(true);
-						if( arg0.character==(char)13 )
-						{
-							showTrigDialog(res.get(0));
-						}
-						
-					} else {
-						txtFilter.setBackground( defaultBgColor );
-					}
-					
-					updateFilteredList( res );
-					
-				}
+				txtFilterKeyPressEvent(arg0);
 			}
-			
+
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 
 			}
 		});
-		
+
 		fd_lstAccounts.left = new FormAttachment(0, 10);
 		fd_lstAccounts.right = new FormAttachment(100, -10);
 
@@ -793,7 +762,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 			@Override
 			public void doubleClick(DoubleClickEvent arg0) {
-				// TODO Auto-generated method stub
 				StructuredSelection selection = (StructuredSelection) arg0.getSelection();
 				if( !selection.isEmpty() )
 				{
@@ -838,7 +806,52 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 
-		cmpAccounts.setTabList(new Control[]{lstAccountsControl, txtFilter, btnOpenAccount, btnNewAccount});
+		lstAccountsControl.addKeyListener( new KeyListener() {
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				if( arg0.keyCode > 31 && arg0.keyCode < 126 )
+				{
+				}
+			}
+
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				if( arg0.keyCode > 31 && arg0.keyCode < 126 )
+				{
+					txtFilter.setFocus();
+					txtFilter.setText( ""+(char)arg0.keyCode );
+					txtFilterKeyPressEvent(arg0);
+					txtFilter.setSelection(1);
+				}
+			}
+		});
+
+		cmpAccounts.setTabList(new Control[]{txtFilter,lstAccountsControl, btnOpenAccount, btnNewAccount});
+	}
+
+	protected void txtFilterKeyPressEvent(KeyEvent arg0) {
+		if( txtFilter.getText().length() == 0 )
+		{
+			updateFilteredList( FkManager.getInstance().getList() );
+			txtFilter.setBackground( defaultBgColor );
+		} else {
+			Vector<Account> res = FkManager.getInstance().getList(txtFilter.getText());
+			if( res.size() < 1 )
+			{
+				txtFilter.setBackground( redColor );
+			} else if( res.size() == 1 )
+			{
+				txtFilter.setBackground( greenColor );
+				if( arg0.character==(char)13 )
+				{
+					showTrigDialog(res.get(0));
+				}
+
+			} else {
+				txtFilter.setBackground( defaultBgColor );
+			}
+			updateFilteredList( res );
+		}
 	}
 
 	private void addSettingsTab()
@@ -917,45 +930,36 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		btnShowaccountsReady.setText(Messages.MainWin_btnShowaccountsReady_text);
 		btnShowaccountsReady.addSelectionListener( new SelectionAdapter() {
 		public void widgetSelected(SelectionEvent e) {
-			prefs.putBoolean( PREF_SHOW_ACCOUNTS_READY_NOTICE, btnShowaccountsReady.getSelection() );
-			checkForUpdates();
-		}
-	});
-		
-
+				prefs.putBoolean( PREF_SHOW_ACCOUNTS_READY_NOTICE, btnShowaccountsReady.getSelection() );
+				checkForUpdates();
+			}
+		});
 
 	}
 
 	private void showTrigDialog(Account acc) {
 		Account selectedAccount = acc;
-		TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc, mySelf );
+		TriggerDialog diag = new TriggerDialog(shell, shell.getStyle(), acc,
+				mySelf);
 
-		//shell.setMinimized(true);
 		shell.setEnabled(false);
-		if( !((Boolean)diag.open()) )
-		{
-			//shell.setMinimized(false);
-		}
+		diag.open();
 
-		//Check if the account still exists
-		Boolean deleted=true;
-		for( Account a : FkManager.getInstance().getList() )
-		{
-			if( a.equals(selectedAccount) )
-			{
-				deleted=false;
+		// Check if the account still exists
+		Boolean deleted = true;
+		for (Account a : FkManager.getInstance().getList()) {
+			if (a.equals(selectedAccount)) {
+				deleted = false;
 				break;
 			}
 		}
 
-		if(deleted)
-		{
+		if (deleted) {
 			btnOpenAccount.setEnabled(false);
 		}
 
 		txtFilter.setFocus();
 		shell.setEnabled(true);
-
 	}
 
 	@Override
