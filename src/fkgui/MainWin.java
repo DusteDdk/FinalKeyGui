@@ -853,28 +853,37 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	}
 
 	protected void txtFilterKeyPressEvent(KeyEvent arg0) {
+
 		if( txtFilter.getText().length() == 0 )
 		{
 			updateFilteredList( FkManager.getInstance().getList() );
 			txtFilter.setBackground( defaultBgColor );
 		} else {
-			Vector<Account> res = FkManager.getInstance().getList(txtFilter.getText());
-			if( res.size() < 1 )
+			if( arg0.keyCode > 31 && arg0.keyCode < 126 )
 			{
-				txtFilter.setBackground( redColor );
-			} else if( res.size() == 1 )
-			{
-				txtFilter.setBackground( greenColor );
-				if( arg0.character== SWT.CR)
+				Vector<Account> res = FkManager.getInstance().getList(txtFilter.getText());
+				if( res.size() < 1 )
 				{
-					showTrigDialog(res.get(0));
+					txtFilter.setBackground( redColor );
+				} else if( res.size() == 1 )
+				{
+					txtFilter.setBackground( greenColor );
+					if( arg0.character== SWT.CR)
+					{
+						showTrigDialog(res.get(0));
+					}
+				} else {
+					txtFilter.setBackground( defaultBgColor );
 				}
-
-			} else {
-				txtFilter.setBackground( defaultBgColor );
+				updateFilteredList( res );
 			}
-			updateFilteredList( res );
 		}
+
+		if(arg0.keyCode == SWT.ARROW_UP || arg0.keyCode == SWT.ARROW_DOWN )
+		{
+			lstAccountsControl.forceFocus();
+		}
+
 	}
 
 	private void addSettingsTab()
@@ -914,7 +923,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 
-		
 		chkShowAccountId = new Button(cmpSettings, SWT.CHECK);
 		FormData fd_chkShowAccountId = new FormData();
 		fd_chkShowAccountId.top = new FormAttachment(chkSortByAccountId, 6);
@@ -928,7 +936,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				updateAccountList();
 			}
 		});
-		
+
 		chkCheckForUpdates = new Button(cmpSettings, SWT.CHECK);
 		FormData fd_chkCheckForUpdates = new FormData();
 		fd_chkCheckForUpdates.left = new FormAttachment(chkAutoHide, 0, SWT.LEFT);
@@ -942,7 +950,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 		fd_chkCheckForUpdates.top = new FormAttachment(chkShowAccountId, 6);
-		
+
 		btnShowaccountsReady = new Button(cmpSettings, SWT.CHECK);
 		btnShowaccountsReady.setSelection( prefs.getBoolean( PREF_SHOW_ACCOUNTS_READY_NOTICE, true) );
 		FormData fd_btnShowaccountsReady = new FormData();
