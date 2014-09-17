@@ -49,16 +49,13 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 				serialPort.removeEventListener();
 
-				if( serialPort.closePort() )
-				{
-					publish("Disconnect: OK.");
-				} else {
-					publish("Disconnect: Failed.");
-				}
+				serialPort.closePort();
+
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				publish(Messages.SerialWorker_6);
+				explainSerialPortException(e);
 			}
+			publish(Messages.SerialWorker_9);
 		}
 		state = SerialState.Disconnected;
 		postStateChange( SerialState.Disconnected);
@@ -66,8 +63,6 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 	public String expectString(String expect, int timeOut)
 	{
-		
-		System.out.println("Searching for string:"+expect+" timeout:"+timeOut);
 		//Read from port, and if not found within 2 seconds, exit with null
 		String in=new String();
 		int msLeft=timeOut;
@@ -77,7 +72,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				if( serialPort.getInputBufferBytesCount() > 0)
 				{
 					in += serialPort.readString();
-					System.out.println("In:"+in);
+
 					if( in.contains(expect))
 					{
 						return(in);
@@ -95,8 +90,8 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				}
 			} catch (Exception e)
 			{
-				System.out.println("Exception from expectString:" + e.getMessage() );
-				publish("Error: Unplug FinalKey from USB port and reconnect, then try again.");
+				publish(Messages.SerialWorker_10);
+				explainSerialPortException(e);
 				break;
 			}
 		}
@@ -118,22 +113,22 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		
 		int numAccounts=0;
 		try {
-			System.out.println(Messages.SerialWorker_1 + serialPort.openPort());
-			System.out.println(Messages.SerialWorker_2 + serialPort.setParams(9600, 8, 1, 0));
+			serialPort.openPort();
+			serialPort.setParams(9600, 8, 1, 0);
 
 			int mask = SerialPort.MASK_BREAK | SerialPort.MASK_ERR;
 			serialPort.setEventsMask(mask);
 
 			serialPort.addEventListener(this);
-			String test = expectString("The Final Key", 1000); //$NON-NLS-1$
-			if( test != null )
+
+			if( expectString("The Final Key", 1000) != null ) //$NON-NLS-1$
 			{
 				publish(Messages.SerialWorker_4);
 			} else {
 				//Try logging out.
 				serialPort.writeByte( (byte)'q');
-				test = expectString("The Final Key", 1000); //$NON-NLS-1$
-				if( test != null )
+
+				if( expectString("The Final Key", 1000) != null ) //$NON-NLS-1$
 				{
 					publish(Messages.SerialWorker_4);
 				} else {
@@ -143,8 +138,19 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				}
 			}
 			
-			if( expectString( "Pass:", 0 ) != null ) //$NON-NLS-1$
+			String res;
+			String banner = ""; //$NON-NLS-1$
+			if( (res = expectString( "Pass:", 0 )) != null ) //$NON-NLS-1$
 			{
+				publish("" ); //$NON-NLS-1$
+				if( res.indexOf('{') != -1 && res.indexOf('}') != -1 )
+				{
+					banner = res.substring( res.indexOf('{')+1, res.lastIndexOf('}'));
+					publish(Messages.SerialWorker_17 );
+					FkManager.getInstance().setCurrentBanner( banner );
+					publish(banner);
+				}
+				publish(""); //$NON-NLS-1$
 				publish(Messages.SerialWorker_7);
 				postStateChange(SerialState.Working);
 			} else {
@@ -167,18 +173,17 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			{
 				if( serialPort.getInputBufferBytesCount() > 0 )
 				{
-					System.out.println("Sb1:"+sb.toString());
 					sb.append( serialPort.readString());
-					System.out.println("Sb2:"+sb.toString());
 
 					String s = sb.toString();
 
-					if( s.contains( "[Denied]") )
+					if( s.contains( "[Denied]") ) //$NON-NLS-1$
 					{
 						publish(Messages.SerialWorker_12);
+						publish(Messages.SerialWorker_14);
 						disconnect();
 						return null;
-					} else if( s.contains("[Granted]") )
+					} else if( s.contains("[Granted]") ) //$NON-NLS-1$
 					{
 						granted=true;
 						publish(Messages.SerialWorker_11);
@@ -186,7 +191,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 
 					if( granted )
 					{
-						if( s.contains("[Keyboard: ") )
+						if( s.contains("[Keyboard: ") ) //$NON-NLS-1$
 						{
 							gotKbLayout=true;
 						}
@@ -194,13 +199,13 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 						if(gotKbLayout)
 						{
 							//Look for the ] after "[Keyboard: "
-							String ks = s.substring( s.indexOf("[Keyboard: ") + 11 );
-							if( ks.contains("]") )
+							String ks = s.substring( s.indexOf("[Keyboard: ") + 11 ); //$NON-NLS-1$
+							if( ks.contains("]") ) //$NON-NLS-1$
 							{
-								keyboard = ks.substring(0, ks.indexOf("]" ) );
+								keyboard = ks.substring(0, ks.indexOf("]" ) ); //$NON-NLS-1$
 								//Older firmware had a dash between country and platform (US-PC) when reporting the language.
-								keyboard=keyboard.replace("-", "");
-								publish("Current FinalKey keyboard layout: " + keyboard );
+								keyboard=keyboard.replace("-", ""); //$NON-NLS-1$ //$NON-NLS-2$
+								publish(Messages.SerialWorker_28 + keyboard );
 								FkManager.getInstance().setCurrentLayout(keyboard);
 								break;
 							}
@@ -209,7 +214,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 							timeOut++;
 							if(timeOut == 10 )
 							{
-								publish("Note: The firmware on this FinalKey does report Keyboard layout.");
+								publish(Messages.SerialWorker_29);
 								break;
 							}
 						}
@@ -226,13 +231,11 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			expectString("[auto]", 200); //$NON-NLS-1$
 			serialPort.writeByte( (byte)'l'); //Full list 
 
-			
 			String accounts = new String();
-			
+
 			timeOut = 10000;
 			while(true)
 			{
-				
 				if( serialPort.getInputBufferBytesCount() > 0 )
 				{
 					accounts += serialPort.readString();
@@ -267,6 +270,8 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 					if( l.compareTo("[KBL]") == 0 ) //$NON-NLS-1$
 					{
 						kbList=true;
+						publish(""); //$NON-NLS-1$
+						publish(Messages.SerialWorker_31);
 					} else {
 						String ac = l.substring(0,2);
 						String an = l.substring(2);
@@ -274,34 +279,71 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 					}
 				} else {
 					//Next entries are supported keyboard layouts
-					publish(Messages.SerialWorker_3 + l);
+					publish(Messages.SerialWorker_3 + FkManager.getInstance().addAvailableLayout(l) );
 				}
 			}
 
 		}
 		catch (Exception ex){
-			publish("Error: Unplug FinalKey from USB and reconnect, then try again." ); //$NON-NLS-1$
+			publish(Messages.SerialWorker_32 );
+
+			if( ex instanceof SerialPortException )
+			{
+				explainSerialPortException(ex);
+			} else {
+				publish(Messages.SerialWorker_33);
+				publish(ex.getLocalizedMessage());
+			}
+			
 			disconnect();
 		}
 
 		if( state != SerialState.Disconnected )
 		{
+			publish(""); //$NON-NLS-1$
 			if(numAccounts==1)
 			{
-				publish(numAccounts+" account."); //$NON-NLS-1$
+				publish(numAccounts+Messages.SerialWorker_35);
 			} else {
-				publish(numAccounts+" accounts ready."); //$NON-NLS-1$
+				publish(numAccounts+Messages.SerialWorker_36);
 			}
-	
-			publish(Messages.SerialWorker_23);
 
 			state = SerialState.Connected;
-			postStateChange( state);
+
+			postStateChange( state );
+			publish(Messages.SerialWorker_23);
 		}
-		
+
 		return null;
 	}
 
+
+	private void explainSerialPortException(Exception ex) {
+		String ext = ((SerialPortException)ex).getExceptionType();
+
+		if( ext.compareTo(SerialPortException.TYPE_PORT_ALREADY_OPENED) == 0)
+		{
+			publish(Messages.SerialWorker_37+dev+Messages.SerialWorker_38);
+			publish(Messages.SerialWorker_39);
+		} else if( ext.compareTo(SerialPortException.TYPE_PORT_NOT_FOUND) == 0 )
+		{
+			publish(Messages.SerialWorker_40+dev+Messages.SerialWorker_41);
+			publish(Messages.SerialWorker_42);
+
+		} else if( ext.compareTo(SerialPortException.TYPE_PERMISSION_DENIED) == 0 )
+		{
+			publish(Messages.SerialWorker_43+dev+Messages.SerialWorker_44);
+			publish(Messages.SerialWorker_45);
+		} else if( ext.compareTo(SerialPortException.TYPE_PORT_NOT_OPENED) == 0 )
+		{
+			publish(Messages.SerialWorker_46);
+			publish(Messages.SerialWorker_47);
+		} else {
+			publish(Messages.SerialWorker_48+ex.getMessage());
+			publish(Messages.SerialWorker_49);
+			publish(Messages.SerialWorker_50);
+		}
+	}
 
 	private void enterString(String str) throws SerialPortException, InterruptedException {
 		for(int i=0; i < str.length(); i++)

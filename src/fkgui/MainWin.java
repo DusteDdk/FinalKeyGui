@@ -1,6 +1,7 @@
 package fkgui;
 
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Vector;
 import  java.util.prefs.*;
@@ -52,9 +53,6 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.List;
 
-import com.sun.media.jfxmediaimpl.platform.Platform;
-
-
 public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 	protected Shell shell;
@@ -76,7 +74,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private Text txtDev;
 	Preferences prefs;
 	MainWin mySelf;
-	private SerialState lastState = SerialState.Disconnected;
 	
 	SerialWorker fkSerial;
 	private boolean sysTrayIconVisible;
@@ -566,7 +563,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		switch(state)
 		{
 		case Connected:
-			shell.setText(Messages.MainWin_33);
+			shell.setText(Messages.MainWin_33 + FkManager.getInstance().getBanner());
 
 			animation.setVisible(false);
 			animation.setPlaying(false);
@@ -598,7 +595,8 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 						TrayIcon.MessageType.INFO);
 			}
 
-			log(Messages.MainWin_40);
+		//	log(Messages.MainWin_40);
+
 			break;
 		case Connecting:
 			shell.setText(Messages.MainWin_41);
@@ -639,11 +637,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			//Update icons for systray and window
 			shell.setImage( iconProgramOffline );
 			trayIcon.setImage( iconSystrayOffline );
-
-			if(lastState != state)
-			{
-				log(Messages.MainWin_44);
-			}
 			break;
 
 		case Working:
@@ -654,7 +647,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		default:
 			break;
 		}
-		lastState=state;
 		cmpConnect.layout();
 	}
 
@@ -767,7 +759,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			public void keyReleased(KeyEvent arg0) {
 				if( arg0.keyCode == SWT.ESC )
 				{
-					txtFilter.setText("");
+					txtFilter.setText(""); //$NON-NLS-1$
 				}
 
 				txtFilterKeyPressEvent(arg0);
@@ -842,7 +834,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				if( arg0.keyCode > 31 && arg0.keyCode < 126 && (arg0.stateMask&SWT.CTRL)!=SWT.CTRL )
 				{
 					txtFilter.setFocus();
-					txtFilter.setText( ""+(char)arg0.keyCode );
+					txtFilter.setText( ""+(char)arg0.keyCode ); //$NON-NLS-1$
 					txtFilterKeyPressEvent(arg0);
 					txtFilter.setSelection(1);
 				} else if( arg0.keyCode == SWT.ARROW_UP)
@@ -894,21 +886,18 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			txtFilter.setBackground( defaultBgColor );
 		} else {
 			res = FkManager.getInstance().getList(txtFilter.getText());
-			if( arg0.keyCode > 31 && arg0.keyCode < 126 )
+			if( res.size() < 1 )
 			{
-				if( res.size() < 1 )
+				txtFilter.setBackground( redColor );
+			} else if( res.size() == 1 )
+			{
+				txtFilter.setBackground( greenColor );
+				if( arg0.character== SWT.CR)
 				{
-					txtFilter.setBackground( redColor );
-				} else if( res.size() == 1 )
-				{
-					txtFilter.setBackground( greenColor );
-					if( arg0.character== SWT.CR)
-					{
-						showTrigDialog(res.get(0));
-					}
-				} else {
-					txtFilter.setBackground( defaultBgColor );
+					showTrigDialog(res.get(0));
 				}
+			} else {
+				txtFilter.setBackground( defaultBgColor );
 			}
 		}
 
@@ -1052,10 +1041,36 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			System.out.println("No update avaiable at this time."); //$NON-NLS-1$
 			break;
 		case UPDATE_AVAILABLE:
-			MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
-			dialog.setText(Messages.MainWin_52+event.version+Messages.MainWin_53);
-			dialog.setMessage(Messages.MainWin_54+event.message);
-			dialog.open();	
+			String title =Messages.MainWin_52+event.version+Messages.MainWin_53;
+			String text = Messages.MainWin_54+event.message;
+			log(title);
+			log(text);
+
+			MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION |SWT.YES | SWT.NO);
+			dialog.setText(title);
+			dialog.setMessage(text+"\n\n\n"+Messages.MainWin_13); //$NON-NLS-1$
+			int res = dialog.open();
+
+			if( res == SWT.YES )
+			{
+				if(Desktop.isDesktopSupported())
+				{
+					try {
+						URI uri = new URI("http://finalkey.net/gui/"); //$NON-NLS-1$
+						log(Messages.MainWin_16+uri.toString());
+						//FIXME: For whichever reason, this causes busy-cursor on the application, even though ui works fine.
+						Desktop.getDesktop().browse(uri);
+						log(Messages.MainWin_17);
+					} catch (Exception e) {
+						log(Messages.MainWin_20);
+						log(Messages.MainWin_21);
+						log(e.getLocalizedMessage());
+					}
+				}
+			} else {
+				log("\nNot visiting the website.");
+			}
+
 			break;
 		}
 

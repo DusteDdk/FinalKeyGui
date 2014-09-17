@@ -49,10 +49,14 @@ public class FkManager implements ActionListener {
 	}
 		
 	private Vector<Account> list;
+	private String banner = "Noname";
+	private String keyLayout = "USPC";
+	private Vector<String> supportedLayouts;
 	
 	protected FkManager()
 	{
 		list = new Vector<Account>(256);
+		supportedLayouts = new Vector<String>(4);
 	}
 	
 	public static FkManager getInstance()
@@ -280,15 +284,19 @@ public class FkManager implements ActionListener {
 		
 		return(res);
 	}
-	
-	public void getCurrentLayout()
+
+	public Vector<String> getAvailableLayouts()
 	{
-		
+		return(supportedLayouts);
 	}
 	
-	public void getAvailableLayouts()
+	public String addAvailableLayout( String str )
 	{
-		
+		//available formats are in order and of the form: '  N. Layout' so we cut
+		//space space N dot and space.
+		String l = str.substring(5);
+		supportedLayouts.add(l);
+		return(l);
 	}
 	
 	public void setLayout(int num)
@@ -311,14 +319,18 @@ public class FkManager implements ActionListener {
 		{
 			trig(f, e.getActionCommand().charAt(0), null);
 		}
-		
 	}
 
 	public void setCurrentLayout(String str) {
 		System.out.println("FkManager: Got current layout:" + str );
-		
+		keyLayout =str;
 	}
-	
+
+	public String getCurrentLayout()
+	{
+		return( keyLayout );
+	}
+
 	private class NewAccountTask implements Runnable
 	{
 		private String seq;
@@ -590,6 +602,16 @@ public class FkManager implements ActionListener {
 		{
 			Collections.sort(list, sortMethod);
 		}
+	}
+
+	public void setCurrentBanner(String _banner) {
+		banner = _banner;
+		
+	}
+	
+	public String getBanner()
+	{
+		return(banner);
 	}
 
 
