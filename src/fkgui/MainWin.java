@@ -17,6 +17,7 @@ import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -50,6 +51,8 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.List;
+
+import com.sun.media.jfxmediaimpl.platform.Platform;
 
 
 public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
@@ -155,6 +158,22 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		createSysTrayIcon();
 
 		serialEvent(SerialState.Disconnected);
+		
+		shell.getDisplay().addFilter(SWT.KeyDown, new Listener() {
+			
+			@Override
+			public void handleEvent(Event arg0) {
+				if( ( (arg0.stateMask&SWT.CTRL) == SWT.CTRL) && arg0.keyCode == 'f'  )
+				{
+					if( tabFolder.getItemCount() == 3 && !txtFilter.isFocusControl() )
+					{
+						tabFolder.setSelection(1);
+						txtFilter.setFocus();
+					}
+				}
+				
+			}
+		});
 
 
 		checkForUpdates();
@@ -610,6 +629,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			lblPort.setEnabled(true);
 			lblPassword.setEnabled(true);
 			txtPsw.setEnabled(true);
+			txtPsw.setFocus();
 			txtDev.setEnabled(true);
 
 			cmpConnect.update();
@@ -811,41 +831,54 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 
+
 		lstAccountsControl.addKeyListener( new KeyListener() {
 			@Override
 			public void keyReleased(KeyEvent arg0) {
-				if( arg0.keyCode > 31 && arg0.keyCode < 126 )
-				{
-				}
 			}
 
 			@Override
 			public void keyPressed(KeyEvent arg0) {
-				if( arg0.keyCode > 31 && arg0.keyCode < 126 )
+				if( arg0.keyCode > 31 && arg0.keyCode < 126 && (arg0.stateMask&SWT.CTRL)!=SWT.CTRL )
 				{
 					txtFilter.setFocus();
 					txtFilter.setText( ""+(char)arg0.keyCode );
 					txtFilterKeyPressEvent(arg0);
 					txtFilter.setSelection(1);
+				} else if( arg0.keyCode == SWT.ARROW_UP)
+				{
+					//If selectionIndex is already 0, that means that the previous event caused that, so this time, it's changing nothing
+					//and we can use it to wrap
+					if( lstAccountsControl.getSelectionIndex() == 0)
+					{
+						lstAccountsControl.setSelection( lstAccountsControl.getItemCount()-1 );
+						arg0.doit=false;
+					}
+				} else if( arg0.keyCode == SWT.ARROW_DOWN)
+				{
+					if( lstAccountsControl.getSelectionIndex() == lstAccountsControl.getItemCount()-1 )
+					{
+						lstAccountsControl.setSelection(0);
+						arg0.doit=false;
+					}
 				}
 			}
 		});
-		
+
 		lstAccountsControl.addFocusListener( new FocusListener() {
-			
+
 			@Override
 			public void focusLost(FocusEvent arg0) {
-				System.out.println("lost");
-				
+
 			}
-			
+
 			@Override
 			public void focusGained(FocusEvent arg0) {
 				if( lstAccountsControl.getItemCount() == 0 )
 				{
 					updateFilteredList(FkManager.getInstance().getList());
 				}
-				
+
 			}
 		});
 
@@ -853,15 +886,16 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	}
 
 	protected void txtFilterKeyPressEvent(KeyEvent arg0) {
+		Vector<Account> res = null;
 
 		if( txtFilter.getText().length() == 0 )
 		{
-			updateFilteredList( FkManager.getInstance().getList() );
+			res=FkManager.getInstance().getList();
 			txtFilter.setBackground( defaultBgColor );
 		} else {
+			res = FkManager.getInstance().getList(txtFilter.getText());
 			if( arg0.keyCode > 31 && arg0.keyCode < 126 )
 			{
-				Vector<Account> res = FkManager.getInstance().getList(txtFilter.getText());
 				if( res.size() < 1 )
 				{
 					txtFilter.setBackground( redColor );
@@ -875,15 +909,28 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				} else {
 					txtFilter.setBackground( defaultBgColor );
 				}
-				updateFilteredList( res );
 			}
 		}
 
-		if(arg0.keyCode == SWT.ARROW_UP || arg0.keyCode == SWT.ARROW_DOWN )
-		{
-			lstAccountsControl.forceFocus();
-		}
 
+		if( res != null )
+		{
+			updateFilteredList( res );
+			if( res.size() > 0 )
+			{
+				if( arg0.keyCode == SWT.ARROW_UP )
+				{
+					lstAccountsControl.setFocus();
+					lstAccountsControl.setSelection( res.size()-1 );
+				}
+
+				if( arg0.keyCode == SWT.ARROW_DOWN )
+				{
+					lstAccountsControl.setFocus();
+					lstAccountsControl.setSelection( 0 );
+				}
+			}
+		}
 	}
 
 	private void addSettingsTab()
