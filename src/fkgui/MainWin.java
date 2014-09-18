@@ -430,7 +430,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		lblPassword.setAlignment(SWT.RIGHT);
 		FormData fd_lblPassword = new FormData();
 		fd_lblPassword.right = new FormAttachment(0, 95);
-		fd_lblPassword.top = new FormAttachment(0, 29);
+		fd_lblPassword.top = new FormAttachment(txtPsw, 0, SWT.CENTER);
 		fd_lblPassword.left = new FormAttachment(0, 10);
 		lblPassword.setLayoutData(fd_lblPassword);
 		lblPassword.setText(Messages.MainWin_18);
@@ -685,6 +685,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				NewAccountDialog dialog = new NewAccountDialog(shell, shell.getStyle() );
+				btnOpenAccount.setEnabled(false);
 				shell.setEnabled(false);
 				dialog.open();
 				shell.setEnabled(true);
@@ -998,7 +999,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		btnShowaccountsReady.addSelectionListener( new SelectionAdapter() {
 		public void widgetSelected(SelectionEvent e) {
 				prefs.putBoolean( PREF_SHOW_ACCOUNTS_READY_NOTICE, btnShowaccountsReady.getSelection() );
-				checkForUpdates();
 			}
 		});
 
@@ -1068,7 +1068,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 					}
 				}
 			} else {
-				log("\nNot visiting the website.");
+				log(Messages.MainWin_11);
 			}
 
 			break;

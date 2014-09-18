@@ -111,7 +111,6 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		 * 
 		 */
 		
-		int numAccounts=0;
 		try {
 			serialPort.openPort();
 			serialPort.setParams(9600, 8, 1, 0);
@@ -261,7 +260,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 			accounts = accounts.substring(3);
 
 			String[] lines = accounts.split( "\r\n" ); //$NON-NLS-1$
-			numAccounts=lines.length;
+
 			Boolean kbList=false;
 			for(String l:lines)
 			{
@@ -301,11 +300,11 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 		if( state != SerialState.Disconnected )
 		{
 			publish(""); //$NON-NLS-1$
-			if(numAccounts==1)
+			if( FkManager.getInstance().getList().size()==1 )
 			{
-				publish(numAccounts+Messages.SerialWorker_35);
+				publish(Messages.SerialWorker_35);
 			} else {
-				publish(numAccounts+Messages.SerialWorker_36);
+				publish(FkManager.getInstance().getList().size()+Messages.SerialWorker_36);
 			}
 
 			state = SerialState.Connected;
