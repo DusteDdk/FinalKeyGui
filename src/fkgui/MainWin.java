@@ -92,6 +92,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private static final String PREF_SHOW_ACCOUNT_ID_IN_NAME_KEY = "showAccountIdInName"; //$NON-NLS-1$
 	private static final String PREF_ALLOW_UPDATE_CHECK = "allowUpdateCheck"; //$NON-NLS-1$
 	private static final String PREF_SHOW_ACCOUNTS_READY_NOTICE = "showAccountsReadyNotice"; //$NON-NLS-1$
+	private static final String PREF_SHOW_SYSTRAY_NAME = "showSystrayName"; //$NON-NLS-1$
 
 	public Composite cmpConnect;
 	private Composite cmpAccounts;
@@ -225,7 +226,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		sysTrayIconVisible=true;
 		//Check the SystemTray is supported
 		if (!SystemTray.isSupported()) {
-			log("SystemTray is not supported, app is useless"); //$NON-NLS-1$
+			log("SystemTray is not supported."); //$NON-NLS-1$
 			return;
 		}
 
@@ -237,7 +238,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 		popup = new PopupMenu();
 		trayIcon = new TrayIcon( iconSystrayOffline ); //$NON-NLS-1$
-		trayIcon.setToolTip("The Final Key - Hardware password manager"); //$NON-NLS-1$
+
 		trayIcon.setImageAutoSize(true);
 		final SystemTray tray = SystemTray.getSystemTray();
 
@@ -281,6 +282,23 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			tray.add(trayIcon);
 		} catch (AWTException e) {
 			log("TrayIcon could not be added."); //$NON-NLS-1$
+		}
+
+	}
+
+	String systrayTipTxt;
+	private void setSystrayIconTip(String tip) {
+		if( tip == null )
+		{
+			trayIcon.setToolTip(systrayTipTxt);
+		} else {
+			systrayTipTxt=tip;
+			trayIcon.setToolTip(tip);
+		}
+
+		if( !prefs.getBoolean(PREF_SHOW_SYSTRAY_NAME, true) )
+		{
+			trayIcon.setToolTip(null);
 		}
 
 	}
@@ -564,6 +582,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		{
 		case Connected:
 			shell.setText(Messages.MainWin_33 + FkManager.getInstance().getBanner());
+			setSystrayIconTip(Messages.MainWin_33 + FkManager.getInstance().getBanner());
 
 			animation.setVisible(false);
 			animation.setPlaying(false);
@@ -611,6 +630,8 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			lblPassword.setEnabled(false);
 			break;
 		case Disconnected:
+			setSystrayIconTip("The Final Key - Not Connected"); //$NON-NLS-1$
+
 			fkSerial=null;
 			animation.setVisible(false);
 			animation.setPlaying(false);
@@ -651,7 +672,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	}
 
 	private void remAccountsTab() {
-		if( tabFolder.getItemCount() > 1 )
+		if( tabFolder.getItemCount() > 2 )
 		{
 			tabFolder.getItem(1).dispose();
 		}
@@ -1002,6 +1023,20 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 
+		Button btnShowSystrayName = new Button( cmpSettings, SWT.CHECK );
+		btnShowSystrayName.setSelection( prefs.getBoolean( PREF_SHOW_SYSTRAY_NAME,  true) );
+		FormData fd_btnShowSystrayName = new FormData();
+		fd_btnShowSystrayName.top = new FormAttachment( btnShowaccountsReady, 6 );
+		fd_btnShowSystrayName.left = new FormAttachment( chkAutoHide, 0, SWT.LEFT );
+		btnShowSystrayName.setLayoutData(fd_btnShowSystrayName);
+		btnShowSystrayName.setText( Messages.MainWin_14 );
+		btnShowSystrayName.addSelectionListener( new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					Button b = (Button)e.widget;
+					prefs.putBoolean( PREF_SHOW_SYSTRAY_NAME, b.getSelection() );
+					setSystrayIconTip(null);
+				}
+		});
 	}
 
 	private void showTrigDialog(Account acc) {

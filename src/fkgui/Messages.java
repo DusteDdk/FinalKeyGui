@@ -13,6 +13,7 @@ public class Messages extends NLS {
 	public static String MainWin_11;
 	public static String MainWin_12;
 	public static String MainWin_13;
+	public static String MainWin_14;
 	public static String MainWin_15;
 	public static String MainWin_16;
 	public static String MainWin_17;
