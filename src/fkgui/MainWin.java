@@ -1,7 +1,9 @@
 package fkgui;
 
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Vector;
 import  java.util.prefs.*;
@@ -9,6 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -184,9 +187,11 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			shell.layout();
 		}
 
+		clearSystray();
+		
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
-				display.sleep();				
+				display.sleep();
 			}
 		}
 	}
@@ -234,7 +239,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e1) {
 			e1.printStackTrace();
-		} 
+		}
 
 		popup = new PopupMenu();
 		trayIcon = new TrayIcon( iconSystrayOffline ); //$NON-NLS-1$
@@ -272,9 +277,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				} );
 			}
 		});
-
-		clearSystray();
-
 
 		trayIcon.setPopupMenu(popup);
 
@@ -610,8 +612,23 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			int numAccounts=FkManager.getInstance().getList().size();
 			if( numAccounts>0 && prefs.getBoolean( PREF_SHOW_ACCOUNTS_READY_NOTICE, true) )
 			{
-				trayIcon.displayMessage("FinalKey", numAccounts +" "+ (( numAccounts >1)?Messages.MainWin_1:Messages.MainWin_2), //$NON-NLS-1$ //$NON-NLS-2$
-						TrayIcon.MessageType.INFO);
+
+				class TrayIconMessageTask implements Runnable
+				{
+					private String msg;
+					public TrayIconMessageTask(String _msg)
+					{
+						msg = _msg;
+					}
+					public void run()
+					{
+						trayIcon.displayMessage("FinalKey", msg, //$NON-NLS-1$ //$NON-NLS-2$
+								TrayIcon.MessageType.INFO);
+					}
+				}
+
+				new Thread( new TrayIconMessageTask(numAccounts +" "+ (( numAccounts >1)?Messages.MainWin_1:Messages.MainWin_2)) ).start();
+
 			}
 
 		//	log(Messages.MainWin_40);
@@ -1091,7 +1108,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				if(Desktop.isDesktopSupported())
 				{
 					try {
-						URI uri = new URI("http://finalkey.net/gui/"); //$NON-NLS-1$
+						URI uri = new URI("http://finalkey.net/"); //$NON-NLS-1$
 						log(Messages.MainWin_16+uri.toString());
 						//FIXME: For whichever reason, this causes busy-cursor on the application, even though ui works fine.
 						Desktop.getDesktop().browse(uri);
