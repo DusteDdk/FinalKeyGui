@@ -286,6 +286,12 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 			dialog.setMessage(Messages.TriggerDialog_36);
 			dialog.open();			
 			break;
+		case UNEXPECTED_ACTION_RESULT_ERROR:
+			dialog = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
+			dialog.setText(Messages.TriggerDialog_36);
+			dialog.setMessage(event.data);
+			dialog.open();
+			break;
 		case ACTION_OKAY:
 			result = (Object)new Boolean(true);
 			if( event.action == 's' )
@@ -304,7 +310,7 @@ public class TriggerDialog extends Dialog implements FkActionEventListener {
 				dialog.setMessage(s);
 				dialog.open();
 			}
-			
+
 			if( event.action == 'd' )
 			{
 				result = (Object)new Boolean(false); //We want the mainwin to get back after deleting an account.

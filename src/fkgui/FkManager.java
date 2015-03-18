@@ -96,7 +96,6 @@ public class FkManager implements ActionListener {
 	
 	private Boolean checkState()
 	{
-
 		int t=0;
 		String msg="";
 		Boolean stateOk=false;
@@ -139,6 +138,7 @@ public class FkManager implements ActionListener {
 		private Account acc;
 		private char action;
 		private FkActionEventListener delegate;
+
 		public TrigTask(Account ac, char act, FkActionEventListener d )
 		{
 			acc=ac;
@@ -162,6 +162,12 @@ public class FkManager implements ActionListener {
 					return;
 				}
 
+				//Drain any previous input.
+				while( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					com.serialPort.readBytes();
+				}
+				
 				//if it's not '%' we need to type which action.
 				if(action != '%' )
 				{
@@ -173,21 +179,77 @@ public class FkManager implements ActionListener {
 							com.serialPort.writeByte((byte)'x');
 						}
 						com.serialPort.writeByte((byte)action);
-	
 				}
-			
+
 				com.serialPort.writeBytes(acc.num.toLowerCase().getBytes());
-		
+				Thread.sleep(100);
+
+				//Verify that the device asks confirmation about the account number and action we requested, else return STATE_UNEXPECTED_ACTION_RESULT
+				//Wait until a ?\r\n is found
+				//Since we flushed the buffer, all we should see is an echo 
+				t=0;
+				while( t < 2 )
+				{
+					t++;
+					Thread.sleep(50);
+					if( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						msg += com.serialPort.readString();
+
+						if( msg.contains(" ?\r\n") )
+						{
+							System.out.println("Got '"+msg+"'");
+
+							String expect;
+
+							if(action=='d'||action=='o')
+							{
+								expect = "x"+action+"%"+acc.num.toLowerCase();
+
+								if(action=='d')
+								{
+									expect += "\r\nDel "+acc.name+" [y/n] ?\r\n";
+								} else {
+									expect += "\r\nOverride "+acc.name+" [y/n] ?\r\n";
+								}
+							} else if(action=='%')
+							{
+								expect=acc.num.toLowerCase()+"\r\n\r\n[U][S][P] "+acc.name+" ?\r\n";
+							} else {
+								expect=""+action+"%"+acc.num.toLowerCase();
+								String actStr = (""+action).toUpperCase();
+								if(actStr.compareTo("S")==0)
+								{
+									actStr="SHOW";
+								}
+								expect += "\r\n\r\n\r\n["+actStr+"] "+acc.name+" ?\r\n";
+							}
+
+							String cut = msg.substring(0, expect.length());
+
+							if( cut.compareTo(expect ) != 0 )
+							{
+								System.out.println("Expected: '"+expect+"' Got: '"+cut+"'");
+								msg="Error: unexpected reply, disconnect it and close this program, this indicates either hardware-error or another program trying to communicate with it.";
+								Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.UNEXPECTED_ACTION_RESULT_ERROR, msg, acc, action) );
+								com.serialPort.writeByte((byte)9); //tab is unsupported in all inputs, should cause the device to go into a state where q will lock it.
+								com.serialPort.writeByte((byte)'q');
+								com.serialPort.closePort();
+								return;
+							}
+						}
+					}
+				}
+
 				if( action == 'd' || action == 'o' )
 				{
 					com.serialPort.writeByte((byte)'y');
-				}				
-				
-				Thread.sleep(200);
+					Thread.sleep(100);
+				}
 
-				
 				t=0;
-				while( t < 1200 )
+				int waitfor =  ((action=='o'||action=='d')?200:700);
+				while( t < waitfor )
 				{
 					t++;
 					Thread.sleep(50);
