@@ -179,6 +179,38 @@ public class Messages extends NLS {
 	public static String MainWin_btnShowaccountsReady_text;
 	public static String NewAccountDialog_btnNoSpecialSymbols_text;
 	public static String NewAccountDialog_51;
+	public static String MainWin_btnF_text;
+	public static String MainWin_btnCheckButton_text;
+	public static String MainWin_btnHideToTrayOnClose_toolTipText;
+	public static String MainWin_tbtmThisFinalkey_text;
+	public static String MainWin_text_1_text;
+	public static String MainWin_lblF_text;
+	public static String MainWin_text_1_text_1;
+	public static String MainWin_text_1_toolTipText;
+	public static String MainWin_lblBannerName_text;
+	public static String MainWin_btnSaveBanner_text;
+	public static String MainWin_lblKeyb_text;
+	public static String MainWin_lblKeyboardLayout_text;
+	public static String MainWin_group_text;
+	public static String MainWin_group_1_text;
+	public static String MainWin_grpBackupAndRestore_text;
+	public static String MainWin_btnSave_text;
+	public static String MainWin_lblNewLabel_text;
+	public static String MainWin_text_1_text_2;
+	public static String MainWin_lblNewLabel_1_text;
+	public static String MainWin_lblNewPsw1_text;
+	public static String MainWin_lblRepeat_text;
+	public static String MainWin_btnChange_text;
+	public static String MainWin_grpFormat_text;
+	public static String MainWin_lblNewLabel_text_1;
+	public static String MainWin_lblY_text;
+	public static String MainWin_btnBackupYourFinalkey_text;
+	public static String MainWin_btnNewButton_text;
+	public static String MainWin_lblNewLabel_1_text_1;
+	public static String MainWin_btnFormatMyFinalkey_text;
+	public static String MainWin_btnNewButton_1_text;
+	public static String MainWin_lblMakeSureYou_text;
+	public static String MainWin_lblYouHaveNever_text;
 
 	static {
 		// initialize resource bundle

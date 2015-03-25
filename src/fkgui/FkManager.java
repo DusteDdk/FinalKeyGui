@@ -2,6 +2,9 @@ package fkgui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
@@ -9,6 +12,8 @@ import java.util.Vector;
 import jssc.SerialPort;
 
 import org.eclipse.swt.widgets.Display;
+
+import com.sun.corba.se.impl.ior.ByteBuffer;
 
 import fkgui.FkActionEventListener.FkActionEvent;
 import fkgui.FkActionEventListener.FkActionEventType;
@@ -347,9 +352,10 @@ public class FkManager implements ActionListener {
 		return(res);
 	}
 
-	public Vector<String> getAvailableLayouts()
+	public String[] getAvailableLayouts()
 	{
-		return(supportedLayouts);
+		String[] layouts = supportedLayouts.toArray(new String[supportedLayouts.size()]);
+		return(layouts);
 	}
 	
 	public String addAvailableLayout( String str )
@@ -361,10 +367,7 @@ public class FkManager implements ActionListener {
 		return(l);
 	}
 	
-	public void setLayout(int num)
-	{
-		
-	}
+
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -666,7 +669,7 @@ public class FkManager implements ActionListener {
 		}
 	}
 
-	public void setCurrentBanner(String _banner) {
+	public void setBanner(String _banner) {
 		banner = _banner;
 		
 	}
@@ -675,6 +678,520 @@ public class FkManager implements ActionListener {
 	{
 		return(banner);
 	}
+	
+	public boolean isStringValidForFk(String str)
+	{
+
+		char passChars[] = {
+				'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E',
+				'F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
+				'U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i',
+				'j','k','l','m','n','o','p','q','r','s','t','u','v','w','x',
+				'y','z','!','"','#','$','%','&','@','?','(',')','[',']','-',
+				'.',',','+','{','}','_','/','<','>','=','|','\'','\\', 
+				';',':',' ','*'// <- 92 (idx 91)
+				};
+
+
+		int len = str.length();
+		for(int i=0; i<len; i++)
+		{
+			boolean valid=false;
+
+			for(char c : passChars)
+			{
+				if(str.charAt(i)==c)
+				{
+					valid=true;
+				}
+			}
+
+			if(!valid)
+			{
+				System.out.println("FkManager.isStringValidForFk(); Invalid character '"+str.charAt(i)+"' at pos "+i+" in '"+str+"'");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	
+	
+	///
+	private class BannerTask implements Runnable
+	{
+
+		private FkActionEventListener delegate;
+		private String bannerTxt;
+		
+		public BannerTask(String txt, FkActionEventListener d )
+		{
+			bannerTxt=txt;
+			delegate=d;
+		}
+		
+		@Override
+		public void run() {
+			
+			int timeOut=0;
+			String data="";
+			String msg = "";
+
+
+			try {
+			
+				//First check that we get a prompt
+				if( !checkState() )
+				{
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",null,'b') );
+					return;
+				}
+
+				//Drain any previous input.
+				while( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					com.serialPort.readBytes();
+				}
+				
+				com.serialPort.writeByte((byte)'x');
+				com.serialPort.writeByte((byte)'b');
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'b') );
+
+				timeOut = 6000;
+				while(timeOut > 0)
+				{
+					if( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						String in = com.serialPort.readString(); 
+						data += in;
+						System.out.println("Datain:" +in);
+						if( data.contains("Banner (0-31):\r\n") )
+						{
+							System.out.println("Found");
+							break;
+						}
+					} else {
+						timeOut -= 50;
+						Thread.sleep(50);
+					}
+				}
+				
+
+				if(timeOut > 0 )
+				{
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "WORKING",null,'b') );
+
+					for(int p=0; p < bannerTxt.length();p++)
+					{
+						com.serialPort.writeByte( (byte)bannerTxt.charAt(p) );
+						Thread.sleep(5);
+					}
+
+					while( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						com.serialPort.readBytes();
+					}
+
+					com.serialPort.writeByte( (byte)ENTER_KEY );
+
+					timeOut = 3000;
+					while(timeOut > 0)
+					{
+						if( com.serialPort.getInputBufferBytesCount() > 0 )
+						{
+							String in = com.serialPort.readString(); 
+							data += in;
+							System.out.println("Datain:" +in);
+							if( data.contains("[done]\r\n") )
+							{
+								System.out.println("Found");
+								break;
+							}
+						} else {
+							timeOut -= 50;
+							Thread.sleep(50);
+						}
+					}
+				}
+
+				if( timeOut > 0 )
+				{
+
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "Saved:"+data,null,'b') );
+				} else {
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "TIMEOUT:"+data,null,'b') );
+				}
+
+			} catch(Exception e)
+			{
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "EXCEPTION",null,'b') );
+				return;
+			}
+		}
+
+	}
+
+	public void saveBanner(String bannerTxt, FkActionEventListener eventListener) {
+		BannerTask bannerTask = new BannerTask(bannerTxt, eventListener);
+		new Thread(bannerTask).start();
+	}
+
+	
+	private class LayoutTask implements Runnable
+	{
+
+		private FkActionEventListener delegate;
+		private String layout;
+		
+		public LayoutTask(int _Layout, FkActionEventListener d )
+		{
+			layout = ""+_Layout;
+			delegate=d;
+		}
+		
+		@Override
+		public void run() {
+			
+			int timeOut=0;
+			String data="";
+			String msg = "";
+
+
+			try {
+			
+				//First check that we get a prompt
+				if( !checkState() )
+				{
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",null,'k') );
+					return;
+				}
+
+				//Drain any previous input.
+				while( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					com.serialPort.readBytes();
+				}
+				
+				com.serialPort.writeByte((byte)'x');
+				com.serialPort.writeByte((byte)'k');
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'k') );
+
+				timeOut = 6000;
+				while(timeOut > 0)
+				{
+					if( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						String in = com.serialPort.readString(); 
+						data += in;
+						System.out.println("Datain:" +in);
+						if( data.contains("Select keyboard layout:\r\n") && data.contains("\r\n% ") )
+						{
+							System.out.println("Found");
+							break;
+						}
+					} else {
+						timeOut -= 50;
+						Thread.sleep(50);
+					}
+				}
+
+				if(timeOut > 0 )
+				{
+
+
+					com.serialPort.writeByte( (byte)layout.charAt(0) );
+
+
+					while( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						com.serialPort.readBytes();
+					}
+
+					com.serialPort.writeByte( (byte)ENTER_KEY );
+
+					timeOut = 3000;
+					while(timeOut > 0)
+					{
+						if( com.serialPort.getInputBufferBytesCount() > 0 )
+						{
+							String in = com.serialPort.readString(); 
+							data += in;
+							System.out.println("Datain:" +in);
+							if( data.contains("test.\r\n#") )
+							{
+								System.out.println("Found");
+								break;
+							}
+						} else {
+							timeOut -= 50;
+							Thread.sleep(50);
+						}
+					}
+				}
+
+				timeOut = 30000;
+				while(timeOut > 0)
+				{
+					if( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						String in = com.serialPort.readString(); 
+						data += in;
+						System.out.println("Datain:" +in);
+						if( data.contains("Correct [y/n] ?") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "WORKING",null,'k') );
+							System.out.println("Found");
+							com.serialPort.writeByte((byte)'y');
+
+							Thread.sleep(500); //sleep before returning the result, give the UI plenty of time to catch up.
+
+							break;
+						}
+					} else {
+						timeOut -= 50;
+						Thread.sleep(50);
+					}
+				}				
+
+				if( timeOut > 0 )
+				{
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "Saved:"+data,null,'k') );
+				} else {
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "TIMEOUT:"+data,null,'k') );
+				}
+
+			} catch(Exception e)
+			{
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "EXCEPTION",null,'k') );
+				return;
+			}
+		}
+
+	}
+	
+	public void saveLayout(int layout, FkActionEventListener eventListener) {
+		LayoutTask lt = new LayoutTask(layout, eventListener);
+		new Thread(lt).start();
+	}
+	
+	
+	private class BackupTask implements Runnable
+	{
+
+		private FkActionEventListener delegate;
+		private File file;
+		
+		
+		public BackupTask(File f, FkActionEventListener d )
+		{
+			file=f;
+			delegate=d;
+		}
+		
+		/*
+		 * 
+		 * uint8_t crc8(const uint8_t *addr, uint8_t len)
+		{
+		        uint8_t crc = 0;
+
+		        while (len--) {
+		                uint8_t inbyte = *addr++;
+		                for (uint8_t i = 8; i; i--) {
+		                        uint8_t mix = (crc ^ inbyte) & 0x01;
+		                        crc >>= 1;
+		                        if (mix) crc ^= 0x8C;
+		                        inbyte >>= 1;
+		                }
+		        }
+		        return crc;
+		}*/
+		
+		byte crc8( byte[] dat, int begin, int len )
+		{
+			int crc = 0;
+			
+			int idx=0;
+
+			while( len-- != 0 )
+			{
+				int inbyte = dat[begin+idx];
+				idx++;
+				
+				for(int i=8; i!=0; i--)
+				{
+					int mix =  (( crc ^ inbyte) & 0x01);
+					crc >>=1;
+					if( mix != 0 )
+					{
+						crc ^=0x8C;
+					}
+					inbyte >>=1;
+				}
+			}
+			return((byte)crc);
+		}
+		
+		@Override
+		public void run() {
+			
+			int timeOut=0;
+			String data="";
+
+			int state=0;
+
+			try {
+
+				//First check that we get a prompt
+				if( !checkState() )
+				{
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",null,'e') );
+					return;
+				}
+
+				//Drain any previous input.
+				while( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					com.serialPort.readBytes();
+				}
+				com.serialPort.writeByte((byte)'X');
+				com.serialPort.writeByte((byte)'e');
+
+				
+				timeOut = 6000;
+				
+				ByteBuffer bin = new ByteBuffer( 67000 );
+
+				while(timeOut > 0)
+				{
+					if( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						
+						int n = com.serialPort.getInputBufferBytesCount();
+						while(n-->0)
+						{
+							bin.append( com.serialPort.readBytes(1)[0]);
+						}
+
+
+						data += new String(bin.toArray());
+
+						if( state==0 && data.contains("[RDY]\r\n") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'e') );
+
+							state=1;
+						}
+
+						if( state==1 && data.contains("[OK]\r\n[BEGIN]" ) )
+						{
+							state=2;
+
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "Working",null,'e') );
+						}
+
+						if( state==2 )
+						{
+							timeOut=3000;
+							if( data.contains("[END]") )
+							{
+
+								//data = data.substring(0, data.length()-5 );
+								
+								bin.trimToSize();
+								
+								byte[] arr = bin.toArray();
+								
+								byte[] clean = new byte[66000];
+								
+								state=0;
+								int idx=0;
+								int cc=0;
+								String errors="";
+								for(int i=0;i< arr.length; i++ )
+								{
+									//Find [BEGIN]
+									if(state==0 && i+6 < arr.length)
+									{
+										if(arr[i] == '[' &&arr[i+1] == 'B' &&arr[i+2] == 'E' &&arr[i+3] == 'G' &&arr[i+4] == 'I' &&arr[i+5] == 'N' &&arr[i+6] == ']' )
+										{
+											i+=7;
+											state=1;
+											idx=0;
+										}
+									}
+									
+									if(state==1)
+									{
+										
+										if( idx < 66000 )
+										{
+											clean[idx] = arr[i];
+											cc++;
+											
+											if( cc==33  )
+											{
+												cc=0;
+
+												byte c = crc8(clean,(idx-32),32);
+												
+												if( c != clean[idx] )
+												{
+													errors += "CRC Error: Bytes "+(idx-32)+" to "+(idx-1)+" have CRC "+c+" but the CRC sent from FinalKey in byte "+idx+" is "+clean[idx]+"\n";
+												}
+											}
+											
+											idx++;
+										} else {
+											if( arr[i] == '['  &&arr[i+1] == 'E' &&arr[i+2] == 'N' &&arr[i+3] == 'D' &&arr[i+4] == ']' )
+											{
+												FileOutputStream fout = new FileOutputStream( file );
+												fout.write( clean );
+												fout.close();
+												
+												if( errors.length() == 0 )
+												{
+													Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "Done" ,null,'e') );
+												} else {
+													Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, errors ,null,'e') );
+												}
+												return;
+											} else {
+												Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.UNEXPECTED_ACTION_RESULT_ERROR, "Read past the end?" ,null,'e') );
+											}
+										}
+									}
+									
+									
+								}
+								
+								
+								break;
+							} else {
+								Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.PROGRESS_UPDATE, ""+bin.size() ,null,'e') );
+							}
+						}
+
+					} else {
+						timeOut -= 50;
+						Thread.sleep(50);
+					}
+				}
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "Timed out" ,null,'e') );
+				
+				
+			} catch (Exception e) { 
+				
+			}
+		}
+	}
+
+	public void backup(File f, FkActionEventListener delegate) {
+		BackupTask bt = new BackupTask(f, delegate );
+		new Thread(bt).start();
+	}
+	
+	
 
 
 }

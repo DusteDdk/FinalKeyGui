@@ -146,7 +146,7 @@ public class SerialWorker extends javax.swing.SwingWorker<Void, String> implemen
 				{
 					banner = res.substring( res.indexOf('{')+1, res.lastIndexOf('}'));
 					publish(Messages.SerialWorker_17 );
-					FkManager.getInstance().setCurrentBanner( banner );
+					FkManager.getInstance().setBanner( banner );
 					publish(banner);
 				}
 				publish(""); //$NON-NLS-1$

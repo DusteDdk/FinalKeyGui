@@ -27,15 +27,21 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.events.ShellListener;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.widgets.Text;
@@ -55,6 +61,10 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.awt.SWT_AWT;
+import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Group;
 
 public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
@@ -64,6 +74,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	public PopupMenu popup;
 	public MenuItem showMain;
 	public MenuItem hideMain;
+	public MenuItem exitApp;
 
 	public Text txtLog;
 	public Button btnConnect;
@@ -96,6 +107,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private static final String PREF_ALLOW_UPDATE_CHECK = "allowUpdateCheck"; //$NON-NLS-1$
 	private static final String PREF_SHOW_ACCOUNTS_READY_NOTICE = "showAccountsReadyNotice"; //$NON-NLS-1$
 	private static final String PREF_SHOW_SYSTRAY_NAME = "showSystrayName"; //$NON-NLS-1$
+	private static final String PREF_HIDE_ON_CLOSE = "hideToSysTrayOnMainWinClose"; //$NON-NLS-1$
 
 	public Composite cmpConnect;
 	private Composite cmpAccounts;
@@ -121,6 +133,30 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private Button chkShowAccountId;
 	private Thread updateCheckThread;
 	private Text txtFilter;
+	
+	String systrayTipTxt;
+	private Button btnHideToTrayOnClose;
+	private TabItem tbtmThisFinalkey;
+	private Composite composite;
+	private Text txtBanner;	
+	private Combo cmbLayout;
+	private Group grpBackupAndRestore;
+	private Group group_1;
+	private Label label;
+	private Text text_1;
+	private Text text_2;
+	private Text text_3;
+	private Label label_1;
+	private Label label_2;
+	private Label label_3;
+	private Button button;
+	private Group grpFormat;
+	private Label lblNewLabel;
+	private Button btnNewButton;
+	private Button btnNewButton_1;
+	
+	private Button btnFkSettingsSave;
+	private Label lblMakeSureYou;
 
 	
 	
@@ -154,9 +190,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	public void open() {
 		Display display = Display.getDefault();
 		createContents();
-		addAccountsTab();
-		addSettingsTab();
-		createSysTrayIcon();
 
 		serialEvent(SerialState.Disconnected);
 		
@@ -187,7 +220,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			shell.layout();
 		}
 
-		clearSystray();
+		clearSystray(true);
 		
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -250,6 +283,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		// Create a pop-up menu components
 		showMain = new MenuItem(Messages.MainWin_7);
 		hideMain = new MenuItem(Messages.MainWin_8);
+		exitApp  = new MenuItem("Quit");
 
 		showMain.addActionListener(new ActionListener() {
 			@Override
@@ -278,6 +312,19 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 
+		exitApp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Display.getDefault().asyncExec( new Runnable(){
+
+					public void run()
+					{
+						shutDownApp();
+					}
+				} );
+			}
+		});		
+		
 		trayIcon.setPopupMenu(popup);
 
 		try {
@@ -288,7 +335,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 	}
 
-	String systrayTipTxt;
 	private void setSystrayIconTip(String tip) {
 		if( tip == null )
 		{
@@ -326,7 +372,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		SystemTray.getSystemTray().remove(trayIcon);
 	}
 
-	private void clearSystray() {
+	private void clearSystray(Boolean addExitBtn) {
 			popup.removeAll();
 			//Add components to pop-up menu
 			if(shell.isVisible()==true)
@@ -336,6 +382,11 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				popup.add(showMain);
 			}
 			popup.addSeparator();
+
+			if(addExitBtn)
+			{
+				popup.add(exitApp);
+			}
 	}
 
 	public void shutDownApp()
@@ -354,13 +405,31 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	/**
 	 * Create contents of the window.
 	 */
+	
+
+	/*uint8_t EncryptedStorage::crc8(const uint8_t *addr, uint8_t len)
+	{
+	        uint8_t crc = 0;
+
+	        while (len--) {
+	                uint8_t inbyte = *addr++;
+	                for (uint8_t i = 8; i; i--) {
+	                        uint8_t mix = (crc ^ inbyte) & 0x01;
+	                        crc >>= 1;
+	                        if (mix) crc ^= 0x8C;
+	                        inbyte >>= 1;
+	                }
+	        }
+	        return crc;
+	} */
+	
+	
 	protected void createContents() {
 
 
 		shell = new Shell();
 		shell.setImage( iconProgramOffline ); //$NON-NLS-1$
 		shell.setSize(711, 655);
-
 
 		prefs = Preferences.userNodeForPackage(this.getClass());
 
@@ -472,25 +541,19 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		log(Messages.MainWin_22);
 
 
-		shell.addShellListener( new ShellListener() {
-
-			public void shellIconified(ShellEvent e) {
+		//
+		shell.addListener(SWT.Close, new Listener() {
+			@Override
+			public void handleEvent(Event arg0) {
+				if( prefs.getBoolean(PREF_HIDE_ON_CLOSE, true))
+				{
+					arg0.doit=false;
+					hideToTray();
+				} else {
+					shutDownApp();
+				}
 			}
-
-			public void shellDeiconified(ShellEvent e) {
-			}
-
-			public void shellDeactivated(ShellEvent e) {
-			}
-
-			public void shellClosed(ShellEvent e) {
-				shutDownApp();
-			}
-
-			public void shellActivated(ShellEvent e) {
-
-			}
-		} );
+		});
 
 
 		if( System.getProperty("os.name").compareTo("Linux") == 0 ) //$NON-NLS-1$ //$NON-NLS-2$
@@ -517,6 +580,12 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		greenColor = display.getSystemColor(SWT.COLOR_DARK_GREEN );
 		redColor = display.getSystemColor(SWT.COLOR_RED );
 
+		
+		//
+		addSettingsTab();
+		addThisFkTab();
+		addAccountsTab();
+		createSysTrayIcon();
 	}
 
 
@@ -531,7 +600,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	public void updateAccountList()
 	{
 		int free=256;
-		clearSystray();
+		clearSystray(false);
 		lstAccounts.getList().removeAll();
 
 		Boolean showAccountId = prefs.getBoolean( PREF_SHOW_ACCOUNT_ID_IN_NAME_KEY, false);
@@ -541,6 +610,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			free--;
 			lstAccounts.add( a.showNumInName( showAccountId ) );
 
+			//populate the popup
 			Menu menu = new Menu(a.toString());
 			MenuItem both = new MenuItem(Messages.MainWin_25);
 			MenuItem usr = new MenuItem(Messages.MainWin_26);
@@ -564,6 +634,10 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 			popup.add(menu);
 		}
+		
+		//Add the exit button
+		popup.addSeparator();
+		popup.add(exitApp);
 
 		lblNumFree.setText(" "+free+Messages.MainWin_32); //$NON-NLS-1$
 		lblNumFree.pack();
@@ -598,9 +672,12 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				hideToTray();
 			}
 
+			addThisFkTab();
 			addAccountsTab();
+			
 
-			tabFolder.setSelection(1);
+			
+			tabFolder.setSelection(tbtmAccounts);
 
 			updateAccountList();
 			txtFilter.setFocus();
@@ -654,6 +731,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			animation.setPlaying(false);
 
 			remAccountsTab();
+			remThisFkTab();
 
 			tabFolder.setSelection(0);
 
@@ -670,7 +748,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 			cmpConnect.update();
 
-			clearSystray();
+			clearSystray(true);
 
 			//Update icons for systray and window
 			shell.setImage( iconProgramOffline );
@@ -688,10 +766,315 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		cmpConnect.layout();
 	}
 
-	private void remAccountsTab() {
-		if( tabFolder.getItemCount() > 2 )
+	private void updateSettingsSaveBtnVisibility()
+	{
+		boolean show=false;
+		if( btnFkSettingsSave != null)
 		{
-			tabFolder.getItem(1).dispose();
+			if( FkManager.getInstance().getBanner().compareTo( txtBanner.getText() ) != 0 )
+			{
+				show=true;
+			}
+
+			if( cmbLayout.getSelectionIndex() != -1  && cmbLayout.getItem(cmbLayout.getSelectionIndex()).compareTo(FkManager.getInstance().getCurrentLayout()) != 0 )
+			{
+				show=true;
+			}
+
+			if(show)
+			{
+				btnFkSettingsSave.setEnabled(true);
+			} else {
+				btnFkSettingsSave.setEnabled(false);
+			}
+		}
+	}
+
+	private void addThisFkTab()
+	{
+		tbtmThisFinalkey = new TabItem(tabFolder, SWT.NONE,1);
+		tbtmThisFinalkey.setText(Messages.MainWin_tbtmThisFinalkey_text);
+
+		composite = new Composite(tabFolder, SWT.NONE);
+		tbtmThisFinalkey.setControl(composite);
+		composite.setLayout(new FormLayout());
+
+		Group group = new Group(composite, SWT.NONE);
+		group.setText(Messages.MainWin_group_text);
+		group.setLayout(new FormLayout());
+		FormData fd_group = new FormData();
+		fd_group.bottom = new FormAttachment(0, 100);
+		fd_group.top = new FormAttachment(0, 10);
+		fd_group.left = new FormAttachment(0, 10);
+		fd_group.right = new FormAttachment(100, -10);
+		group.setLayoutData(fd_group);
+
+
+		Label lblBannerName = new Label(group, SWT.NONE);
+		lblBannerName.setAlignment(SWT.RIGHT);
+		FormData fd_lblBannerName = new FormData();
+		fd_lblBannerName.left = new FormAttachment(0, 10);
+		fd_lblBannerName.top = new FormAttachment(0, 10);
+		lblBannerName.setLayoutData(fd_lblBannerName);
+		lblBannerName.setText(Messages.MainWin_lblBannerName_text);
+
+		txtBanner = new Text(group, SWT.BORDER);
+		fd_lblBannerName.right = new FormAttachment(txtBanner, -6);
+		FormData fd_txtBanner = new FormData();
+		fd_txtBanner.right = new FormAttachment(0, 455);
+		fd_txtBanner.top = new FormAttachment(0, 10);
+		fd_txtBanner.left = new FormAttachment(0, 149);
+		txtBanner.setLayoutData(fd_txtBanner);
+		txtBanner.setToolTipText(Messages.MainWin_text_1_toolTipText);
+		txtBanner.setText(Messages.MainWin_text_1_text_1);
+		txtBanner.addVerifyListener(new VerifyListener() {
+			@Override
+			public void verifyText(VerifyEvent arg0) {
+				System.out.println("Verify:"+arg0.text );
+				arg0.doit=false;
+				if(arg0.text.length()==0)
+				{
+					arg0.doit=true;
+				} else if( FkManager.getInstance().isStringValidForFk(arg0.text))
+				{
+					if(txtBanner.getText().length()+arg0.text.length() < 32) //Banner can be a max of 31 chars long.
+					{
+						arg0.doit=true;
+					}
+				}
+			}
+		});
+		txtBanner.addModifyListener( new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent arg0) {
+				updateSettingsSaveBtnVisibility();
+			}
+		});
+
+		//Populate with data from FkManager
+		txtBanner.setText( FkManager.getInstance().getBanner() );
+
+		Label lblKeyboardLayout = new Label(group, SWT.NONE);
+		lblKeyboardLayout.setAlignment(SWT.RIGHT);
+		FormData fd_lblKeyboardLayout = new FormData();
+		fd_lblKeyboardLayout.left = new FormAttachment(0, 10);
+		fd_lblKeyboardLayout.bottom = new FormAttachment(100, -13);
+		lblKeyboardLayout.setLayoutData(fd_lblKeyboardLayout);
+		lblKeyboardLayout.setText(Messages.MainWin_lblKeyboardLayout_text);
+
+		cmbLayout = new Combo(group, SWT.READ_ONLY);
+		fd_lblKeyboardLayout.right = new FormAttachment(cmbLayout, -6);
+		FormData fd_cmbLayout = new FormData();
+		fd_cmbLayout.bottom = new FormAttachment(100, -11);
+		fd_cmbLayout.top = new FormAttachment(txtBanner, 6);
+		fd_cmbLayout.right = new FormAttachment(0, 301);
+		fd_cmbLayout.left = new FormAttachment(0, 149);
+		cmbLayout.setLayoutData(fd_cmbLayout);
+		cmbLayout.setItems( FkManager.getInstance().getAvailableLayouts() );
+		cmbLayout.addSelectionListener( new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent arg0) {
+				updateSettingsSaveBtnVisibility();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent arg0) {} 
+		});
+
+		cmbLayout.select( cmbLayout.indexOf(FkManager.getInstance().getCurrentLayout() ));
+
+		grpBackupAndRestore = new Group(composite, SWT.NONE);
+		grpBackupAndRestore.setText(Messages.MainWin_grpBackupAndRestore_text);
+		grpBackupAndRestore.setLayout(new FormLayout());
+		FormData fd_grpBackupAndRestore = new FormData();
+		fd_grpBackupAndRestore.top = new FormAttachment(group, 6);
+		fd_grpBackupAndRestore.left = new FormAttachment(0, 10);
+		fd_grpBackupAndRestore.bottom = new FormAttachment(0, 243);
+		fd_grpBackupAndRestore.right = new FormAttachment(100, -10);
+
+		btnFkSettingsSave = new Button(group, SWT.NONE);
+		btnFkSettingsSave.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				SaveSettingsDialog dialog = new SaveSettingsDialog(shell, shell.getStyle() );
+				shell.setEnabled(false);
+				
+				if( (FkManager.getInstance().getBanner().compareTo( txtBanner.getText() ) != 0) )
+				{
+					dialog.bannerTxt = txtBanner.getText();
+				}
+				
+				if( (cmbLayout.getSelectionIndex() != -1  && cmbLayout.getItem(cmbLayout.getSelectionIndex()).compareTo(FkManager.getInstance().getCurrentLayout()) != 0) )
+				{
+					dialog.Layout = cmbLayout.getSelectionIndex()+1; //FinalKey presents the layout choice between 1,2,3
+				}
+				
+				dialog.open();
+				shell.setEnabled(true);
+				updateSettingsSaveBtnVisibility();
+				
+			}
+		});
+		FormData fd_btnSave = new FormData();
+		fd_btnSave.right = new FormAttachment(txtBanner, 68, SWT.RIGHT);
+		fd_btnSave.top = new FormAttachment(lblBannerName, 0, SWT.TOP);
+		fd_btnSave.left = new FormAttachment(txtBanner, 6);
+		btnFkSettingsSave.setLayoutData(fd_btnSave);
+		btnFkSettingsSave.setText(Messages.MainWin_btnSave_text);
+		grpBackupAndRestore.setLayoutData(fd_grpBackupAndRestore);
+		btnFkSettingsSave.setEnabled(false);
+
+		group_1 = new Group(composite, SWT.NONE);
+		group_1.setText("Security");
+		group_1.setLayout(new FormLayout());
+		FormData fd_group_1 = new FormData();
+		fd_group_1.bottom = new FormAttachment(grpBackupAndRestore, 197, SWT.BOTTOM);
+		fd_group_1.top = new FormAttachment(grpBackupAndRestore, 6);
+
+		Button btnBackup = new Button(grpBackupAndRestore, SWT.CENTER);
+		btnBackup.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/backup.png"));
+		FormData fd_btnBackup = new FormData();
+		fd_btnBackup.left = new FormAttachment(0, 10);
+		fd_btnBackup.top = new FormAttachment(0, 10);
+		fd_btnBackup.bottom = new FormAttachment(100, -28);
+		btnBackup.setLayoutData(fd_btnBackup);
+		btnBackup.setText(Messages.MainWin_btnBackupYourFinalkey_text);
+		btnBackup.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				shell.setEnabled(false);;
+				Backup b = new Backup(shell, shell.getStyle() );
+				b.open(false);
+				shell.setEnabled(true);
+			}
+		});
+
+		btnNewButton = new Button(grpBackupAndRestore, SWT.NONE);
+		btnNewButton.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/restore.png"));
+		FormData fd_btnNewButton = new FormData();
+		fd_btnNewButton.top = new FormAttachment(0, 10);
+		fd_btnNewButton.right = new FormAttachment(100, -10);
+		fd_btnNewButton.bottom = new FormAttachment(100, -28);
+		btnNewButton.setLayoutData(fd_btnNewButton);
+		btnNewButton.setText(Messages.MainWin_btnNewButton_text);
+		btnNewButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				shell.setEnabled(false);;
+				Backup b = new Backup(shell, shell.getStyle() );
+				b.open(true);
+				shell.setEnabled(true);
+			}
+		});
+		
+		lblMakeSureYou = new Label(grpBackupAndRestore, SWT.NONE);
+		fd_btnNewButton.left = new FormAttachment(lblMakeSureYou, 6);
+		fd_btnBackup.right = new FormAttachment(100, -555);
+		FormData fd_lblMakeSureYou = new FormData();
+		fd_lblMakeSureYou.top = new FormAttachment(0, 10);
+		fd_lblMakeSureYou.left = new FormAttachment(btnBackup, 6);
+		fd_lblMakeSureYou.right = new FormAttachment(0, 541);
+		fd_lblMakeSureYou.bottom = new FormAttachment(0, 92);
+		lblMakeSureYou.setLayoutData(fd_lblMakeSureYou);
+		lblMakeSureYou.setText(Messages.MainWin_lblMakeSureYou_text);
+		fd_group_1.right = new FormAttachment(group, 0, SWT.RIGHT);
+		fd_group_1.left = new FormAttachment(0, 10);
+		group_1.setLayoutData(fd_group_1);
+
+		label = new Label(group_1, SWT.NONE);
+		label.setText("Always use a secure master-password, but don't forget it, you can not unlock\nyour FinalKey without it! Changing the password is risky, it can result in data-loss\nif the process is interrupted, you should take a backup before changing your\nmaster-password. Changing master-password takes a while as it re-encrypts accounts.");
+		FormData fd_label = new FormData();
+		fd_label.bottom = new FormAttachment(0, 79);
+		fd_label.top = new FormAttachment(0, 10);
+		fd_label.right = new FormAttachment(0, 675);
+		fd_label.left = new FormAttachment(0, 10);
+		label.setLayoutData(fd_label);
+
+		text_1 = new Text(group_1, SWT.BORDER | SWT.PASSWORD);
+		FormData fd_text_1 = new FormData();
+		fd_text_1.top = new FormAttachment(label, 6);
+		fd_text_1.right = new FormAttachment(0, 455);
+		fd_text_1.left = new FormAttachment(0, 149);
+		text_1.setLayoutData(fd_text_1);
+
+		text_2 = new Text(group_1, SWT.BORDER | SWT.PASSWORD);
+		FormData fd_text_2 = new FormData();
+		fd_text_2.top = new FormAttachment(text_1, 6);
+		fd_text_2.right = new FormAttachment(0, 455);
+		fd_text_2.left = new FormAttachment(0, 149);
+		text_2.setLayoutData(fd_text_2);
+
+		text_3 = new Text(group_1, SWT.BORDER | SWT.PASSWORD);
+		FormData fd_text_3 = new FormData();
+		fd_text_3.top = new FormAttachment(text_2, 6);
+		fd_text_3.right = new FormAttachment(text_1, 0, SWT.RIGHT);
+		fd_text_3.left = new FormAttachment(0, 149);
+		text_3.setLayoutData(fd_text_3);
+
+		label_1 = new Label(group_1, SWT.NONE);
+		label_1.setText("Current Pass");
+		label_1.setAlignment(SWT.RIGHT);
+		FormData fd_label_1 = new FormData();
+		fd_label_1.top = new FormAttachment(label, 12);
+		fd_label_1.right = new FormAttachment(text_1, -6);
+		fd_label_1.left = new FormAttachment(label, 0, SWT.LEFT);
+		label_1.setLayoutData(fd_label_1);
+
+		label_2 = new Label(group_1, SWT.NONE);
+		label_2.setText("New Pass");
+		label_2.setAlignment(SWT.RIGHT);
+		FormData fd_label_2 = new FormData();
+		fd_label_2.top = new FormAttachment(label_1, 12);
+		fd_label_2.right = new FormAttachment(text_2, -6);
+		fd_label_2.left = new FormAttachment(label, 0, SWT.LEFT);
+		label_2.setLayoutData(fd_label_2);
+
+		label_3 = new Label(group_1, SWT.NONE);
+		label_3.setText("Repeat");
+		label_3.setAlignment(SWT.RIGHT);
+		FormData fd_label_3 = new FormData();
+		fd_label_3.top = new FormAttachment(label_2, 12);
+		fd_label_3.right = new FormAttachment(text_3, -6);
+		fd_label_3.left = new FormAttachment(text_3, -139, SWT.LEFT);
+		label_3.setLayoutData(fd_label_3);
+
+		button = new Button(group_1, SWT.NONE);
+		button.setText("Re-encrypt");
+		FormData fd_button = new FormData();
+		fd_button.bottom = new FormAttachment(text_3, 0, SWT.BOTTOM);
+		fd_button.left = new FormAttachment(text_3, 6);
+		button.setLayoutData(fd_button);
+
+		grpFormat = new Group(composite, SWT.NONE);
+		grpFormat.setText(Messages.MainWin_grpFormat_text);
+		FormData fd_grpFormat = new FormData();
+		fd_grpFormat.bottom = new FormAttachment(group_1, 69, SWT.BOTTOM);
+		fd_grpFormat.top = new FormAttachment(group_1, 6);
+		fd_grpFormat.right = new FormAttachment(group, 0, SWT.RIGHT);
+		fd_grpFormat.left = new FormAttachment(group, 0, SWT.LEFT);
+		grpFormat.setLayoutData(fd_grpFormat);
+
+		lblNewLabel = new Label(grpFormat, SWT.NONE);
+		lblNewLabel.setBounds(10, 0, 366, 40);
+		lblNewLabel.setText(Messages.MainWin_lblNewLabel_text_1);
+
+		btnNewButton_1 = new Button(grpFormat, SWT.NONE);
+		btnNewButton_1.setBounds(382, 10, 91, 26);
+		btnNewButton_1.setText(Messages.MainWin_btnNewButton_1_text);
+
+	}
+	private void remThisFkTab() {
+		if(tbtmThisFinalkey != null)
+		{
+			tbtmThisFinalkey.dispose();
+		}
+	}
+
+	private void remAccountsTab() {
+		if( tbtmAccounts != null )
+		{
+			tbtmAccounts.dispose();
 		}
 
 	}
@@ -984,11 +1367,13 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 
 		chkSortByAccountId = new Button(cmpSettings, SWT.CHECK);
+		fd_chkAutoHide.right = new FormAttachment(chkSortByAccountId, 0, SWT.RIGHT);
 		chkSortByAccountId.setText(Messages.MainWin_9);
 		chkSortByAccountId.setSelection( prefs.getBoolean( PREF_SORT_BY_ID_KEY, false) );
 		FormData fd_btnSortByAccountId = new FormData();
 		fd_btnSortByAccountId.top = new FormAttachment(chkAutoHide, 6);
-		fd_btnSortByAccountId.left = new FormAttachment(chkAutoHide, 0, SWT.LEFT);
+		fd_btnSortByAccountId.left = new FormAttachment(0, 10);
+		fd_btnSortByAccountId.right = new FormAttachment(100, -10);
 		chkSortByAccountId.setLayoutData(fd_btnSortByAccountId);
 		chkSortByAccountId.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -1000,8 +1385,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 		chkShowAccountId = new Button(cmpSettings, SWT.CHECK);
 		FormData fd_chkShowAccountId = new FormData();
+		fd_chkShowAccountId.left = new FormAttachment(0, 10);
+		fd_chkShowAccountId.right = new FormAttachment(100, -10);
 		fd_chkShowAccountId.top = new FormAttachment(chkSortByAccountId, 6);
-		fd_chkShowAccountId.left = new FormAttachment(chkAutoHide, 0, SWT.LEFT);
 		chkShowAccountId.setLayoutData(fd_chkShowAccountId);
 		chkShowAccountId.setText(Messages.MainWin_btnShowAccountId_text);
 		chkShowAccountId.setSelection( prefs.getBoolean(PREF_SHOW_ACCOUNT_ID_IN_NAME_KEY, false) );
@@ -1014,7 +1400,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 		chkCheckForUpdates = new Button(cmpSettings, SWT.CHECK);
 		FormData fd_chkCheckForUpdates = new FormData();
-		fd_chkCheckForUpdates.left = new FormAttachment(chkAutoHide, 0, SWT.LEFT);
+		fd_chkCheckForUpdates.left = new FormAttachment(0, 10);
+		fd_chkCheckForUpdates.right = new FormAttachment(100, -10);
+		fd_chkCheckForUpdates.top = new FormAttachment(chkShowAccountId, 6);
 		chkCheckForUpdates.setLayoutData(fd_chkCheckForUpdates);
 		chkCheckForUpdates.setText(Messages.MainWin_btnCheckForUpdates_text);
 		chkCheckForUpdates.setSelection( prefs.getBoolean( PREF_ALLOW_UPDATE_CHECK, true) );
@@ -1024,13 +1412,13 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 				checkForUpdates();
 			}
 		});
-		fd_chkCheckForUpdates.top = new FormAttachment(chkShowAccountId, 6);
 
 		btnShowaccountsReady = new Button(cmpSettings, SWT.CHECK);
 		btnShowaccountsReady.setSelection( prefs.getBoolean( PREF_SHOW_ACCOUNTS_READY_NOTICE, true) );
 		FormData fd_btnShowaccountsReady = new FormData();
+		fd_btnShowaccountsReady.left = new FormAttachment(0, 10);
+		fd_btnShowaccountsReady.right = new FormAttachment(100, -10);
 		fd_btnShowaccountsReady.top = new FormAttachment(chkCheckForUpdates, 6);
-		fd_btnShowaccountsReady.left = new FormAttachment(chkAutoHide, 0, SWT.LEFT);
 		btnShowaccountsReady.setLayoutData(fd_btnShowaccountsReady);
 
 		btnShowaccountsReady.setText(Messages.MainWin_btnShowaccountsReady_text);
@@ -1043,17 +1431,35 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		Button btnShowSystrayName = new Button( cmpSettings, SWT.CHECK );
 		btnShowSystrayName.setSelection( prefs.getBoolean( PREF_SHOW_SYSTRAY_NAME,  true) );
 		FormData fd_btnShowSystrayName = new FormData();
-		fd_btnShowSystrayName.top = new FormAttachment( btnShowaccountsReady, 6 );
-		fd_btnShowSystrayName.left = new FormAttachment( chkAutoHide, 0, SWT.LEFT );
+		fd_btnShowSystrayName.left = new FormAttachment(0, 10);
+		fd_btnShowSystrayName.right = new FormAttachment(100, -10);
+		fd_btnShowSystrayName.top = new FormAttachment(btnShowaccountsReady, 6);
 		btnShowSystrayName.setLayoutData(fd_btnShowSystrayName);
 		btnShowSystrayName.setText( Messages.MainWin_14 );
 		btnShowSystrayName.addSelectionListener( new SelectionAdapter() {
-				public void widgetSelected(SelectionEvent e) {
-					Button b = (Button)e.widget;
-					prefs.putBoolean( PREF_SHOW_SYSTRAY_NAME, b.getSelection() );
-					setSystrayIconTip(null);
-				}
+			public void widgetSelected(SelectionEvent e) {
+				Button b = (Button)e.widget;
+				prefs.putBoolean( PREF_SHOW_SYSTRAY_NAME, b.getSelection() );
+				setSystrayIconTip(null);
+			}
 		});
+
+		btnHideToTrayOnClose = new Button(cmpSettings, SWT.CHECK);
+		btnHideToTrayOnClose.setSelection( prefs.getBoolean( PREF_HIDE_ON_CLOSE, true) );
+		btnHideToTrayOnClose.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				prefs.putBoolean( PREF_HIDE_ON_CLOSE, btnHideToTrayOnClose.getSelection() );
+			}
+		});
+		btnHideToTrayOnClose.setToolTipText(Messages.MainWin_btnHideToTrayOnClose_toolTipText);
+		FormData fd_btnHideToTrayOnClose = new FormData();
+		fd_btnHideToTrayOnClose.top = new FormAttachment(btnShowSystrayName, 6);
+		fd_btnHideToTrayOnClose.right = new FormAttachment(0, 695);
+		fd_btnHideToTrayOnClose.left = new FormAttachment(0, 10);
+		btnHideToTrayOnClose.setLayoutData(fd_btnHideToTrayOnClose);
+		btnHideToTrayOnClose.setText(Messages.MainWin_btnCheckButton_text);
+
 	}
 
 	private void showTrigDialog(Account acc) {

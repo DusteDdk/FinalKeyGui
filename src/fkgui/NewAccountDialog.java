@@ -72,8 +72,6 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 	
 	NewAccountDialog mySelf;
 
-	
-	
 	Composite composite;
 	/**
 	 * Create the dialog.
