@@ -932,6 +932,7 @@ public class NewAccountDialog extends Dialog implements FkActionEventListener {
 
 	}
 
+	@SuppressWarnings("incomplete-switch")
 	@Override
 	public void fkActionEvent(FkActionEvent event) {
 		//System.out.println( "Event data:"+ event.data );

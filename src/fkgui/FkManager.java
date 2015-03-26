@@ -3,8 +3,9 @@ package fkgui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
@@ -736,7 +737,6 @@ public class FkManager implements ActionListener {
 			
 			int timeOut=0;
 			String data="";
-			String msg = "";
 
 
 			try {
@@ -855,7 +855,6 @@ public class FkManager implements ActionListener {
 			
 			int timeOut=0;
 			String data="";
-			String msg = "";
 
 
 			try {
@@ -989,23 +988,6 @@ public class FkManager implements ActionListener {
 			delegate=d;
 		}
 		
-		/*
-		 * 
-		 * uint8_t crc8(const uint8_t *addr, uint8_t len)
-		{
-		        uint8_t crc = 0;
-
-		        while (len--) {
-		                uint8_t inbyte = *addr++;
-		                for (uint8_t i = 8; i; i--) {
-		                        uint8_t mix = (crc ^ inbyte) & 0x01;
-		                        crc >>= 1;
-		                        if (mix) crc ^= 0x8C;
-		                        inbyte >>= 1;
-		                }
-		        }
-		        return crc;
-		}*/
 		
 		byte crc8( byte[] dat, int begin, int len )
 		{
@@ -1074,7 +1056,7 @@ public class FkManager implements ActionListener {
 						}
 
 
-						data += new String(bin.toArray());
+						data = new String(bin.toArray());
 
 						if( state==0 && data.contains("[RDY]\r\n") )
 						{
@@ -1161,11 +1143,9 @@ public class FkManager implements ActionListener {
 											}
 										}
 									}
-									
-									
+
 								}
-								
-								
+
 								break;
 							} else {
 								Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.PROGRESS_UPDATE, ""+bin.size() ,null,'e') );
@@ -1178,10 +1158,9 @@ public class FkManager implements ActionListener {
 					}
 				}
 				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "Timed out" ,null,'e') );
-				
-				
+
 			} catch (Exception e) { 
-				
+
 			}
 		}
 	}
@@ -1190,8 +1169,176 @@ public class FkManager implements ActionListener {
 		BackupTask bt = new BackupTask(f, delegate );
 		new Thread(bt).start();
 	}
-	
-	
 
+	private class RestoreTask implements Runnable
+	{
+
+		private FkActionEventListener delegate;
+		private File file;
+
+		public RestoreTask(File f, FkActionEventListener d )
+		{
+			file=f;
+			delegate=d;
+		}
+
+
+		@Override
+		public void run() {
+
+			int state=0;
+			long timeStamp=System.currentTimeMillis();
+
+			String data="";
+
+			byte[] bin = new byte[66000];
+
+			boolean fileOk=false;
+			FileInputStream in=null;
+			try {
+				in = new FileInputStream(file);
+
+				int len = in.read(bin);
+				if( len == 66000 )
+				{
+					fileOk=true;
+				}
+
+			} catch (Exception e1) {
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.FILE_ERROR, e1.getLocalizedMessage() ,null,'i') );
+				return;
+			} finally {
+				try {
+					if( in != null )
+					{
+						in.close();
+					}
+				} catch (IOException e) {}
+			}
+
+			String verify = new String( bin ).substring(0,9);
+
+			if( !fileOk  || verify.compareTo("[FinalKey") != 0)
+			{
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.FILE_ERROR, "Not a FinalKey backup file." ,null,'i') );
+				fileOk=false;
+			}
+
+			if( !fileOk )
+			{
+				return;
+			}
+
+			try {
+
+				//First check that we get a prompt
+				if( !checkState() )
+				{
+					Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",null,'i') );
+					return;
+				}
+
+				//Drain any previous input.
+				while( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					com.serialPort.readBytes();
+				}
+				com.serialPort.writeByte((byte)'X');
+				com.serialPort.writeByte((byte)'i');
+
+
+				int idx=0;
+				while(System.currentTimeMillis() - timeStamp < 6000L)
+				{
+					if( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						data += com.serialPort.readString();
+					}
+					if( state==0 && data.contains("[RDY]\r\n") )
+					{
+						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'i') );
+						data="";
+						state=1;
+					}
+
+					if( state==1 && data.contains("[NO]") )
+					{
+						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "",null,'i') );
+						return;
+					}
+
+					if( state==1 && data.contains("[OK]\r\n") )
+					{
+						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "WORKING",null,'i') );
+						state=2;
+
+						//Don't reset data, state2 may need some of it
+					}
+
+					//Catch E = END, F=Fail, C=CRC Fail O=CRC OK
+					if( data.contains("E") )
+					{
+						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "Done.",null,'i') );
+						return;
+					}
+
+					if( data.contains("F") )
+					{
+						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Device reported read-error.",null,'i') );
+						return;
+					}
+
+					if( data.contains("C") )
+					{
+						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Device reported CRC-error.",null,'i') );
+						return;
+					}
+
+					//Device ready for more data
+					if( state==2 && data.contains("R") )
+					{
+						data="";
+						timeStamp = System.currentTimeMillis();
+
+						byte[] outBuf = new byte[33];
+
+						for(int i=0;i<33;i++)
+						{
+							outBuf[i] = bin[idx++];
+						}
+
+						com.serialPort.writeBytes(outBuf);
+
+						Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.PROGRESS_UPDATE, ""+idx ,null,'i') );
+
+						state=3;
+					}
+
+					if( state == 3 && data.contains("W") && data.contains("O") )
+					{
+						state=2;
+					}
+
+				}
+			} catch(Exception e)
+			{
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Exception: "+e.getLocalizedMessage(),null,'i') );
+				return;
+
+			}
+
+			Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "No data from device.",null,'i') );
+
+		}
+	}
+
+	public void restore(File f, FkActionEventListener delegate) {
+		RestoreTask rt = new RestoreTask(f, delegate );
+		new Thread(rt).start();
+	}
+
+	public void disconnect() {
+		com.disconnect();
+	}
 
 }
