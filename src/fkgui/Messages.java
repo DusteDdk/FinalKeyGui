@@ -211,6 +211,10 @@ public class Messages extends NLS {
 	public static String MainWin_btnNewButton_1_text;
 	public static String MainWin_lblMakeSureYou_text;
 	public static String MainWin_lblYouHaveNever_text;
+	public static String MainWin_lblAlwaysUseA_text;
+	public static String MainWin_grpChangePassword_text;
+	public static String MainWin_lblNewPassword_text;
+	public static String MainWin_btnReencrypt_text;
 
 	static {
 		// initialize resource bundle

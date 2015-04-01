@@ -132,19 +132,13 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private Text txtBanner;	
 	private Combo cmbLayout;
 	private Group grpBackupAndRestore;
-	private Group group_1;
-	private Label label;
-	private Text text_1;
-	private Text text_2;
-	private Text text_3;
-	private Label label_1;
-	private Label label_2;
-	private Label label_3;
-	private Button button;
+	private Group grpChangePassword;
+	private Label lblAlwaysUseA;
+	private Button btnReencrypt;
 	private Group grpFormat;
 	private Label lblNewLabel;
 	private Button btnNewButton;
-	private Button btnNewButton_1;
+	private Button btnFormat;
 	
 	private Button btnFkSettingsSave;
 	private Label lblMakeSureYou;
@@ -804,16 +798,16 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		Label lblBannerName = new Label(group, SWT.NONE);
 		lblBannerName.setAlignment(SWT.RIGHT);
 		FormData fd_lblBannerName = new FormData();
-		fd_lblBannerName.left = new FormAttachment(0, 10);
-		fd_lblBannerName.top = new FormAttachment(0, 10);
 		lblBannerName.setLayoutData(fd_lblBannerName);
 		lblBannerName.setText(Messages.MainWin_lblBannerName_text);
 
 		txtBanner = new Text(group, SWT.BORDER);
 		fd_lblBannerName.right = new FormAttachment(txtBanner, -6);
+		fd_lblBannerName.left = new FormAttachment(txtBanner, -139, SWT.LEFT);
+		fd_lblBannerName.bottom = new FormAttachment(txtBanner, 0, SWT.CENTER);
 		FormData fd_txtBanner = new FormData();
-		fd_txtBanner.right = new FormAttachment(0, 455);
-		fd_txtBanner.top = new FormAttachment(0, 10);
+		fd_txtBanner.right = new FormAttachment(0, 395);
+		//fd_txtBanner.right = new FormAttachment(0, 455);
 		fd_txtBanner.left = new FormAttachment(0, 149);
 		txtBanner.setLayoutData(fd_txtBanner);
 		txtBanner.setToolTipText(Messages.MainWin_text_1_toolTipText);
@@ -848,17 +842,17 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		Label lblKeyboardLayout = new Label(group, SWT.NONE);
 		lblKeyboardLayout.setAlignment(SWT.RIGHT);
 		FormData fd_lblKeyboardLayout = new FormData();
+		fd_lblKeyboardLayout.bottom = new FormAttachment(100, -27);
+		fd_lblKeyboardLayout.right = new FormAttachment(lblBannerName, 0, SWT.RIGHT);
 		fd_lblKeyboardLayout.left = new FormAttachment(0, 10);
-		fd_lblKeyboardLayout.bottom = new FormAttachment(100, -13);
 		lblKeyboardLayout.setLayoutData(fd_lblKeyboardLayout);
 		lblKeyboardLayout.setText(Messages.MainWin_lblKeyboardLayout_text);
 
 		cmbLayout = new Combo(group, SWT.READ_ONLY);
-		fd_lblKeyboardLayout.right = new FormAttachment(cmbLayout, -6);
 		FormData fd_cmbLayout = new FormData();
-		fd_cmbLayout.bottom = new FormAttachment(100, -11);
 		fd_cmbLayout.top = new FormAttachment(txtBanner, 6);
-		fd_cmbLayout.right = new FormAttachment(0, 301);
+		fd_cmbLayout.bottom = new FormAttachment(100, -23);
+		fd_cmbLayout.right = new FormAttachment(0, 395);
 		fd_cmbLayout.left = new FormAttachment(0, 149);
 		cmbLayout.setLayoutData(fd_cmbLayout);
 		cmbLayout.setItems( FkManager.getInstance().getAvailableLayouts() );
@@ -881,7 +875,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		FormData fd_grpBackupAndRestore = new FormData();
 		fd_grpBackupAndRestore.top = new FormAttachment(group, 6);
 		fd_grpBackupAndRestore.left = new FormAttachment(0, 10);
-		fd_grpBackupAndRestore.bottom = new FormAttachment(0, 243);
+		fd_grpBackupAndRestore.bottom = new FormAttachment(0, 224);
 		fd_grpBackupAndRestore.right = new FormAttachment(100, -10);
 
 		btnFkSettingsSave = new Button(group, SWT.NONE);
@@ -908,27 +902,27 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 		FormData fd_btnSave = new FormData();
-		fd_btnSave.right = new FormAttachment(txtBanner, 68, SWT.RIGHT);
-		fd_btnSave.top = new FormAttachment(lblBannerName, 0, SWT.TOP);
-		fd_btnSave.left = new FormAttachment(txtBanner, 6);
+		fd_btnSave.left = new FormAttachment(cmbLayout, 218);
+		fd_btnSave.right = new FormAttachment(100, -10);
+		fd_btnSave.bottom = new FormAttachment(100, -3);
 		btnFkSettingsSave.setLayoutData(fd_btnSave);
 		btnFkSettingsSave.setText(Messages.MainWin_btnSave_text);
 		grpBackupAndRestore.setLayoutData(fd_grpBackupAndRestore);
 		btnFkSettingsSave.setEnabled(false);
 
-		group_1 = new Group(composite, SWT.NONE);
-		group_1.setText("Security");
-		group_1.setLayout(new FormLayout());
-		FormData fd_group_1 = new FormData();
-		fd_group_1.bottom = new FormAttachment(grpBackupAndRestore, 197, SWT.BOTTOM);
-		fd_group_1.top = new FormAttachment(grpBackupAndRestore, 6);
+		grpChangePassword = new Group(composite, SWT.NONE);
+		grpChangePassword.setText(Messages.MainWin_grpChangePassword_text);
+		grpChangePassword.setLayout(new FormLayout());
+		FormData fd_grpChangePassword = new FormData();
+		fd_grpChangePassword.top = new FormAttachment(grpBackupAndRestore, 6);
+		fd_grpChangePassword.right = new FormAttachment(group, 0, SWT.RIGHT);
 
 		Button btnBackup = new Button(grpBackupAndRestore, SWT.CENTER);
 		btnBackup.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/backup.png"));
 		FormData fd_btnBackup = new FormData();
-		fd_btnBackup.left = new FormAttachment(0, 10);
 		fd_btnBackup.top = new FormAttachment(0, 10);
-		fd_btnBackup.bottom = new FormAttachment(100, -28);
+		fd_btnBackup.bottom = new FormAttachment(100, -10);
+		fd_btnBackup.left = new FormAttachment(0, 10);
 		btnBackup.setLayoutData(fd_btnBackup);
 		btnBackup.setText(Messages.MainWin_btnBackupYourFinalkey_text);
 		btnBackup.addSelectionListener(new SelectionAdapter() {
@@ -944,9 +938,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		btnNewButton = new Button(grpBackupAndRestore, SWT.NONE);
 		btnNewButton.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/restore.png"));
 		FormData fd_btnNewButton = new FormData();
-		fd_btnNewButton.top = new FormAttachment(0, 10);
+		fd_btnNewButton.bottom = new FormAttachment(btnBackup, 0, SWT.BOTTOM);
 		fd_btnNewButton.right = new FormAttachment(100, -10);
-		fd_btnNewButton.bottom = new FormAttachment(100, -28);
+		fd_btnNewButton.top = new FormAttachment(0, 10);
 		btnNewButton.setLayoutData(fd_btnNewButton);
 		btnNewButton.setText(Messages.MainWin_btnNewButton_text);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
@@ -961,98 +955,98 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		
 		lblMakeSureYou = new Label(grpBackupAndRestore, SWT.NONE);
 		fd_btnNewButton.left = new FormAttachment(lblMakeSureYou, 6);
-		fd_btnBackup.right = new FormAttachment(100, -555);
+		fd_btnBackup.right = new FormAttachment(lblMakeSureYou, -6);
 		FormData fd_lblMakeSureYou = new FormData();
-		fd_lblMakeSureYou.top = new FormAttachment(0, 10);
-		fd_lblMakeSureYou.left = new FormAttachment(btnBackup, 6);
-		fd_lblMakeSureYou.right = new FormAttachment(0, 541);
+		fd_lblMakeSureYou.left = new FormAttachment(0, 136);
+		fd_lblMakeSureYou.right = new FormAttachment(100, -144);
 		fd_lblMakeSureYou.bottom = new FormAttachment(0, 92);
+		fd_lblMakeSureYou.top = new FormAttachment(0, 10);
 		lblMakeSureYou.setLayoutData(fd_lblMakeSureYou);
 		lblMakeSureYou.setText(Messages.MainWin_lblMakeSureYou_text);
-		fd_group_1.right = new FormAttachment(group, 0, SWT.RIGHT);
-		fd_group_1.left = new FormAttachment(0, 10);
-		group_1.setLayoutData(fd_group_1);
+		fd_grpChangePassword.left = new FormAttachment(0, 10);
+		grpChangePassword.setLayoutData(fd_grpChangePassword);
 
-		label = new Label(group_1, SWT.NONE);
-		label.setText("Always use a secure master-password, but don't forget it, you can not unlock\nyour FinalKey without it! Changing the password is risky, it can result in data-loss\nif the process is interrupted, you should take a backup before changing your\nmaster-password. Changing master-password takes a while as it re-encrypts accounts.");
-		FormData fd_label = new FormData();
-		fd_label.bottom = new FormAttachment(0, 79);
-		fd_label.top = new FormAttachment(0, 10);
-		fd_label.right = new FormAttachment(0, 675);
-		fd_label.left = new FormAttachment(0, 10);
-		label.setLayoutData(fd_label);
+		lblAlwaysUseA = new Label(grpChangePassword, SWT.NONE);
+		lblAlwaysUseA.setText(Messages.MainWin_lblAlwaysUseA_text);
+		FormData fd_lblAlwaysUseA = new FormData();
+		fd_lblAlwaysUseA.bottom = new FormAttachment(0, 79);
+		fd_lblAlwaysUseA.top = new FormAttachment(0, 10);
+		fd_lblAlwaysUseA.right = new FormAttachment(0, 675);
+		fd_lblAlwaysUseA.left = new FormAttachment(0, 10);
+		lblAlwaysUseA.setLayoutData(fd_lblAlwaysUseA);
 
-		text_1 = new Text(group_1, SWT.BORDER | SWT.PASSWORD);
-		FormData fd_text_1 = new FormData();
-		fd_text_1.top = new FormAttachment(label, 6);
-		fd_text_1.right = new FormAttachment(0, 455);
-		fd_text_1.left = new FormAttachment(0, 149);
-		text_1.setLayoutData(fd_text_1);
+		btnReencrypt = new Button(grpChangePassword, SWT.NONE);
+		btnReencrypt.setText(Messages.MainWin_btnReencrypt_text);
+		FormData fd_btnReencrypt = new FormData();
+		fd_btnReencrypt.left = new FormAttachment(lblAlwaysUseA, -102);
+		fd_btnReencrypt.bottom = new FormAttachment(100, -10);
+		fd_btnReencrypt.top = new FormAttachment(lblAlwaysUseA, 6);
+		fd_btnReencrypt.right = new FormAttachment(lblAlwaysUseA, 0, SWT.RIGHT);
+		btnReencrypt.setLayoutData(fd_btnReencrypt);
+		btnReencrypt.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				shell.setEnabled(false);
 
-		text_2 = new Text(group_1, SWT.BORDER | SWT.PASSWORD);
-		FormData fd_text_2 = new FormData();
-		fd_text_2.top = new FormAttachment(text_1, 6);
-		fd_text_2.right = new FormAttachment(0, 455);
-		fd_text_2.left = new FormAttachment(0, 149);
-		text_2.setLayoutData(fd_text_2);
-
-		text_3 = new Text(group_1, SWT.BORDER | SWT.PASSWORD);
-		FormData fd_text_3 = new FormData();
-		fd_text_3.top = new FormAttachment(text_2, 6);
-		fd_text_3.right = new FormAttachment(text_1, 0, SWT.RIGHT);
-		fd_text_3.left = new FormAttachment(0, 149);
-		text_3.setLayoutData(fd_text_3);
-
-		label_1 = new Label(group_1, SWT.NONE);
-		label_1.setText("Current Pass");
-		label_1.setAlignment(SWT.RIGHT);
-		FormData fd_label_1 = new FormData();
-		fd_label_1.top = new FormAttachment(label, 12);
-		fd_label_1.right = new FormAttachment(text_1, -6);
-		fd_label_1.left = new FormAttachment(label, 0, SWT.LEFT);
-		label_1.setLayoutData(fd_label_1);
-
-		label_2 = new Label(group_1, SWT.NONE);
-		label_2.setText("New Pass");
-		label_2.setAlignment(SWT.RIGHT);
-		FormData fd_label_2 = new FormData();
-		fd_label_2.top = new FormAttachment(label_1, 12);
-		fd_label_2.right = new FormAttachment(text_2, -6);
-		fd_label_2.left = new FormAttachment(label, 0, SWT.LEFT);
-		label_2.setLayoutData(fd_label_2);
-
-		label_3 = new Label(group_1, SWT.NONE);
-		label_3.setText("Repeat");
-		label_3.setAlignment(SWT.RIGHT);
-		FormData fd_label_3 = new FormData();
-		fd_label_3.top = new FormAttachment(label_2, 12);
-		fd_label_3.right = new FormAttachment(text_3, -6);
-		fd_label_3.left = new FormAttachment(text_3, -139, SWT.LEFT);
-		label_3.setLayoutData(fd_label_3);
-
-		button = new Button(group_1, SWT.NONE);
-		button.setText("Re-encrypt");
-		FormData fd_button = new FormData();
-		fd_button.bottom = new FormAttachment(text_3, 0, SWT.BOTTOM);
-		fd_button.left = new FormAttachment(text_3, 6);
-		button.setLayoutData(fd_button);
+				MessageBox d;
+				d= new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+				d.setText("Danger ahead");
+				d.setMessage("Changing your password will re-encrypt all accounts on your FinalKey.\nThis may take a while, and if the process is interrupted, data may be unaccessible.\nIt is highly recommended that you backup your FinalKey before proceeding.\nBe sure to remember the new password, your FinalKey can not be unlocked without it!\nDo you wish to continue ?");
+				if( d.open() == SWT.YES )
+				{
+					ChangePassPrompt p = new ChangePassPrompt(shell, shell.getStyle());
+					p.setText("Re-encrypt with new password");
+					p.open(false);
+				} else {
+					d = new MessageBox(shell, SWT.ICON_INFORMATION );
+					d.setText("Aborted");
+					d.setMessage("Not changing the password.");
+					d.open();
+				}
+				shell.setEnabled(true);
+			}
+		});
 
 		grpFormat = new Group(composite, SWT.NONE);
+		fd_grpChangePassword.bottom = new FormAttachment(100, -236);
 		grpFormat.setText(Messages.MainWin_grpFormat_text);
 		FormData fd_grpFormat = new FormData();
-		fd_grpFormat.bottom = new FormAttachment(group_1, 69, SWT.BOTTOM);
-		fd_grpFormat.top = new FormAttachment(group_1, 6);
-		fd_grpFormat.right = new FormAttachment(group, 0, SWT.RIGHT);
+		fd_grpFormat.top = new FormAttachment(grpChangePassword, 6);
 		fd_grpFormat.left = new FormAttachment(group, 0, SWT.LEFT);
+		fd_grpFormat.right = new FormAttachment(group, 0, SWT.RIGHT);
+		fd_grpFormat.bottom = new FormAttachment(100, -167);
 		grpFormat.setLayoutData(fd_grpFormat);
 
 		lblNewLabel = new Label(grpFormat, SWT.NONE);
 		lblNewLabel.setBounds(10, 0, 366, 40);
 		lblNewLabel.setText(Messages.MainWin_lblNewLabel_text_1);
 
-		btnNewButton_1 = new Button(grpFormat, SWT.NONE);
-		btnNewButton_1.setBounds(382, 10, 91, 26);
-		btnNewButton_1.setText(Messages.MainWin_btnNewButton_1_text);
+		btnFormat = new Button(grpFormat, SWT.NONE);
+		btnFormat.setBounds(594, 14, 81, 26);
+		btnFormat.setText(Messages.MainWin_btnNewButton_1_text);
+		btnFormat.addSelectionListener( new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				shell.setEnabled(false);
+
+				MessageBox d;
+				d= new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+				d.setText("Danger ahead");
+				d.setMessage("Formatting your FinalKey overwrites all stored data, all accounts will be lost and unrecoverable. Are you sure you want to erase all data ?");
+				if( d.open() == SWT.YES )
+				{
+					ChangePassPrompt p = new ChangePassPrompt(shell, shell.getStyle());
+					p.setText("Format The FinalKey");
+					p.newBanner = txtBanner.getText();
+					p.newLayout = ""+(cmbLayout.getSelectionIndex()+1);
+					p.open(true);
+				} else {
+					d = new MessageBox(shell, SWT.ICON_INFORMATION );
+					d.setText("Aborted");
+					d.setMessage("Format aborted.");
+					d.open();
+				}
+				shell.setEnabled(true);
+			}
+		});
 
 	}
 	private void remThisFkTab() {

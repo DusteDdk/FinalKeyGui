@@ -6,13 +6,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.spi.CharsetProvider;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
 
 import jssc.SerialPort;
+import jssc.SerialPortException;
 
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
+
+import sun.awt.CharsetString;
+import sun.util.locale.provider.AvailableLanguageTags;
 
 import com.sun.corba.se.impl.ior.ByteBuffer;
 
@@ -1339,6 +1346,318 @@ public class FkManager implements ActionListener {
 
 	public void disconnect() {
 		com.disconnect();
+		supportedLayouts.clear();
+		list.clear();
+	}
+	
+	private class ChangePassTask implements Runnable
+	{
+
+		private FkActionEventListener delegate;
+		private String curPass;
+		private String newPass;
+
+		public ChangePassTask(String _curPass, String _newPass, FkActionEventListener d )
+		{
+			curPass = _curPass;
+			newPass = _newPass;
+			delegate=d;
+		}
+
+
+		@Override
+		public void run() {
+		
+			Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "1",null,'p') );
+			
+			String data="";
+			int state=0;
+			//First check that we get a prompt
+			if( !checkState() )
+			{
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",null,'p') );
+				return;
+			}
+
+			//Drain any previous input.
+			try {
+				while( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					com.serialPort.readBytes();
+				}
+				com.serialPort.writeByte((byte)'x');
+				com.serialPort.writeByte((byte)'p');
+				
+				long timeStamp=System.currentTimeMillis();
+								
+				
+				while(System.currentTimeMillis() - timeStamp < 15000L)
+				{
+					
+					while( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						data += com.serialPort.readString();
+						if( state==0 && data.contains("Are you sure [y/n] ?") )
+						{
+							data="";
+							com.serialPort.writeByte((byte)'y');
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'p') );
+							state++;
+						}
+
+						if( state==1 && data.contains("Current psw:"))
+						{
+							timeStamp=System.currentTimeMillis();
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "WORKING",null,'p') );
+							data="";
+							com.serialPort.writeBytes( curPass.getBytes() );
+							com.serialPort.writeByte( (byte) ENTER_KEY );
+							state++;
+						}
+						
+						if( state==2 && data.contains("New psw:") )
+						{
+							data="";
+							com.serialPort.writeBytes( newPass.getBytes() );
+							com.serialPort.writeByte( (byte) ENTER_KEY );
+							state++;
+						}
+						if( state==3 && data.contains("Repeat:") )
+						{
+							data="";
+							com.serialPort.writeBytes( newPass.getBytes() );
+							com.serialPort.writeByte( (byte) ENTER_KEY );
+							state++;
+
+						}
+						
+						if( state==4 && data.contains("Changing password.")&& data.contains("Encrypting:") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "next",null,'p') );
+							data="";
+							state++;
+						}
+						
+						if( state==5 && data.contains("/255") )
+						{
+							timeStamp=System.currentTimeMillis();
+							String p=data.substring( 1, data.indexOf('/') );
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.PROGRESS_UPDATE, p ,null,'p') );
+							data="";
+						}
+						
+						if( state==5 && data.contains("[done]") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "",null,'p') );
+							return;
+						}
+	
+						if( state== 1 && data.contains("[abort]") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "",null,'p') );
+							return;
+						}
+
+						if( state == 2 && data.contains("[abort]") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Current password was not accepted.",null,'p') );
+							return;
+						}
+					}
+
+
+				}
+
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Timeout ",null,'p') );
+
+			} catch (SerialPortException e) {
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "exception:"+e.getLocalizedMessage(),null,'p') );
+				return;
+			}
+
+		}
+	}
+
+	public void changePass(String currentPass, String newPass, FkActionEventListener delegate) {
+		ChangePassTask ct = new ChangePassTask(currentPass, newPass, delegate);
+		new Thread(ct).start();
+	}
+	
+
+	private class FormatTask implements Runnable
+	{
+
+		private FkActionEventListener delegate;
+		private String curPass;
+		private String newPass;
+		private String newLayout;
+		private String newBanner;
+
+		public FormatTask(String _curPass, String _newPass, String nl, String nb, FkActionEventListener d )
+		{
+			newBanner=nb;
+			newLayout=nl;
+			curPass = _curPass;
+			newPass = _newPass;
+			delegate=d;
+		}
+
+
+		@Override
+		public void run() {
+		
+			Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "1",null,'f') );
+			
+			String data="";
+			int state=0;
+			//First check that we get a prompt
+			if( !checkState() )
+			{
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "EXCEPTION",null,'f') );
+				return;
+			}
+
+			//Drain any previous input.
+			try {
+				while( com.serialPort.getInputBufferBytesCount() > 0 )
+				{
+					com.serialPort.readBytes();
+				}
+				com.serialPort.writeByte((byte)'x');
+				com.serialPort.writeByte((byte)'f');
+
+				long timeStamp=System.currentTimeMillis();
+
+				while(System.currentTimeMillis() - timeStamp < 15000L)
+				{
+
+					while( com.serialPort.getInputBufferBytesCount() > 0 )
+					{
+						data += com.serialPort.readString();
+
+						if( state==0 && data.contains("Are you sure [y/n] ?") )
+						{
+							data="";
+							com.serialPort.writeByte((byte)'y');
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'f') );
+							state++;
+						}
+
+						if( state==1 && data.contains("Current psw:"))
+						{
+							timeStamp=System.currentTimeMillis();
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "WORKING",null,'f') );
+							data="";
+							com.serialPort.writeBytes( curPass.getBytes() );
+							com.serialPort.writeByte( (byte) ENTER_KEY );
+							state++;
+						}
+
+						if( state==2 && data.contains("Psw:") )
+						{
+							data="";
+							com.serialPort.writeBytes( newPass.getBytes() );
+							com.serialPort.writeByte( (byte) ENTER_KEY );
+							state++;
+						}
+
+						if( state==3 && data.contains("Repeat:") )
+						{
+							data="";
+							com.serialPort.writeBytes( newPass.getBytes() );
+							com.serialPort.writeByte( (byte) ENTER_KEY );
+							state++;
+						}
+
+						if( state==4 && data.contains("Name, (0-31):\r\n"))
+						{
+							com.serialPort.writeBytes( newBanner.getBytes() );
+							com.serialPort.writeByte( (byte) ENTER_KEY );
+							//
+							data="";
+							state++;
+						}
+
+						if( state==5 && data.contains("Select keyboard layout:\r\n") && data.contains("% ") )
+						{
+							timeStamp=System.currentTimeMillis()+15000;
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'f') );
+
+							
+							
+							com.serialPort.writeBytes( newLayout.getBytes() );
+
+							data="";
+							state++;
+						}
+
+						if( state==6 && data.contains("Correct [y/n] ?") )
+						{
+							com.serialPort.writeByte( (byte) 'y' );
+							state++;
+						} else if( state==6 && data.contains("[skip test]") )
+						{
+							state++;
+						}
+						
+						if( state==7 && data.contains("Formatting:") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WORKING, "next",null,'f') );
+							data="";
+							state++;
+						}
+						
+						if( state==8 && data.contains("/255"))
+						{
+							timeStamp=System.currentTimeMillis();
+							String p=data.substring( 1, data.indexOf('/') );
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.PROGRESS_UPDATE, p ,null,'f') );
+							data="";
+						}
+						
+						if( state==8 && data.contains("[Done]") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_OKAY, "",null,'p') );
+							return;
+						}
+						
+						
+
+						
+						if( state== 1 && data.contains("[abort]") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ABORTED, "",null,'f') );
+							return;
+						}
+
+						if( state == 2 && data.contains("[lock]") )
+						{
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Current password was not accepted.",null,'f') );
+							return;
+						}
+					}
+
+
+				}
+
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Timeout ",null,'f') );
+
+			} catch (SerialPortException e) {
+				Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.STATE_ERROR, "exception:"+e.getLocalizedMessage(),null,'f') );
+				return;
+			}
+
+		}
+	}
+
+	public void format(String currentPass, String newPass, String newLayout, String newBanner, FkActionEventListener delegate) {
+		FormatTask ft = new FormatTask(currentPass, newPass, newLayout, newBanner, delegate);
+		new Thread(ft).start();
+	}
+
+	public String getCurrentLayoutIndex(String l) {
+		
+		return ""+(supportedLayouts.indexOf( l )+1);
 	}
 
 }
