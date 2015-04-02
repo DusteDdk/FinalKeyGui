@@ -2,6 +2,7 @@ package fkgui;
 
 import java.io.File;
 import java.io.FileOutputStream;
+
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -18,7 +19,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Button;
-
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ProgressBar;
@@ -68,9 +68,9 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 		if( _restoreBackup )
 		{
-			setText("FinalKey - Restore");
+			setText(Messages.Backup_0);
 		} else {
-			setText("FinalKey - Backup");
+			setText(Messages.Backup_1);
 		}
 
 		Display display = getParent().getDisplay();
@@ -140,19 +140,19 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 		if(!restoreBackup)
 		{
-			lblMsg.setText("About backup:\nIt is a good idea to backup your FinalKey so you don't\nlose all your logins if you lose your FinalKey or it breaks.\n\nSecurity:\nThe FinalKey backup files are encrypted, but you should\nnever keep them on your computer or in a place where\nsomeone else may steal them. Keep your backup on\nan offline storage medium in a safe place.\n");
+			lblMsg.setText(Messages.Backup_2);
 		} else {
-			lblMsg.setText("Important! Read  first!\nThis will overwrite all data on your FinalKey with the data\nfrom the backup-file you select!\n\nThe password needed to unlock your FinalKey will be\nthe password that was used at the time that the backup\nwas made. If you do not know the password of the\nbackup file, your FinalKey is useless.\n");
+			lblMsg.setText(Messages.Backup_3);
 		}
 
 		btnBackup = new Button(cmpBackupFileSelect, SWT.NONE);
 		if(!restoreBackup)
 		{
-			btnBackup.setText("Backup");
-			btnBackup.setImage(SWTResourceManager.getImage(Backup.class, "/fkgui/gfx/backup.png"));
+			btnBackup.setText(Messages.Backup_4);
+			btnBackup.setImage(SWTResourceManager.getImage(Backup.class, "/fkgui/gfx/backup.png")); //$NON-NLS-1$
 		} else {
-			btnBackup.setText("Restore");
-			btnBackup.setImage(SWTResourceManager.getImage(Backup.class, "/fkgui/gfx/restore.png"));
+			btnBackup.setText(Messages.Backup_6);
+			btnBackup.setImage(SWTResourceManager.getImage(Backup.class, "/fkgui/gfx/restore.png")); //$NON-NLS-1$
 		}
 		FormData fd_btnBackup = new FormData();
 		fd_btnBackup.bottom = new FormAttachment(100, -10);
@@ -176,8 +176,8 @@ public class Backup extends Dialog implements FkActionEventListener {
 						if(backupFile.createNewFile())
 						{
 							MessageBox m = new MessageBox(shell, SWT.ICON_INFORMATION);
-							m.setText("Ready to backup");
-							m.setMessage("When you press OK, The FinalKey will start blinking, you then have 5 seconds to press the button to allow backup.");
+							m.setText(Messages.Backup_8);
+							m.setMessage(Messages.Backup_9);
 							shell.setEnabled(false);
 							m.open();
 							FkManager.getInstance().backup(backupFile, mySelf);
@@ -185,8 +185,8 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 						} else {
 							MessageBox m = new MessageBox(shell, SWT.ICON_ERROR);
-							m.setText("File exists");
-							m.setMessage("Will not overwrite an existing file.\nChose a new name or delete the existing file.");
+							m.setText(Messages.Backup_10);
+							m.setMessage(Messages.Backup_11);
 							shell.setEnabled(false);
 							m.open();
 							shell.setEnabled(true);
@@ -194,12 +194,12 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 					} catch(Exception ex)
 					{
-						fileName="";
-						txtFileName.setText("");
+						fileName=""; //$NON-NLS-1$
+						txtFileName.setText(""); //$NON-NLS-1$
 						btnBackup.setEnabled(false);
 						MessageBox m = new MessageBox(shell, SWT.ICON_ERROR);
-						m.setText("Could not create file.");
-						m.setMessage("The file could not be created: "+ex.getLocalizedMessage() );
+						m.setText(Messages.Backup_14);
+						m.setMessage(Messages.Backup_15+ex.getLocalizedMessage() );
 						shell.setEnabled(false);
 						m.open();
 						shell.setEnabled(true);
@@ -222,24 +222,24 @@ public class Backup extends Dialog implements FkActionEventListener {
 						if( backupFile.canRead() )
 						{
 							MessageBox m = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-							m.setText("Ready to Restore");
-							m.setMessage("Press yes to restore the backup onto the Finalkey. You will have 5 seconds to press the button on your FinalKey to allow restore.\nIf you do not want to overwrite your FinalKey, press No to abort.");
+							m.setText(Messages.Backup_16);
+							m.setMessage(Messages.Backup_17);
 							shell.setEnabled(false);
 							if( m.open() == SWT.YES )
 							{
 								FkManager.getInstance().restore(backupFile, mySelf);
 							} else {
 								m = new MessageBox(shell, SWT.ICON_INFORMATION);
-								m.setText("Aborted");
-								m.setMessage("Restore was aborted.");
+								m.setText(Messages.Backup_18);
+								m.setMessage(Messages.Backup_19);
 								m.open();
 								shell.close();
 							}
 
 						} else {
 							MessageBox m = new MessageBox(shell, SWT.ICON_ERROR);
-							m.setText("File exists");
-							m.setMessage("Will not overwrite an existing file.\nChose a new name or delete the existing file.");
+							m.setText(Messages.Backup_20);
+							m.setMessage(Messages.Backup_21);
 							shell.setEnabled(false);
 							m.open();
 							shell.setEnabled(true);
@@ -247,12 +247,12 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 					} catch(Exception ex)
 					{
-						fileName="";
-						txtFileName.setText("");
+						fileName=""; //$NON-NLS-1$
+						txtFileName.setText(""); //$NON-NLS-1$
 						btnBackup.setEnabled(false);
 						MessageBox m = new MessageBox(shell, SWT.ICON_ERROR);
-						m.setText("Could not create file.");
-						m.setMessage("The file could not be created: "+ex.getLocalizedMessage() );
+						m.setText(Messages.Backup_24);
+						m.setMessage(Messages.Backup_25+ex.getLocalizedMessage() );
 						shell.setEnabled(false);
 						m.open();
 						shell.setEnabled(true);
@@ -267,7 +267,7 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 		Label lblThisSavesThe = new Label(cmpBackupFileSelect, SWT.NONE);
 		fd_lblNewLabel.top = new FormAttachment(lblThisSavesThe, 18);
-		lblThisSavesThe.setFont(SWTResourceManager.getFont("Sans", 10, SWT.BOLD));
+		lblThisSavesThe.setFont(SWTResourceManager.getFont("Sans", 10, SWT.BOLD)); //$NON-NLS-1$
 		FormData fd_lblThisSavesThe = new FormData();
 		fd_lblThisSavesThe.top = new FormAttachment(0, 10);
 		fd_lblThisSavesThe.left = new FormAttachment(lblMsg, 0, SWT.LEFT);
@@ -277,26 +277,25 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 		if(!restoreBackup)
 		{
-			lblThisSavesThe.setText("Save the contents of FinalKey to a file");
+			lblThisSavesThe.setText(Messages.Backup_27);
 		} else {
-			lblThisSavesThe.setText("Restore the contents of a file onto FinalKey");
+			lblThisSavesThe.setText(Messages.Backup_28);
 		}
 
 		lblFileName = new Label(cmpBackupFileSelect, SWT.NONE);
 		fd_lblNewLabel.bottom = new FormAttachment(100, -81);
 		lblFileName.setAlignment(SWT.RIGHT);
-		lblFileName.setText("File:");
+		lblFileName.setText(Messages.Backup_29);
 		FormData fd_lblFileName = new FormData();
-		fd_lblFileName.top = new FormAttachment(lblMsg, 49);
-		fd_lblFileName.bottom = new FormAttachment(100, -10);
+		fd_lblFileName.bottom = new FormAttachment(btnBackup,0, SWT.CENTER);
 		fd_lblFileName.left = new FormAttachment(0, 10);
 		lblFileName.setLayoutData(fd_lblFileName);
 
 		txtFileName = new Text(cmpBackupFileSelect, SWT.BORDER);
 		fd_lblFileName.right = new FormAttachment(100, -463);
 		FormData fd_txtFileName = new FormData();
-		fd_txtFileName.top = new FormAttachment(lblMsg, 49);
-		fd_txtFileName.bottom = new FormAttachment(100, -10);
+		//fd_txtFileName.top = new FormAttachment(lblMsg, 49);
+		fd_txtFileName.bottom = new FormAttachment(btnBackup, 0, SWT.CENTER);
 		fd_txtFileName.left = new FormAttachment(lblFileName, 6);
 		txtFileName.setLayoutData(fd_txtFileName);
 		txtFileName.addListener(SWT.CHANGED, new Listener() {
@@ -315,16 +314,25 @@ public class Backup extends Dialog implements FkActionEventListener {
 		btnBrowse = new Button(cmpBackupFileSelect, SWT.NONE);
 		fd_txtFileName.right = new FormAttachment(btnBrowse, -6);
 		FormData fd_btnBrowse = new FormData();
-		fd_btnBrowse.top = new FormAttachment(lblMsg, 49);
-		fd_btnBrowse.bottom = new FormAttachment(btnBackup, 0, SWT.BOTTOM);
+		fd_btnBrowse.left = new FormAttachment(0, 322);
 		fd_btnBrowse.right = new FormAttachment(btnBackup, -6);
+		fd_btnBrowse.top = new FormAttachment(lblMsg, 38);
+		fd_btnBrowse.bottom = new FormAttachment(btnBackup, 0, SWT.BOTTOM);
 		btnBrowse.setLayoutData(fd_btnBrowse);
-		btnBrowse.setText("...");
+		btnBrowse.setText("..."); //$NON-NLS-1$
 		btnBrowse.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				FileDialog fd = new FileDialog(shell, SWT.SAVE );
-				String[] ext = { "*.fkb", "*.*"  };
-				String[] extN = { "FinalKey Backup Files", "All Files"};
+				FileDialog fd;
+
+				if(restoreBackup)
+				{
+					fd = new FileDialog(shell, SWT.OPEN );
+				} else {
+					fd = new FileDialog(shell, SWT.SAVE );
+				}
+
+				String[] ext = { "*.fkb", "*.*"  }; //$NON-NLS-1$ //$NON-NLS-2$
+				String[] extN = { Messages.Backup_33, Messages.Backup_34};
 
 				//Try to start the selection dialog in the existing information, if it is correct and exist
 				fileName = txtFileName.getText();
@@ -345,7 +353,7 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 				if(restoreBackup)
 				{
-					fd.setFileName("");
+					fd.setFileName(""); //$NON-NLS-1$
 				}
 
 				fd.setFilterExtensions( ext );
@@ -356,7 +364,7 @@ public class Backup extends Dialog implements FkActionEventListener {
 				if( fileName != null )
 				{
 
-					System.out.println("FileName: " + fileName);
+					System.out.println("FileName: " + fileName); //$NON-NLS-1$
 					txtFileName.setText(fileName);
 					btnBackup.setEnabled(true);
 				}
@@ -368,7 +376,6 @@ public class Backup extends Dialog implements FkActionEventListener {
 	@Override
 	public void fkActionEvent(FkActionEvent event) {
 		MessageBox m;
-		System.out.println(event);
 
 		//Handle errors differently when we are taking bacup
 		if( !restoreBackup )
@@ -378,8 +385,8 @@ public class Backup extends Dialog implements FkActionEventListener {
 			case ACTION_ABORTED:
 				backupFile.delete();
 				m = new MessageBox(shell, SWT.ICON_WARNING| SWT.YES| SWT.NO);
-				m.setText("Backup failed");
-				m.setMessage("You did not press the button within 5 seconds, or you held down the button to abort the backup. Try again ?");
+				m.setText(Messages.Backup_37);
+				m.setMessage(Messages.Backup_38);
 
 				if( m.open() == SWT.YES )
 				{
@@ -391,17 +398,17 @@ public class Backup extends Dialog implements FkActionEventListener {
 				}
 				break;
 			case ACTION_ERROR:
-				lblStatusVerified.setText("Valid: No - Validation failed.");
+				lblStatusVerified.setText(Messages.Backup_39);
 
 				m = new MessageBox(shell, SWT.ICON_ERROR| SWT.YES| SWT.NO);
-				m.setText("Checksum Error");
-				m.setMessage("There were one or more errors when verifying the backup data, this may indicate a bad connection or a hardware-malfunction on the FinalKey.\nThe Backup File can NOT be restored onto the FinalKey, but it may be manually repaired by someone with a hex-editor and too much free-time. Do you want to delete the corrupted file ?");
+				m.setText(Messages.Backup_40);
+				m.setMessage(Messages.Backup_41);
 				if( m.open() == SWT.YES )
 				{
 					backupFile.delete();
 				} else {
-					backupFile.renameTo( new File(fileName+"-failed"));
-					File crashLog = new File(fileName+"-errorlog.txt");
+					backupFile.renameTo( new File(fileName+"-failed")); //$NON-NLS-1$
+					File crashLog = new File(fileName+"-errorlog.txt"); //$NON-NLS-1$
 					FileOutputStream fout;
 					try {
 						fout = new FileOutputStream( crashLog );
@@ -416,22 +423,22 @@ public class Backup extends Dialog implements FkActionEventListener {
 
 				break;
 			case ACTION_OKAY:
-				lblStatusVerified.setText("Valid: Yes");
+				lblStatusVerified.setText(Messages.Backup_44);
 				progressBar.setSelection(66000);
 				m=new MessageBox(shell, SWT.ICON_INFORMATION);
-				m.setText("Backup successful");
-				m.setMessage("Backup was verified and saved.");
+				m.setText(Messages.Backup_45);
+				m.setMessage(Messages.Backup_46);
 				m.open();
 				shell.close();
 				break;
 			case ACTION_WAITING:
 				cmpBackupFileSelect.dispose();
-				createWaitingScreen("Press the FinalKey button to allow backup.\nPress and hold, or wait, to abort.");
+				createWaitingScreen(Messages.Backup_47);
 				shell.layout();
 				break;
 			case ACTION_WORKING:
 				cmpWaiting.dispose();
-				createStatusView("Backing up...");
+				createStatusView(Messages.Backup_48);
 				shell.layout();
 				shell.setEnabled(false);
 				break;
@@ -453,24 +460,24 @@ public class Backup extends Dialog implements FkActionEventListener {
 			{
 			case ACTION_ABORTED:
 				m = new MessageBox(shell, SWT.ICON_ERROR);
-				m.setText("Restore aborted");
-				m.setMessage("You did not press the button within 5 second, restore aborted.");
+				m.setText(Messages.Backup_49);
+				m.setMessage(Messages.Backup_50);
 				m.open();
 				shell.close();
 				break;
 			case ACTION_ERROR:
 				disconnect=true;
 				m = new MessageBox(shell, SWT.ICON_ERROR);
-				m.setText("Restore Error");
-				m.setMessage("Something went wrong, the backup was not fully restored, error: "+event.data);
+				m.setText(Messages.Backup_51);
+				m.setMessage(Messages.Backup_52+event.data);
 				m.open();
 				break;
 			case ACTION_OKAY:
-				lblStatusVerified.setText("Restore complete.");
+				lblStatusVerified.setText(Messages.Backup_53);
 				lblStatusVerified.setVisible(true);
 				m = new MessageBox(shell, SWT.ICON_INFORMATION);
-				m.setText("Restore success");
-				m.setMessage("The backup has been restored to your FinalKey.\nPress the FinalKey button now, so the blinking stops.");
+				m.setText(Messages.Backup_54);
+				m.setMessage(Messages.Backup_55);
 				FkManager.getInstance().disconnect();
 				m.open();
 				shell.close();
@@ -478,19 +485,19 @@ public class Backup extends Dialog implements FkActionEventListener {
 			case ACTION_WAITING:
 				shell.setEnabled(false);
 				cmpBackupFileSelect.dispose();
-				createWaitingScreen("Press the FinalKey button to allo restore.\nPress and hold, or wait, to abort.");
+				createWaitingScreen(Messages.Backup_56);
 				shell.layout();
 				break;
 			case ACTION_WORKING:
 				cmpWaiting.dispose();
-				createStatusView("Writing data to FinalKey...");
+				createStatusView(Messages.Backup_57);
 				lblStatusVerified.setVisible(false);
 				shell.layout();
 				break;
 			case FILE_ERROR:
 				m = new MessageBox(shell, SWT.ICON_ERROR);
-				m.setText("Restore Aborted");
-				m.setMessage("There was a problem with the backup file: "+event.data);
+				m.setText(Messages.Backup_58);
+				m.setMessage(Messages.Backup_59+event.data);
 				m.open();
 				shell.setEnabled(true);
 				break;
@@ -505,8 +512,8 @@ public class Backup extends Dialog implements FkActionEventListener {
 			if(event.type == FkActionEventType.STATE_ERROR )
 			{
 				m = new MessageBox(shell, SWT.ICON_ERROR);
-				m.setText("State error");
-				m.setMessage("The FinalKey was in an unexpected state, operation failed.");
+				m.setText(Messages.Backup_60);
+				m.setMessage(Messages.Backup_61);
 				m.open();
 				disconnect=true;
 			}
@@ -540,7 +547,7 @@ public class Backup extends Dialog implements FkActionEventListener {
 		lblStatusMsg.setText(msg);
 
 		progressBar = new ProgressBar(cmpStatus, SWT.NONE);
-		progressBar.setToolTipText("Progress");
+		progressBar.setToolTipText(Messages.Backup_62);
 		progressBar.setMaximum(66000);
 		FormData fd_progressBar = new FormData();
 		fd_progressBar.right = new FormAttachment(lblStatusMsg, 0, SWT.RIGHT);
@@ -554,7 +561,7 @@ public class Backup extends Dialog implements FkActionEventListener {
 		fd_lblStatusVerified.top = new FormAttachment(progressBar, 6);
 		fd_lblStatusVerified.left = new FormAttachment(lblStatusMsg, 0, SWT.LEFT);
 		lblStatusVerified.setLayoutData(fd_lblStatusVerified);
-		lblStatusVerified.setText("Valid: Not verified yet");
+		lblStatusVerified.setText(Messages.Backup_63);
 
 		btnStatusOk = new Button(cmpStatus, SWT.NONE);
 		fd_lblStatusVerified.bottom = new FormAttachment(btnStatusOk, -6);
@@ -562,7 +569,7 @@ public class Backup extends Dialog implements FkActionEventListener {
 		fd_btnStatusOk.bottom = new FormAttachment(100, -10);
 		fd_btnStatusOk.right = new FormAttachment(100, -10);
 		btnStatusOk.setLayoutData(fd_btnStatusOk);
-		btnStatusOk.setText("OK");
+		btnStatusOk.setText(Messages.Backup_64);
 		btnStatusOk.setVisible(false);
 
 	}

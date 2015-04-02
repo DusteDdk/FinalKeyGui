@@ -108,7 +108,7 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		fd_lblNewLabel.top = new FormAttachment(0, 10);
 		fd_lblNewLabel.left = new FormAttachment(0, 10);
 		lblNewLabel.setLayoutData(fd_lblNewLabel);
-		lblNewLabel.setText("Current Password");
+		lblNewLabel.setText(Messages.ChangePassPrompt_0);
 
 		txtCurrentPass = new Text(content, SWT.BORDER | SWT.PASSWORD);
 		fd_lblNewLabel.right = new FormAttachment(txtCurrentPass, -6);
@@ -133,7 +133,7 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		fd_lblNewLabel_1.top = new FormAttachment(label, 6);
 		fd_lblNewLabel_1.right = new FormAttachment(lblNewLabel, 0, SWT.RIGHT);
 		lblNewLabel_1.setLayoutData(fd_lblNewLabel_1);
-		lblNewLabel_1.setText("New Password");
+		lblNewLabel_1.setText(Messages.ChangePassPrompt_1);
 
 		txtNewPassA = new Text(content, SWT.BORDER | SWT.PASSWORD);
 		FormData fd_txtNewPassA = new FormData();
@@ -150,7 +150,7 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		txtNewPassB.setLayoutData(fd_txtNewPassB);
 
 		lblRepeat = new Label(content, SWT.NONE);
-		lblRepeat.setText("Repeat");
+		lblRepeat.setText(Messages.ChangePassPrompt_2);
 		lblRepeat.setAlignment(SWT.RIGHT);
 		FormData fd_lblRepeat = new FormData();
 		fd_lblRepeat.left = new FormAttachment(0, 10);
@@ -168,10 +168,11 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 
 		btnAbort = new Button(content, SWT.NONE);
 		FormData fd_btnAbort = new FormData();
+		fd_btnAbort.right = new FormAttachment(lblNewLabel, 74);
 		fd_btnAbort.top = new FormAttachment(label_1, 5);
 		fd_btnAbort.left = new FormAttachment(lblNewLabel, 0, SWT.LEFT);
 		btnAbort.setLayoutData(fd_btnAbort);
-		btnAbort.setText("Abort");
+		btnAbort.setText(Messages.ChangePassPrompt_3);
 		btnAbort.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				shell.close();
@@ -180,9 +181,9 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 
 		btnGo = new Button(content, SWT.NONE);
 		FormData fd_btnGo = new FormData();
-		fd_btnGo.left = new FormAttachment(txtCurrentPass, -89);
-		fd_btnGo.top = new FormAttachment(btnAbort, -22);
 		fd_btnGo.bottom = new FormAttachment(btnAbort, 0, SWT.BOTTOM);
+		fd_btnGo.top = new FormAttachment(label_1, 6);
+		fd_btnGo.left = new FormAttachment(txtCurrentPass, -126);
 		fd_btnGo.right = new FormAttachment(txtCurrentPass, 0, SWT.RIGHT);
 		btnGo.setLayoutData(fd_btnGo);
 		btnGo.addSelectionListener( new SelectionAdapter() {
@@ -196,8 +197,8 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 					if( txtNewPassA.getText().length() < 10 )
 					{
 						m = new MessageBox(shell, SWT.ICON_WARNING|SWT.YES|SWT.NO);
-						m.setText("Short password");
-						m.setMessage("Secure passwords need to be long and complex. Your password can be up to 32 characters long, do you want to continue with the short password?");
+						m.setText(Messages.ChangePassPrompt_4);
+						m.setMessage(Messages.ChangePassPrompt_5);
 						if( m.open() == SWT.YES )
 						{
 							if( format )
@@ -213,8 +214,8 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 					}
 				} else {
 					m = new MessageBox(shell, SWT.ICON_ERROR);
-					m.setText("Passwords do not match");
-					m.setMessage("The new passwords you entered do not match, try again.");
+					m.setText(Messages.ChangePassPrompt_6);
+					m.setMessage(Messages.ChangePassPrompt_7);
 					m.open();
 					shell.setEnabled(true);
 				}
@@ -225,11 +226,11 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 
 		if( format )
 		{
-			btnGo.setText("Format");
-			setText("Format your FinalKey");
+			btnGo.setText(Messages.ChangePassPrompt_8);
+			setText(Messages.ChangePassPrompt_9);
 		} else {
-			btnGo.setText("Re-Encrypt");
-			setText("Change password");
+			btnGo.setText(Messages.ChangePassPrompt_10);
+			setText(Messages.ChangePassPrompt_11);
 		}
 		
 	}
@@ -256,9 +257,9 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		
 		if(format )
 		{
-			lblProgressMsg.setText("Formatting...");
+			lblProgressMsg.setText(Messages.ChangePassPrompt_12);
 		} else {
-			lblProgressMsg.setText("Re-encrypting... Do not unplug The FinalKey!");
+			lblProgressMsg.setText(Messages.ChangePassPrompt_13);
 		}
 
 		progressBar = new ProgressBar(content, SWT.NONE);
@@ -274,14 +275,19 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		fd_btnClose.bottom = new FormAttachment(100, -10);
 		fd_btnClose.right = new FormAttachment(lblProgressMsg, 0, SWT.RIGHT);
 		btnClose.setLayoutData(fd_btnClose);
-		btnClose.setText("Done");
+		btnClose.setText(Messages.ChangePassPrompt_14);
 		btnClose.setVisible(false);
 		
 		btnClose.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
+				shell.setEnabled(false);
 				if(format)
 				{
 					FkManager.getInstance().disconnect();
+					MessageBox d = new MessageBox(shell, SWT.ICON_INFORMATION);
+					d.setText(Messages.ChangePassPrompt_15);
+					d.setMessage(Messages.ChangePassPrompt_16);
+					d.open();
 				}
 				shell.close();
 			}
@@ -337,26 +343,24 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		fd_lblWaitText.top = new FormAttachment(0, 10);
 		fd_lblWaitText.left = new FormAttachment(animation, 6);
 		lblWaitText.setLayoutData(fd_lblWaitText);
-		lblWaitText.setText("Working...");
+		lblWaitText.setText(Messages.ChangePassPrompt_17);
 
 	}
 	
 	@Override
 	public void fkActionEvent(FkActionEvent event) {
-		
+
 		MessageBox d;
-		System.out.println("Event: "+event);
-		
 		switch( event.type )
 		{
 		case ACTION_ABORTED:
 			d = new MessageBox(shell, SWT.ICON_WARNING);
-			d.setText("Aborted");
+			d.setText(Messages.ChangePassPrompt_18);
 			if(format)
 			{
-				d.setMessage("Formatting was aborted.\nMaybe you did not press the FinalKey button in time, or you held it down.");
+				d.setMessage(Messages.ChangePassPrompt_19);
 			} else {
-				d.setMessage("Re-encryption was aborted.\nMaybe you did not press the FinalKey button in time, or you held it down.");
+				d.setMessage(Messages.ChangePassPrompt_20);
 			}
 			d.open();
 			shell.close();
@@ -364,9 +368,15 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		case STATE_ERROR:
 		case ACTION_ERROR:
 			d = new MessageBox(shell, SWT.ICON_ERROR);
-			d.setText("Error");
+			d.setText(Messages.ChangePassPrompt_21);
 			d.setMessage(event.data);
 			d.open();
+			
+			if(event.action == 'F' )
+			{
+				FkManager.getInstance().disconnect();
+			}
+			
 			shell.close();
 			break;
 		case ACTION_OKAY:
@@ -375,9 +385,9 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 			
 			if( format )
 			{
-				lblProgressMsg.setText("Format complete.");
+				lblProgressMsg.setText(Messages.ChangePassPrompt_22);
 			} else {
-				lblProgressMsg.setText("Re-encryption complete.");
+				lblProgressMsg.setText(Messages.ChangePassPrompt_23);
 			}
 
 			break;
@@ -388,14 +398,14 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 
 			if( event.action == 'p' )
 			{
-				lblWaitText.setText("Press FinalKey button to re-encrypt.\nPress and hold to abort.");
+				lblWaitText.setText(Messages.ChangePassPrompt_24);
 			} else if( event.action == 'f' )
 			{
-				if( event.data.compareTo("stage1")==0 )
+				if( event.data.compareTo("press1")==0 ) //$NON-NLS-1$
 				{
-					lblWaitText.setText("Press button to format.\nPress and hold to abort.");
+					lblWaitText.setText(Messages.ChangePassPrompt_26);
 				} else {
-					lblWaitText.setText("Press button again.");
+					lblWaitText.setText(Messages.ChangePassPrompt_27);
 				}
 			}
 			shell.layout();
@@ -403,7 +413,7 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 			break;
 		case ACTION_WORKING:
 			content.dispose();
-			if( event.data.compareTo( "next" )==0 )
+			if( event.data.compareTo( "next" )==0 ) //$NON-NLS-1$
 			{
 				createProgress();
 			} else {
@@ -416,6 +426,11 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		case PROGRESS_UPDATE:
 			try {
 				progressBar.setSelection( Integer.parseInt(event.data) );
+				
+				if(event.action=='f' && event.data.contains("255")) //$NON-NLS-1$
+				{
+					lblProgressMsg.setText(Messages.ChangePassPrompt_30);
+				}
 			} catch(Exception e)
 			{
 				

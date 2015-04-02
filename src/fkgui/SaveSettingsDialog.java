@@ -84,9 +84,9 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 	private void createSetLayout() {
 		if(bannerTxt == null)
 		{
-			setText("Save Settings, Save the keyboard layout");
+			setText(Messages.SaveSettingsDialog_0);
 		} else {
-			setText("Save Settings, step 2/2: Save the keyboard layout");
+			setText(Messages.SaveSettingsDialog_1);
 		}
 
 		Composite cmpSetLayout = new Composite(shell, SWT.NONE);
@@ -105,7 +105,7 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		fd_lblL.top = new FormAttachment(0, 10);
 		fd_lblL.left = new FormAttachment(0, 10);
 		lblL.setLayoutData(fd_lblL);
-		lblL.setText("Ready to set the keyboard layout.\nWhen you press GO, The FinalKey will start blinking.\nPress the button on the FinalKey to proceed.");
+		lblL.setText(Messages.SaveSettingsDialog_2);
 
 		Button btnSaveLayout = new Button(cmpSetLayout, SWT.NONE);
 		FormData fd_btnSaveLayout = new FormData();
@@ -113,10 +113,10 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		fd_btnSaveLayout.top = new FormAttachment(0, 135);
 		fd_btnSaveLayout.left = new FormAttachment(0, 515);
 		btnSaveLayout.setLayoutData(fd_btnSaveLayout);
-		btnSaveLayout.setText("GO");
+		btnSaveLayout.setText(Messages.SaveSettingsDialog_3);
 		btnSaveLayout.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				lblL.setText("Press the button now.");
+				lblL.setText(Messages.SaveSettingsDialog_4);
 				animation.setVisible(true);
 				animation.setPlaying(true);
 				Button btn = (Button)e.widget;
@@ -145,7 +145,7 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		fd_lblTest.left = new FormAttachment(0, 10);
 		fd_lblTest.right = new FormAttachment(0, 52);
 		lblTest.setLayoutData(fd_lblTest);
-		lblTest.setText("Test:");
+		lblTest.setText(Messages.SaveSettingsDialog_5);
 		
 		txtTest = new Text(cmpSetLayout, SWT.BORDER);
 		FormData fd_txtTest = new FormData();
@@ -161,9 +161,9 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		
 		if(Layout == 0)
 		{
-			setText("Save Settings, Save the banner text");
+			setText(Messages.SaveSettingsDialog_6);
 		} else {
-			setText("Save Settings, step 1/2: Save the banner text");
+			setText(Messages.SaveSettingsDialog_7);
 		}
 		
 		cmpSetBanner = new Composite(shell, SWT.NONE);
@@ -181,7 +181,7 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		fd_lblK.top = new FormAttachment(0, 10);
 		fd_lblK.left = new FormAttachment(0, 10);
 		lblK.setLayoutData(fd_lblK);
-		lblK.setText("Ready to set the banner text.\nWhen you press GO, The FinalKey will start blinking, and you have 5 seconds\nto press the button on your FinalKey to confirm saving the new banner.\n");
+		lblK.setText(Messages.SaveSettingsDialog_8);
 		
 		
 		animation = new Animation(cmpSetBanner, SWT.NONE, 4);
@@ -203,12 +203,12 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		fd_btnGoSaveBanner.right = new FormAttachment(100, -10);
 		fd_btnGoSaveBanner.left = new FormAttachment(100, -117);
 		btnGoSaveBanner.setLayoutData(fd_btnGoSaveBanner);
-		btnGoSaveBanner.setText("GO");
+		btnGoSaveBanner.setText(Messages.SaveSettingsDialog_9);
 		
 		btnGoSaveBanner.forceFocus();
 		btnGoSaveBanner.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				lblK.setText("Press the button now.");
+				lblK.setText(Messages.SaveSettingsDialog_10);
 				animation.setVisible(true);
 				animation.setPlaying(true);
 				Button btn = (Button)e.widget;
@@ -233,14 +233,14 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		
 		if( event.action == 'b' )
 		{
-			System.out.println("Event (B):" + event.toString() );
+			System.out.println("Event (B):" + event.toString() ); //$NON-NLS-1$
 			
 			if( event.type == FkActionEventType.ACTION_OKAY )
 			{
 				FkManager.getInstance().setBanner(bannerTxt);
 				m = new MessageBox(shell, SWT.ICON_INFORMATION);
-				m.setText("Saved");
-				m.setMessage("Banner is set to "+bannerTxt);
+				m.setText(Messages.SaveSettingsDialog_12);
+				m.setMessage(Messages.SaveSettingsDialog_13+bannerTxt);
 				m.open();
 				
 				if(Layout!=0)
@@ -256,8 +256,8 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 			if( event.type == FkActionEventType.ACTION_ABORTED )
 			{
 				m = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO );
-				m.setText("Set banner was aborted");
-				m.setMessage("The banner was not saved. You did not press the button in time, or you held it down to cancel saving the banner. Do you want to try again ?");
+				m.setText(Messages.SaveSettingsDialog_14);
+				m.setMessage(Messages.SaveSettingsDialog_15);
 
 				cmpSetBanner.dispose();
 				if( m.open() == SWT.YES  )
@@ -266,8 +266,8 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 					shell.layout();
 				} else if( Layout != 0 ) {
 					m = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO );
-					m.setText("Continue saving layout");
-					m.setMessage("You said no to save the banner, but you also wanted to change the keyboard layout. Do you want save the keyboard layout ?");
+					m.setText(Messages.SaveSettingsDialog_16);
+					m.setMessage(Messages.SaveSettingsDialog_17);
 					if( m.open() == SWT.YES )
 					{
 						createSetLayout();
@@ -282,18 +282,18 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 
 		if( event.action == 'k')
 		{
-			System.out.println("Event (k):" + event.toString() );
+			System.out.println("Event (k):" + event.toString() ); //$NON-NLS-1$
 			if( event.type == FkActionEventType.ACTION_OKAY )
 			{
-				if( txtTest.getText().compareTo( "Supported specials:!\"#$%&@?()[]-.,+{}_/<>=|'\\;: *" ) == 0 )
+				if( txtTest.getText().compareTo( "Supported specials:!\"#$%&@?()[]-.,+{}_/<>=|'\\;: *" ) == 0 ) //$NON-NLS-1$
 				{
 					m = new MessageBox(shell, SWT.ICON_INFORMATION );
-					m.setText("Saved");
-					m.setMessage("Layout verified.");
+					m.setText(Messages.SaveSettingsDialog_20);
+					m.setMessage(Messages.SaveSettingsDialog_21);
 				} else {
 					m = new MessageBox(shell, SWT.ICON_INFORMATION );
-					m.setText("Saved");
-					m.setMessage("The layout was saved, but it did not look right, maybe the FinalKey application runs with a different input-language setting than the application you want to use, but if your FinalKey is writing the wrong letters then try another layout.");
+					m.setText(Messages.SaveSettingsDialog_22);
+					m.setMessage(Messages.SaveSettingsDialog_23);
 				}
 				FkManager.getInstance().setCurrentLayout( FkManager.getInstance().getAvailableLayouts()[Layout-1] );
 				m.open();
@@ -306,8 +306,8 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		if( event.type == FkActionEventType.ACTION_ERROR  )
 		{
 			m = new MessageBox(shell, SWT.ICON_ERROR );
-			m.setText("Error - All changes may not have been saved");
-			m.setMessage( "Something went wrong, here is the output: "+event.data);
+			m.setText(Messages.SaveSettingsDialog_24);
+			m.setMessage( Messages.SaveSettingsDialog_25+event.data);
 			m.open();
 			shell.close();
 			
@@ -316,8 +316,8 @@ public class SaveSettingsDialog extends Dialog implements FkActionEventListener 
 		if( event.type == FkActionEventType.STATE_ERROR )
 		{
 			m = new MessageBox(shell, SWT.ICON_ERROR );
-			m.setText("State Error - All changes may not have been saved");
-			m.setMessage( "Something went wrong, here is the output: "+event.data);
+			m.setText(Messages.SaveSettingsDialog_26);
+			m.setMessage( Messages.SaveSettingsDialog_27+event.data);
 			m.open();
 			shell.close();
 		}

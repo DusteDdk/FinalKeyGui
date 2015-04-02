@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.spi.CharsetProvider;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
@@ -16,11 +14,6 @@ import jssc.SerialPort;
 import jssc.SerialPortException;
 
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Text;
-
-import sun.awt.CharsetString;
-import sun.util.locale.provider.AvailableLanguageTags;
-
 import com.sun.corba.se.impl.ior.ByteBuffer;
 
 import fkgui.FkActionEventListener.FkActionEvent;
@@ -119,7 +112,7 @@ public class FkManager implements ActionListener {
 			{
 				t++;
 				Thread.sleep(5);
-				
+
 				if( com.serialPort.getInputBufferBytesCount() > 0 )
 				{
 					msg += com.serialPort.readString();
@@ -1539,7 +1532,7 @@ public class FkManager implements ActionListener {
 						{
 							data="";
 							com.serialPort.writeByte((byte)'y');
-							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "WAITING",null,'f') );
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_WAITING, "press1",null,'f') );
 							state++;
 						}
 
@@ -1632,7 +1625,7 @@ public class FkManager implements ActionListener {
 
 						if( state == 2 && data.contains("[lock]") )
 						{
-							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Current password was not accepted.",null,'f') );
+							Display.getDefault().asyncExec( new FkActionEventMsg(delegate, FkActionEventListener.FkActionEventType.ACTION_ERROR, "Current password was not accepted.",null,'F') );
 							return;
 						}
 					}

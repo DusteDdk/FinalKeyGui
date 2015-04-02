@@ -134,7 +134,6 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	private Group grpBackupAndRestore;
 	private Group grpChangePassword;
 	private Label lblAlwaysUseA;
-	private Button btnReencrypt;
 	private Group grpFormat;
 	private Label lblNewLabel;
 	private Button btnNewButton;
@@ -142,6 +141,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 	
 	private Button btnFkSettingsSave;
 	private Label lblMakeSureYou;
+	private Button btnReencrypt;
 
 	
 	
@@ -268,7 +268,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		// Create a pop-up menu components
 		showMain = new MenuItem(Messages.MainWin_7);
 		hideMain = new MenuItem(Messages.MainWin_8);
-		exitApp  = new MenuItem("Quit");
+		exitApp  = new MenuItem(Messages.MainWin_19);
 
 		showMain.addActionListener(new ActionListener() {
 			@Override
@@ -353,8 +353,13 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 	private void destroySysTrayIcon()
 	{
-		sysTrayIconVisible=false;
-		SystemTray.getSystemTray().remove(trayIcon);
+		new Thread( new Runnable() {
+			public void run() {
+				sysTrayIconVisible=false;
+				SystemTray.getSystemTray().remove(trayIcon);
+			}
+		} ).start();
+
 	}
 
 	private void clearSystray(Boolean addExitBtn) {
@@ -689,7 +694,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 					}
 				}
 
-				new Thread( new TrayIconMessageTask(numAccounts +" "+ (( numAccounts >1)?Messages.MainWin_1:Messages.MainWin_2)) ).start();
+				new Thread( new TrayIconMessageTask(numAccounts +" "+ (( numAccounts >1)?Messages.MainWin_1:Messages.MainWin_2)) ).start(); //$NON-NLS-1$
 
 			}
 
@@ -815,7 +820,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		txtBanner.addVerifyListener(new VerifyListener() {
 			@Override
 			public void verifyText(VerifyEvent arg0) {
-				System.out.println("Verify:"+arg0.text );
+				System.out.println("Verify:"+arg0.text ); //$NON-NLS-1$
 				arg0.doit=false;
 				if(arg0.text.length()==0)
 				{
@@ -842,16 +847,15 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		Label lblKeyboardLayout = new Label(group, SWT.NONE);
 		lblKeyboardLayout.setAlignment(SWT.RIGHT);
 		FormData fd_lblKeyboardLayout = new FormData();
-		fd_lblKeyboardLayout.bottom = new FormAttachment(100, -27);
 		fd_lblKeyboardLayout.right = new FormAttachment(lblBannerName, 0, SWT.RIGHT);
-		fd_lblKeyboardLayout.left = new FormAttachment(0, 10);
+		fd_lblKeyboardLayout.left = new FormAttachment(lblBannerName, 0, SWT.LEFT);
 		lblKeyboardLayout.setLayoutData(fd_lblKeyboardLayout);
 		lblKeyboardLayout.setText(Messages.MainWin_lblKeyboardLayout_text);
 
 		cmbLayout = new Combo(group, SWT.READ_ONLY);
+		fd_lblKeyboardLayout.top = new FormAttachment(cmbLayout, 0, SWT.CENTER);
 		FormData fd_cmbLayout = new FormData();
 		fd_cmbLayout.top = new FormAttachment(txtBanner, 6);
-		fd_cmbLayout.bottom = new FormAttachment(100, -23);
 		fd_cmbLayout.right = new FormAttachment(0, 395);
 		fd_cmbLayout.left = new FormAttachment(0, 149);
 		cmbLayout.setLayoutData(fd_cmbLayout);
@@ -902,9 +906,9 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 			}
 		});
 		FormData fd_btnSave = new FormData();
-		fd_btnSave.left = new FormAttachment(cmbLayout, 218);
+		fd_btnSave.left = new FormAttachment(100, -72);
+		fd_btnSave.bottom = new FormAttachment(100, -10);
 		fd_btnSave.right = new FormAttachment(100, -10);
-		fd_btnSave.bottom = new FormAttachment(100, -3);
 		btnFkSettingsSave.setLayoutData(fd_btnSave);
 		btnFkSettingsSave.setText(Messages.MainWin_btnSave_text);
 		grpBackupAndRestore.setLayoutData(fd_grpBackupAndRestore);
@@ -912,13 +916,12 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 		grpChangePassword = new Group(composite, SWT.NONE);
 		grpChangePassword.setText(Messages.MainWin_grpChangePassword_text);
-		grpChangePassword.setLayout(new FormLayout());
 		FormData fd_grpChangePassword = new FormData();
 		fd_grpChangePassword.top = new FormAttachment(grpBackupAndRestore, 6);
 		fd_grpChangePassword.right = new FormAttachment(group, 0, SWT.RIGHT);
 
 		Button btnBackup = new Button(grpBackupAndRestore, SWT.CENTER);
-		btnBackup.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/backup.png"));
+		btnBackup.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/backup.png")); //$NON-NLS-1$
 		FormData fd_btnBackup = new FormData();
 		fd_btnBackup.top = new FormAttachment(0, 10);
 		fd_btnBackup.bottom = new FormAttachment(100, -10);
@@ -936,7 +939,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 
 		btnNewButton = new Button(grpBackupAndRestore, SWT.NONE);
-		btnNewButton.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/restore.png"));
+		btnNewButton.setImage(SWTResourceManager.getImage(MainWin.class, "/fkgui/gfx/restore.png")); //$NON-NLS-1$
 		FormData fd_btnNewButton = new FormData();
 		fd_btnNewButton.bottom = new FormAttachment(btnBackup, 0, SWT.BOTTOM);
 		fd_btnNewButton.right = new FormAttachment(100, -10);
@@ -963,65 +966,77 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		fd_lblMakeSureYou.top = new FormAttachment(0, 10);
 		lblMakeSureYou.setLayoutData(fd_lblMakeSureYou);
 		lblMakeSureYou.setText(Messages.MainWin_lblMakeSureYou_text);
+		grpChangePassword.setLayout(new FormLayout());
 		fd_grpChangePassword.left = new FormAttachment(0, 10);
 		grpChangePassword.setLayoutData(fd_grpChangePassword);
 
 		lblAlwaysUseA = new Label(grpChangePassword, SWT.NONE);
-		lblAlwaysUseA.setText(Messages.MainWin_lblAlwaysUseA_text);
 		FormData fd_lblAlwaysUseA = new FormData();
-		fd_lblAlwaysUseA.bottom = new FormAttachment(0, 79);
 		fd_lblAlwaysUseA.top = new FormAttachment(0, 10);
-		fd_lblAlwaysUseA.right = new FormAttachment(0, 675);
+		fd_lblAlwaysUseA.right = new FormAttachment(0, 573);
 		fd_lblAlwaysUseA.left = new FormAttachment(0, 10);
 		lblAlwaysUseA.setLayoutData(fd_lblAlwaysUseA);
-
-		btnReencrypt = new Button(grpChangePassword, SWT.NONE);
-		btnReencrypt.setText(Messages.MainWin_btnReencrypt_text);
-		FormData fd_btnReencrypt = new FormData();
-		fd_btnReencrypt.left = new FormAttachment(lblAlwaysUseA, -102);
-		fd_btnReencrypt.bottom = new FormAttachment(100, -10);
-		fd_btnReencrypt.top = new FormAttachment(lblAlwaysUseA, 6);
-		fd_btnReencrypt.right = new FormAttachment(lblAlwaysUseA, 0, SWT.RIGHT);
-		btnReencrypt.setLayoutData(fd_btnReencrypt);
-		btnReencrypt.addSelectionListener( new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				shell.setEnabled(false);
-
-				MessageBox d;
-				d= new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-				d.setText("Danger ahead");
-				d.setMessage("Changing your password will re-encrypt all accounts on your FinalKey.\nThis may take a while, and if the process is interrupted, data may be unaccessible.\nIt is highly recommended that you backup your FinalKey before proceeding.\nBe sure to remember the new password, your FinalKey can not be unlocked without it!\nDo you wish to continue ?");
-				if( d.open() == SWT.YES )
-				{
-					ChangePassPrompt p = new ChangePassPrompt(shell, shell.getStyle());
-					p.setText("Re-encrypt with new password");
-					p.open(false);
-				} else {
-					d = new MessageBox(shell, SWT.ICON_INFORMATION );
-					d.setText("Aborted");
-					d.setMessage("Not changing the password.");
-					d.open();
-				}
-				shell.setEnabled(true);
-			}
-		});
+		lblAlwaysUseA.setText(Messages.MainWin_lblAlwaysUseA_text);
 
 		grpFormat = new Group(composite, SWT.NONE);
-		fd_grpChangePassword.bottom = new FormAttachment(100, -236);
+		fd_grpChangePassword.bottom = new FormAttachment(100, -213);
 		grpFormat.setText(Messages.MainWin_grpFormat_text);
+		grpFormat.setLayout(new FormLayout());
 		FormData fd_grpFormat = new FormData();
 		fd_grpFormat.top = new FormAttachment(grpChangePassword, 6);
-		fd_grpFormat.left = new FormAttachment(group, 0, SWT.LEFT);
 		fd_grpFormat.right = new FormAttachment(group, 0, SWT.RIGHT);
-		fd_grpFormat.bottom = new FormAttachment(100, -167);
+		fd_grpFormat.left = new FormAttachment(group, 0, SWT.LEFT);
+		fd_grpFormat.bottom = new FormAttachment(100, -136);
+		fd_lblAlwaysUseA.bottom = new FormAttachment(100, -61);
+		
+		btnReencrypt = new Button(grpChangePassword, SWT.NONE);
+		FormData fd_btnReencrypt = new FormData();
+		fd_btnReencrypt.bottom = new FormAttachment(100, -10);
+		fd_btnReencrypt.right = new FormAttachment(100, -10);
+		btnReencrypt.setLayoutData(fd_btnReencrypt);
+		btnReencrypt.setText("Re-Encrypt");
+		
+				btnReencrypt.addSelectionListener( new SelectionAdapter() {
+					public void widgetSelected(SelectionEvent e) {
+						shell.setEnabled(false);
+		
+						MessageBox d;
+						d= new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+						d.setText(Messages.MainWin_30);
+						d.setMessage(Messages.MainWin_31);
+						if( d.open() == SWT.YES )
+						{
+							ChangePassPrompt p = new ChangePassPrompt(shell, shell.getStyle());
+							p.setText(Messages.MainWin_35);
+							p.open(false);
+						} else {
+							d = new MessageBox(shell, SWT.ICON_INFORMATION );
+							d.setText(Messages.MainWin_36);
+							d.setMessage(Messages.MainWin_37);
+							d.open();
+						}
+						shell.setEnabled(true);
+					}
+				});
 		grpFormat.setLayoutData(fd_grpFormat);
 
+
 		lblNewLabel = new Label(grpFormat, SWT.NONE);
-		lblNewLabel.setBounds(10, 0, 366, 40);
+		FormData fd_lblNewLabel = new FormData();
+		fd_lblNewLabel.bottom = new FormAttachment(0, 40);
+		fd_lblNewLabel.right = new FormAttachment(0, 376);
+		fd_lblNewLabel.top = new FormAttachment(0);
+		fd_lblNewLabel.left = new FormAttachment(0, 10);
+		lblNewLabel.setLayoutData(fd_lblNewLabel);
 		lblNewLabel.setText(Messages.MainWin_lblNewLabel_text_1);
 
 		btnFormat = new Button(grpFormat, SWT.NONE);
-		btnFormat.setBounds(594, 14, 81, 26);
+		FormData fd_btnFormat = new FormData();
+		fd_btnFormat.top = new FormAttachment(100, -36);
+		fd_btnFormat.left = new FormAttachment(100, -91);
+		fd_btnFormat.bottom = new FormAttachment(100, -10);
+		fd_btnFormat.right = new FormAttachment(100, -10);
+		btnFormat.setLayoutData(fd_btnFormat);
 		btnFormat.setText(Messages.MainWin_btnNewButton_1_text);
 		btnFormat.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -1029,19 +1044,19 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 
 				MessageBox d;
 				d= new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-				d.setText("Danger ahead");
-				d.setMessage("Formatting your FinalKey overwrites all stored data, all accounts will be lost and unrecoverable. Are you sure you want to erase all data ?");
+				d.setText(Messages.MainWin_38);
+				d.setMessage(Messages.MainWin_39);
 				if( d.open() == SWT.YES )
 				{
 					ChangePassPrompt p = new ChangePassPrompt(shell, shell.getStyle());
-					p.setText("Format The FinalKey");
+					p.setText(Messages.MainWin_40);
 					p.newBanner = txtBanner.getText();
-					p.newLayout = ""+(cmbLayout.getSelectionIndex()+1);
+					p.newLayout = ""+(cmbLayout.getSelectionIndex()+1); //$NON-NLS-1$
 					p.open(true);
 				} else {
 					d = new MessageBox(shell, SWT.ICON_INFORMATION );
-					d.setText("Aborted");
-					d.setMessage("Format aborted.");
+					d.setText(Messages.MainWin_46);
+					d.setMessage(Messages.MainWin_48);
 					d.open();
 				}
 				shell.setEnabled(true);
@@ -1339,6 +1354,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		cmpSettings.setLayout(new FormLayout());
 
 		chkAutoHide = new Button(cmpSettings, SWT.CHECK);
+		chkAutoHide.setToolTipText(Messages.MainWin_chkAutoHide_toolTipText);
 		chkAutoHide.setText(Messages.MainWin_6);
 		chkAutoHide.setSelection( prefs.getBoolean( PREF_AUTOHIDE, false ) );
 		FormData fd_chkAutoHide = new FormData();
@@ -1352,6 +1368,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 
 		chkSortByAccountId = new Button(cmpSettings, SWT.CHECK);
+		chkSortByAccountId.setToolTipText(Messages.MainWin_chkSortByAccountId_toolTipText);
 		fd_chkAutoHide.right = new FormAttachment(chkSortByAccountId, 0, SWT.RIGHT);
 		chkSortByAccountId.setText(Messages.MainWin_9);
 		chkSortByAccountId.setSelection( prefs.getBoolean( PREF_SORT_BY_ID_KEY, false) );
@@ -1369,6 +1386,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 
 		chkShowAccountId = new Button(cmpSettings, SWT.CHECK);
+		chkShowAccountId.setToolTipText(Messages.MainWin_chkShowAccountId_toolTipText);
 		FormData fd_chkShowAccountId = new FormData();
 		fd_chkShowAccountId.left = new FormAttachment(0, 10);
 		fd_chkShowAccountId.right = new FormAttachment(100, -10);
@@ -1384,6 +1402,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 
 		chkCheckForUpdates = new Button(cmpSettings, SWT.CHECK);
+		chkCheckForUpdates.setToolTipText(Messages.MainWin_chkCheckForUpdates_toolTipText);
 		FormData fd_chkCheckForUpdates = new FormData();
 		fd_chkCheckForUpdates.left = new FormAttachment(0, 10);
 		fd_chkCheckForUpdates.right = new FormAttachment(100, -10);
@@ -1399,6 +1418,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 
 		btnShowaccountsReady = new Button(cmpSettings, SWT.CHECK);
+		btnShowaccountsReady.setToolTipText(Messages.MainWin_btnShowaccountsReady_toolTipText);
 		btnShowaccountsReady.setSelection( prefs.getBoolean( PREF_SHOW_ACCOUNTS_READY_NOTICE, true) );
 		FormData fd_btnShowaccountsReady = new FormData();
 		fd_btnShowaccountsReady.left = new FormAttachment(0, 10);
@@ -1414,6 +1434,7 @@ public class MainWin implements ConsoleMsg, UpdateCheckResultListener {
 		});
 
 		Button btnShowSystrayName = new Button( cmpSettings, SWT.CHECK );
+		btnShowSystrayName.setToolTipText(Messages.MainWin_btnShowSystrayName_toolTipText);
 		btnShowSystrayName.setSelection( prefs.getBoolean( PREF_SHOW_SYSTRAY_NAME,  true) );
 		FormData fd_btnShowSystrayName = new FormData();
 		fd_btnShowSystrayName.left = new FormAttachment(0, 10);

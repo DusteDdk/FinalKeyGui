@@ -15,12 +15,12 @@ public class UpdateChecker implements Runnable {
 
 	//Change locale with -Duser.country=DK -Duser.language=da parms for the java command.
 
-	static final String CHECK_URL="http://finalkey.net/gui/update.php";
-	static final String CUR_VER="0.1.2.1";
-	static final String PLATFORM=System.getProperty("os.name")+"_"+System.getProperty("os.arch");
+	static final String CHECK_URL="http://finalkey.net/gui/update.php"; //$NON-NLS-1$
+	static final String CUR_VER="0.5"; //$NON-NLS-1$
+	static final String PLATFORM=System.getProperty("os.name")+"_"+System.getProperty("os.arch"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	static final String LANG = Locale.getDefault().getLanguage();
 
-	public static final String REQUEST_STRING = CHECK_URL + "?version="+CUR_VER+"&platform="+PLATFORM+"&lang="+LANG;
+	public static final String REQUEST_STRING = CHECK_URL + "?version="+CUR_VER+"&platform="+PLATFORM+"&lang="+LANG; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
 	public interface UpdateCheckResultListener {
 		public class UpdateResultEvent
@@ -65,10 +65,10 @@ public class UpdateChecker implements Runnable {
 	public void run() {
 
 		UpdateCheckResult state = UpdateCheckResult.CHECK_FAILED;
-		String res="";
-		String ver="No Version";
-		String msg="No Update";
-		System.out.println("Checking for new version: "+REQUEST_STRING);
+		String res=""; //$NON-NLS-1$
+		String ver="No Version"; //$NON-NLS-1$
+		String msg="No Update"; //$NON-NLS-1$
+		System.out.println(Messages.UpdateChecker_11+REQUEST_STRING);
 		try {
 			URL url = new URL(REQUEST_STRING);
 			BufferedReader  in = new BufferedReader ( new InputStreamReader( url.openStream() ) );
@@ -76,14 +76,14 @@ public class UpdateChecker implements Runnable {
 			in.close();
 			state = UpdateCheckResult.NO_UPDATE;
 
-			String[] lines = res.split( "," );
+			String[] lines = res.split( "," ); //$NON-NLS-1$
 
-			if( lines[0].compareTo("1")==0 )
+			if( lines[0].compareTo("1")==0 ) //$NON-NLS-1$
 			{
 				state = UpdateCheckResult.UPDATE_AVAILABLE;
 				ver = lines[1];
 				msg = lines[2];
-				msg=msg.replace("<br>", "\n");
+				msg=msg.replace("<br>", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 				msg.trim();
 
 			}
@@ -91,7 +91,7 @@ public class UpdateChecker implements Runnable {
 			in.close();
 
 		} catch (Exception e) {
-			System.out.println("Trouble checking for new version: "+e.getMessage() );
+			System.out.println(Messages.UpdateChecker_16+e.getMessage() );
 		}
 
 		Display.getDefault().asyncExec( new AutoUpdaterResultTask(new UpdateResultEvent(state , ver, msg), delegate) );
