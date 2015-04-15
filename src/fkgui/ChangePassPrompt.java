@@ -189,29 +189,38 @@ public class ChangePassPrompt extends Dialog implements FkActionEventListener {
 		btnGo.addSelectionListener( new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				MessageBox m;
-
+				
 				shell.setEnabled(false);
 
+				//Check that passwords match
 				if( txtNewPassA.getText().compareTo(txtNewPassB.getText()) == 0 )
 				{
+					boolean passOk=true;
+					//Check if password is long enough, warn if it is not
 					if( txtNewPassA.getText().length() < 10 )
 					{
 						m = new MessageBox(shell, SWT.ICON_WARNING|SWT.YES|SWT.NO);
 						m.setText(Messages.ChangePassPrompt_4);
 						m.setMessage(Messages.ChangePassPrompt_5);
-						if( m.open() == SWT.YES )
+						if( m.open() != SWT.YES )
 						{
-							if( format )
-							{
-								FkManager.getInstance().format( txtCurrentPass.getText(), txtNewPassA.getText(), newLayout, newBanner, mySelf );
-							} else {
-								FkManager.getInstance().changePass( txtCurrentPass.getText(), txtNewPassA.getText(), mySelf );
-							}
-						} else {
+							//If user does not answer YES, then re-enable the shell and don't change password.
+							passOk=false;
 							shell.setEnabled(true);
 						}
-
 					}
+					
+					//Change the password.
+					if(passOk)
+					{
+						if( format )
+						{
+							FkManager.getInstance().format( txtCurrentPass.getText(), txtNewPassA.getText(), newLayout, newBanner, mySelf );
+						} else {
+							FkManager.getInstance().changePass( txtCurrentPass.getText(), txtNewPassA.getText(), mySelf );
+						}
+					}					
+					
 				} else {
 					m = new MessageBox(shell, SWT.ICON_ERROR);
 					m.setText(Messages.ChangePassPrompt_6);
