@@ -16,7 +16,7 @@ public class UpdateChecker implements Runnable {
 	//Change locale with -Duser.country=DK -Duser.language=da parms for the java command.
 
 	static final String CHECK_URL="http://finalkey.net/gui/update.php"; //$NON-NLS-1$
-	static final String CUR_VER="0.5.1"; //$NON-NLS-1$
+	static final String CUR_VER="0.5.2"; //$NON-NLS-1$
 	static final String PLATFORM=System.getProperty("os.name")+"_"+System.getProperty("os.arch"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	static final String LANG = Locale.getDefault().getLanguage();
 

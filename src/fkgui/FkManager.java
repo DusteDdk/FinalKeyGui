@@ -474,7 +474,7 @@ public class FkManager implements ActionListener {
 								}
 	
 								com.serialPort.writeByte( (byte)seq.charAt(p) );
-								Thread.sleep(5);
+								Thread.sleep(30);
 							}
 							
 						}
